@@ -4,24 +4,11 @@
   
     
     <entry>
-      <title>Hello World</title>
-      <link href="/2024/04/28/hello-world/"/>
-      <url>/2024/04/28/hello-world/</url>
-      
-        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
-      
-      
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>学习笔记——流体力学基本方程（二）</title>
       <link href="/2024/04/27/2024-04-22-study-note-002/"/>
       <url>/2024/04/27/2024-04-22-study-note-002/</url>
       
-        <content type="html"><![CDATA[<h1 id="学习视频"><a href="#学习视频" class="headerlink" title="学习视频"></a>学习视频</h1><h2 id="Bilibili-流体力学基础科普-北斗导航Compass"><a href="#Bilibili-流体力学基础科普-北斗导航Compass" class="headerlink" title="Bilibili-流体力学基础科普-北斗导航Compass"></a><a href="https://www.bilibili.com/video/BV1Ty4y1M7Fx/?share_source=copy_web&amp;vd_source=374d2addde246f63ad679abfc5ab707c">Bilibili-流体力学基础科普-北斗导航Compass</a></h2><p>参考教材：<a href="https://pan.baidu.com/s/1fbj6e9Xk6LmWW2Vjmu0oIw?pwd=eavw">Fundamentals of AERODYNAMICS by John D. Anderson, Jr.</a></p><hr><h1 id="二、基本方程"><a href="#二、基本方程" class="headerlink" title="二、基本方程"></a>二、基本方程</h1><h2 id="1-质量守恒方程-连续方程"><a href="#1-质量守恒方程-连续方程" class="headerlink" title="1. 质量守恒方程(连续方程)"></a>1. 质量守恒方程(连续方程)</h2><p> <strong>控制体内流体总质量的增量 = 流入控制体的流体质量</strong></p><p>积分形式的质量守恒方程</p><script type="math/tex; mode=display">{\int\int\int}_{cv}[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV=0</script><p>微分形式的质量守恒方程</p><script type="math/tex; mode=display">\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}=0</script><p>用哈密顿算子表示,可写为</p><script type="math/tex; mode=display">\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})=0</script><hr><h2 id="2-动量守恒方程"><a href="#2-动量守恒方程" class="headerlink" title="2. 动量守恒方程"></a>2. 动量守恒方程</h2><p> <strong>控制体内流体总动量的增量 = 流入控制体的流体动量 + 外界的力产生的动量增量</strong></p><h2 id="3-能量守恒方程"><a href="#3-能量守恒方程" class="headerlink" title="3. 能量守恒方程"></a>3. 能量守恒方程</h2><p> <strong>控制体内流体的总能量的增量 = 流入控制体的流体能量 + 外界的作用产生的能量增量</strong></p>]]></content>
+        <content type="html"><![CDATA[<h1 id="学习视频"><a href="#学习视频" class="headerlink" title="学习视频"></a>学习视频</h1><h2 id="Bilibili-流体力学基础科普-北斗导航Compass"><a href="#Bilibili-流体力学基础科普-北斗导航Compass" class="headerlink" title="Bilibili-流体力学基础科普-北斗导航Compass"></a><a href="https://www.bilibili.com/video/BV1Ty4y1M7Fx/?share_source=copy_web&amp;vd_source=374d2addde246f63ad679abfc5ab707c">Bilibili-流体力学基础科普-北斗导航Compass</a></h2><p>参考教材：<a href="https://pan.baidu.com/s/1fbj6e9Xk6LmWW2Vjmu0oIw?pwd=eavw">Fundamentals of AERODYNAMICS by John D. Anderson, Jr.</a></p><hr><h1 id="二、基本方程"><a href="#二、基本方程" class="headerlink" title="二、基本方程"></a>二、基本方程</h1><h2 id="1-质量守恒方程-连续方程"><a href="#1-质量守恒方程-连续方程" class="headerlink" title="1. 质量守恒方程(连续方程)"></a>1. 质量守恒方程(连续方程)</h2><p> <strong>控制体内流体总质量的增量 = 流入控制体的流体质量</strong></p><p>积分形式的质量守恒方程</p><script type="math/tex; mode=display">{\iiint}_{cv}\Big[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}\Big]dV=0</script><p>微分形式的质量守恒方程</p><script type="math/tex; mode=display">\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}=0</script><p>用哈密顿算子表示,可写为</p><script type="math/tex; mode=display">\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})=0</script><hr><h2 id="2-动量守恒方程"><a href="#2-动量守恒方程" class="headerlink" title="2. 动量守恒方程"></a>2. 动量守恒方程</h2><p> <strong>控制体内流体总动量的增量 = 流入控制体的流体动量 + 外界的力产生的动量增量</strong></p><h2 id="3-能量守恒方程"><a href="#3-能量守恒方程" class="headerlink" title="3. 能量守恒方程"></a>3. 能量守恒方程</h2><p> <strong>控制体内流体的总能量的增量 = 流入控制体的流体能量 + 外界的作用产生的能量增量</strong></p>]]></content>
       
       
       <categories>
@@ -54,8 +41,6 @@
       <categories>
           
           <category> 学习笔记 </category>
-          
-          <category> 教程及说明 </category>
           
       </categories>
       
@@ -151,11 +136,11 @@
             
             <tag> 边坡稳定性 </tag>
             
+            <tag> Fortran </tag>
+            
             <tag> 非饱和土 </tag>
             
             <tag> 方形网格 </tag>
-            
-            <tag> Fortran </tag>
             
         </tags>
       
@@ -180,13 +165,13 @@
       
         <tags>
             
-            <tag> 边坡稳定性 </tag>
-            
-            <tag> Fortran </tag>
-            
             <tag> 失效概率 </tag>
             
             <tag> Monte-Carlo </tag>
+            
+            <tag> 边坡稳定性 </tag>
+            
+            <tag> Fortran </tag>
             
             <tag> Python </tag>
             
