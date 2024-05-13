@@ -4,95 +4,6 @@
   
     
     <entry>
-      <title>Fortran转C++的注意事项(草稿)</title>
-      <link href="/2024/05/5a883584.html"/>
-      <url>/2024/05/5a883584.html</url>
-      
-        <content type="html"><![CDATA[<h1 id="参数类型"><a href="#参数类型" class="headerlink" title="参数类型"></a>参数类型</h1><h2 id="1-可直接转换的参数类型"><a href="#1-可直接转换的参数类型" class="headerlink" title="1. 可直接转换的参数类型"></a>1. 可直接转换的参数类型</h2><ul><li><p>整型: <code>integer</code>  = <code>int</code></p></li><li><p>浮点数: <code>real</code>  = <code>float</code></p></li><li><p>双浮点数: <code>real(8)</code>  = <code>double</code></p></li></ul><h2 id="2-可代替的参数类型"><a href="#2-可代替的参数类型" class="headerlink" title="2. 可代替的参数类型"></a>2. 可代替的参数类型</h2><ul><li>字符串<code>character</code>: 可使用<code>std::string</code>代替 (须<code>#indlude &lt;string&gt;</code>)</li></ul><blockquote><p>在c++中<code>char</code>只能储存一个字符串, 因此在使用上<code>character</code>和<code>string</code>更类似</p></blockquote><ul><li>自定义类型<code>type</code>: 可使用结构体<code>struct</code>代替</li></ul><blockquote><p>对于参数的访问, 在Fortran中使用<code>%</code>在c++中使用<code>.</code></p></blockquote><ul><li>动态数组<code>allocatable</code>: 可使用向量<code>vector</code>代替 (须<code>#include &lt;vector&gt;</code>)</li><li>动态<code>type</code>数组: 使用<code>std::vector&lt;structname&gt;</code>来定义</li></ul><blockquote><p>对于动态type数组这类变量, 在Fortran中的初始化: </p><figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">!在Fortran2003以后的标准中, type可以直接给定默认值</span></span><br><span class="line"><span class="keyword">type</span> material</span><br><span class="line"><span class="keyword">real</span> :: mass = <span class="number">0.0</span></span><br><span class="line"><span class="keyword">real</span> :: speed = <span class="number">0.0</span></span><br><span class="line"><span class="keyword">real</span> :: Vx(<span class="number">3</span>) = <span class="number">0.0</span>, Vy(<span class="number">3</span>) = <span class="number">0.0</span>, Vz(<span class="number">3</span>)=<span class="number">0.0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span>(material),<span class="keyword">allocatable</span>::material_list(:)</span><br><span class="line"><span class="built_in">allocate</span>(material_list(<span class="number">3</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">!对于之前的标准, 或者没有定义默认值, 再或者需要再次初始化, 可以使用以下方式</span></span><br><span class="line"><span class="keyword">type</span> material</span><br><span class="line"><span class="keyword">real</span> mass</span><br><span class="line"><span class="keyword">real</span> speed</span><br><span class="line"><span class="keyword">real</span> Vx(<span class="number">3</span>), Vy(<span class="number">3</span>), Vz(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span>(material),<span class="keyword">allocatable</span>::material_list(:)</span><br><span class="line"><span class="built_in">allocate</span>(material_list(<span class="number">3</span>))</span><br><span class="line"><span class="keyword">do</span> i=<span class="number">1</span>,<span class="number">3</span></span><br><span class="line">material_list(i)%mass = <span class="number">0.0</span></span><br><span class="line">material_list(i)%speed = <span class="number">0.0</span></span><br><span class="line">material_list(i)%Vx = (/<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>/)</span><br><span class="line">material_list(i)%Vy = (/<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>/)</span><br><span class="line">material_list(i)%Vz = (/<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>/)</span><br><span class="line"><span class="keyword">end</span> <span class="keyword">do</span></span><br></pre></td></tr></table></figure><p>在c++中: </p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在C++11以后的标准中可以直接对结构体设置默认值</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">material</span> <span class="comment">//定义结构体</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">float</span> mass = <span class="number">0.0f</span>; <span class="comment">//0.0默认是double类型, 浮点数的0.0要加上f</span></span><br><span class="line">    <span class="type">float</span> speed = <span class="number">0.0f</span>;</span><br><span class="line">    <span class="type">float</span> Vx[<span class="number">3</span>] = &#123;<span class="number">0.0f</span>&#125;, Vy[<span class="number">3</span>] = &#123;<span class="number">0.0f</span>&#125;, Vz[<span class="number">3</span>] = &#123;<span class="number">0.0f</span>&#125;;<span class="comment">//此处c++会将数组里的其他值也初始化为0.0f</span></span><br><span class="line">&#125;;</span><br><span class="line">std::vector&lt;material&gt; material_list; <span class="comment">//创建结构体向量</span></span><br><span class="line">material_list.<span class="built_in">assign</span>(<span class="number">3</span>,<span class="built_in">material</span>()); <span class="comment">//修改向量大小</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//对于之前的标准或者没有定义默认值, 再或者想要填充为其他值</span></span><br><span class="line">material temp; </span><br><span class="line">temp.mass = <span class="number">0.0</span>;</span><br><span class="line">temp.speed = <span class="number">0.0</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; <span class="number">3</span>; i++ )</span><br><span class="line">&#123;</span><br><span class="line">    temp.Vx[i] = <span class="number">0.0</span>;</span><br><span class="line">    temp.Vy[i] = <span class="number">0.0</span>;</span><br><span class="line">    temp.Vz[i] = <span class="number">0.0</span>;</span><br><span class="line">&#125;;</span><br><span class="line">material_list.<span class="built_in">assign</span>(<span class="number">3</span>,temp); </span><br><span class="line"><span class="comment">//assign函数会将material的大小调整为3, 并将所有值填充为temp</span></span><br></pre></td></tr></table></figure></blockquote><h2 id="3-需要注意的参数类型"><a href="#3-需要注意的参数类型" class="headerlink" title="3. 需要注意的参数类型"></a>3. 需要注意的参数类型</h2><ul><li><p>数组: 在Fortran中,数组的索引序号默认是从<code>1</code>开始, 而在C++中序号默认从<code>0</code>开始. 这要求我们在使用循环操作数组时要注意索引序号</p></li><li><p>数组的运算: 在Fortran中, 对于<code>数值类型的数组</code>可以直接使用<code>+ - =</code>等运算符号, 其意义为数组中对应位置的元素相加, 减, 赋值. (前面的自定义类型不能使用)</p></li></ul><p>例如:</p><figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> <span class="keyword">integer</span>:: i(<span class="number">3</span>),j(<span class="number">3</span>)</span><br><span class="line"><span class="number">2</span> i = <span class="number">1</span></span><br><span class="line"><span class="number">3</span> i = i + <span class="number">1</span></span><br><span class="line"><span class="number">4</span> j = i</span><br><span class="line"><span class="number">5</span> i = i - j</span><br></pre></td></tr></table></figure><p>在这段代码中, 定义了两个长度为3的一维数组. </p><blockquote><p>第2行, 将<code>i</code>中的元素全部赋值为<code>1</code>. </p><p>第3行, 将<code>i</code>中的每一个元素都加<code>1</code>, <code>i</code>中所有元素变为<code>2</code>.  </p><p>第4行, 将<code>i</code>中元素的值,对应赋值给<code>j</code>数组, <code>j</code>中元素也都变为了<code>2</code>.  </p><p>第5行, 将<code>i</code>中的元素对应减去<code>j</code>中的元素并赋值给<code>i</code>,  这时, <code>i</code>中的元素全部变为了<code>1</code>.  </p></blockquote><figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">!错误示范</span></span><br><span class="line"><span class="keyword">type</span> material</span><br><span class="line"><span class="keyword">real</span> mass</span><br><span class="line"><span class="keyword">real</span> speed</span><br><span class="line"><span class="keyword">real</span> Vx(<span class="number">3</span>), Vy(<span class="number">3</span>), Vz(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span>(material),<span class="keyword">allocatable</span>::material_list(:)</span><br><span class="line"><span class="built_in">allocate</span>(material_list(<span class="number">3</span>))</span><br><span class="line">material_list%mass = <span class="number">0.0</span></span><br><span class="line">material_list%speed = <span class="number">0.0</span></span><br><span class="line">material_list%Vx = (/<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>/)</span><br><span class="line">material_list%Vy = (/<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>/)</span><br><span class="line">material_list%Vz = (/<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>/)</span><br><span class="line"><span class="comment">!这些操作只会对数值中的第一个值进行初始化, 注意与数值类型的数组区分</span></span><br></pre></td></tr></table></figure><p>这些在C++中是无法直接做到的, 可以借助一些库或者使用循环来完成这些操作. </p><h1 id="子程序"><a href="#子程序" class="headerlink" title="子程序"></a>子程序</h1><p>对于独立的子程序 (不引用其他的module) 可直接使用函数替代</p><p>例子:</p><figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">subroutine</span></span> sum100(sum_)</span><br><span class="line"><span class="keyword">implicit</span> <span class="keyword">none</span></span><br><span class="line"><span class="keyword">integer</span>,<span class="keyword">intent</span>(<span class="keyword">out</span>)::sum_</span><br><span class="line"><span class="keyword">integer</span> :: i</span><br><span class="line">sum_ = <span class="number">0</span></span><br><span class="line"><span class="keyword">do</span> i=<span class="number">1</span>,<span class="number">100</span></span><br><span class="line">sum_ = sum_ +i</span><br><span class="line">endo</span><br><span class="line"><span class="keyword">end</span> <span class="function"><span class="keyword">subroutine</span></span> sum100</span><br></pre></td></tr></table></figure><p>这个程序会计算1~100的和并输出到sum这个量</p><figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">call</span> sum100(sum1)</span><br></pre></td></tr></table></figure><p>转换成c++</p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sum100</span> <span class="params">(<span class="type">int</span> sum_)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i=<span class="number">1</span>; i&lt;=<span class="number">100</span>; i++) <span class="comment">//在循环体中Fortran判断结束的条件默认是小于等于</span></span><br><span class="line">&#123;</span><br><span class="line">sum_ += i</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> sum_;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><blockquote><p> 这类子程序的特点: 有明确的输入的输出, 全部工作都在子程序内完成, 不牵扯其他的module或子程序. </p></blockquote><h1 id="Module"><a href="#Module" class="headerlink" title="Module"></a>Module</h1><p>对于这类文件, 可以使用<code>头文件</code>+<code>全局变量</code>+<code>源文件</code>的模式</p><blockquote><h3 id="以下是GPT对两种方式的优缺点的判断"><a href="#以下是GPT对两种方式的优缺点的判断" class="headerlink" title="以下是GPT对两种方式的优缺点的判断:"></a>以下是GPT对两种方式的优缺点的判断:</h3><p><strong>使用<code>namespace</code>的优点：</strong></p><ol><li><code>namespace</code>可以用来避免命名冲突。你可以在不同的<code>namespace</code>中定义同名的函数或变量，而不会产生冲突。</li><li><code>namespace</code>可以嵌套，这使得你可以更好地组织你的代码。</li><li><code>namespace</code>可以在多个文件中定义，这使得你可以将相关的代码和数据分散在多个文件中。</li></ol><p><strong>使用<code>namespace</code>的缺点：</strong></p><ol><li><code>namespace</code>不能用来封装数据。在<code>namespace</code>中定义的所有函数和变量都是公开的，任何人都可以访问。</li><li><code>namespace</code>不能用来实现面向对象编程的特性，如继承和多态。</li></ol><p><strong>使用<code>class</code>的优点：</strong></p><ol><li><code>class</code>可以用来封装数据和函数。你可以控制哪些数据和函数是公开的（<code>public</code>），哪些是私有的（<code>private</code>）。</li><li><code>class</code>可以用来实现面向对象编程的特性，如继承和多态。</li><li><code>class</code>可以用来创建对象，这使得你可以在运行时动态地创建和销毁数据和函数。</li></ol><p><strong>使用<code>class</code>的缺点：</strong></p><ol><li><code>class</code>不能像<code>namespace</code>那样用来避免命名冲突。在同一个<code>namespace</code>中，不能有两个同名的<code>class</code>。</li><li><code>class</code>不能在多个文件中定义。一个<code>class</code>的所有成员都必须在同一个文件中定义。</li></ol></blockquote>]]></content>
-      
-      
-      <categories>
-          
-          <category> 学习笔记 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> Fortran </tag>
-            
-            <tag> C++ </tag>
-            
-            <tag> 语言转换 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>渗漏计算程序说明</title>
-      <link href="/2024/05/80807990.html"/>
-      <url>/2024/05/80807990.html</url>
-      
-        <content type="html"><![CDATA[<h1 id="瞬态渗流基本方程"><a href="#瞬态渗流基本方程" class="headerlink" title="瞬态渗流基本方程"></a>瞬态渗流基本方程</h1><h2 id="1-质量守恒方程-连续方程"><a href="#1-质量守恒方程-连续方程" class="headerlink" title="1. 质量守恒方程(连续方程)"></a>1. 质量守恒方程(连续方程)</h2><blockquote><p>对于瞬态渗流而言, 单位时间内流入和流出单元的水量差等于单元内水量的增加量</p></blockquote><p>规定流入单元体水量为正</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202405/20240509173611.png" alt="image-20240509172436931"></p><p>假设流入的水量为$q_x$和$q_y$, 流出的水量为$q_x+\frac{\partial q_x}{\partial x}dx$和$q_y+\frac{\partial q_y}{\partial y}dy$</p><p>则单位时间内微元体内减少的水量为:</p><script type="math/tex; mode=display">\begin{equation}\label{eq1}\Big(q_x+\frac{\partial q_x}{\partial x}dx-q_x\Big)*dy*1+\Big(q_y+\frac{\partial q_y}{\partial y}dy-q_y\Big)*dx*1\end{equation}</script><p>使用体积含水率表示的单位时间内微元体减少的水量为:</p><script type="math/tex; mode=display">\begin{equation}\label{eq2}\frac{\partial \theta_w}{\partial t}*dx*dy*1\end{equation}</script><p>由渗流连续方程可知$\eqref{eq1}$和$\eqref{eq2}$是相等的, 则有下式:</p><script type="math/tex; mode=display">\begin{equation}\label{eq3}\frac{\partial q_x}{\partial x}+\frac{\partial q_y}{\partial y}=\frac{\partial \theta_w}{\partial t}\end{equation}</script><p>应用达西定律对$\eqref{eq3}$进行简化可得:</p><script type="math/tex; mode=display">\begin{equation}\label{eq4}\frac{\partial }{\partial x}\big(k_x*\frac{\partial h}{\partial x}\big) + \frac{\partial}{\partial y}\big(k_y*\frac{\partial h}{\partial y}\big)=\frac{\partial \theta_w}{\partial h}*\frac{\partial h}{\partial t}\end{equation}</script><p>式中: h为总水头, $k_x$和$k_y$分别为水平渗透系数和垂向渗透系数</p><p>若土体中存在着其他的输入和输出源时, 如降雨、灌溉、蒸发、抽水等, 可以用流量Q来表示输入源或输出源</p><p>则式$\eqref{eq4}$左侧加上Q得到完整的渗流连续方程$\eqref{eq5}$</p><script type="math/tex; mode=display">\begin{equation}\label{eq5}\frac{\partial }{\partial x}\big(k_x*\frac{\partial h}{\partial x}\big) + \frac{\partial}{\partial y}\big(k_y*\frac{\partial h}{\partial y}\big)+Q=\frac{\partial \theta_w}{\partial h}*\frac{\partial h}{\partial t}\end{equation}</script><h2 id="2-瞬态有限元方程的推导"><a href="#2-瞬态有限元方程的推导" class="headerlink" title="2.  瞬态有限元方程的推导"></a>2.  瞬态有限元方程的推导</h2><p>$\gamma(h) = C \left[ 1 - e^{-3 \left(\frac{h}{a}\right)^2} \right]$</p>]]></content>
-      
-      
-      <categories>
-          
-          <category> 教程及说明 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> 非饱和土 </tag>
-            
-            <tag> 孔压 </tag>
-            
-            <tag> 有限元 </tag>
-            
-            <tag> 渗流 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Ubuntu24.04最新长期支持版本双系统安装教程(未完成)</title>
-      <link href="/2024/05/bf0075e.html"/>
-      <url>/2024/05/bf0075e.html</url>
-      
-        <content type="html"><![CDATA[<blockquote><p>本教程与<a href="https://fireflye.asia/2024/05/deb026e9.html">Ubuntu22.04双系统安装教程 | Firefly Blog (fireflye.asia)</a>类似, 仅安装界面有区别. 因此其他步骤仅简单说明, 详细请查看22.04教程</p><p>教程未完成. 也可以参考22.04的安装, 过程基本一致.  之后填坑</p></blockquote><h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><blockquote><p>良好的网络环境</p><p>一块8g以上的U盘(注意备份数据, 该U盘会被格式化)</p><p>Windows电脑</p></blockquote><h1 id="硬件要求"><a href="#硬件要求" class="headerlink" title="硬件要求"></a>硬件要求</h1><blockquote><ul><li>双核2 GHz处理器或更高</li><li>4 GB系统内存</li><li>25 GB磁盘存储空间</li></ul></blockquote><h1 id="装机需谨慎-做好数据备份"><a href="#装机需谨慎-做好数据备份" class="headerlink" title="装机需谨慎, 做好数据备份"></a>装机需谨慎, 做好数据备份</h1><h1 id="1-系统镜像的下载"><a href="#1-系统镜像的下载" class="headerlink" title="1. 系统镜像的下载"></a>1. 系统镜像的下载</h1><p>打开官网<a href="https://ubuntu.com/download/desktop">Download Ubuntu Desktop | Ubuntu</a>下载镜像文件</p><p>或者从网盘中下载: </p><p>百度云：<a href="https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111">https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111</a> 提取码: 1111</p><h1 id="2-安装写盘工具Rufus"><a href="#2-安装写盘工具Rufus" class="headerlink" title="2. 安装写盘工具Rufus"></a>2. 安装写盘工具Rufus</h1><p>打开<a href="https://rufus.ie/zh/">Rufus - 轻松创建 USB 启动盘</a> 页面, 找到下载,选择Windows x64平台的便携版, 下载打开即用. </p><p>插入U盘,打开软件</p><p>点击选择, 设备选择刚刚插入的U盘, 镜像文件点击右侧<strong>选择</strong>, 选中刚刚下载的镜像文件, 我的是位于<code>F:/Ubuntu</code>, 选项如下图即可, 点击开始, 等待写入完成, 点击关闭, 弹出U盘</p><h1 id="3-关闭Bitlocker或者备份Bitlocker恢复密钥"><a href="#3-关闭Bitlocker或者备份Bitlocker恢复密钥" class="headerlink" title="3. 关闭Bitlocker或者备份Bitlocker恢复密钥"></a>3. 关闭Bitlocker或者备份Bitlocker恢复密钥</h1><p>如果硬盘设置了Bitlocker, 一定要提前找到恢复密钥, 可以先保存到手机上, 一般在微软账户里会有备份<a href="https://account.microsoft.com/devices/recoverykey">恢复密钥</a></p><p>如果找不到了, 开始前一定要关闭Bitlocker. 改动引导顺序和安全启动选项会触发BitLocker, 要求输入恢复密钥. 否则你将无法打开Windows系统或已加密数据</p><h1 id="4-压缩硬盘空间-双系统需要-若全新安装不需要"><a href="#4-压缩硬盘空间-双系统需要-若全新安装不需要" class="headerlink" title="4. 压缩硬盘空间(双系统需要,若全新安装不需要)"></a>4. 压缩硬盘空间(双系统需要,若全新安装不需要)</h1><p>打开Windows的磁盘管理工具, 右键开始菜单图标, 选择磁盘管理</p><p>找到需要压缩的分区, 右键点击压缩卷</p><p>输入合适的空间, 建议40GB以上, 最低不低于官网要求的25GB, 点击压缩即可</p><h1 id="5-关闭安全启动-设置U盘启动"><a href="#5-关闭安全启动-设置U盘启动" class="headerlink" title="5. 关闭安全启动, 设置U盘启动"></a>5. 关闭安全启动, 设置U盘启动</h1><p>网络上搜索自己的电脑进入BIOS的方法, surface go系列是按音量加键, 一般电脑是按F2或者F10, 以自己的电脑为准, 进入BIOS,关闭安全启动, 设置启动顺序, 将<strong>USB设备</strong>设置到最上面, 由于每台设备情况不同, 此处设置请自行搜索自己电脑的教程. </p><h1 id="6-插入U盘-启动电脑"><a href="#6-插入U盘-启动电脑" class="headerlink" title="6. 插入U盘, 启动电脑"></a>6. 插入U盘, 启动电脑</h1><p>在上一步设置完成之后, 若处于开机状态就插入U盘, 重启电脑, 引导位置选择</p><blockquote><p> Try or Install Ubuntu</p></blockquote><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202405/202405071609859.png" alt="image-20240507160956939"></p><p>等待进入安装界面, 选择中文</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202405/202405071613543.png" alt="image-20240507161319473"></p><p>如果出现窗口显示不全, 点击试用Ubuntu,如果像我一样可以看到全部窗口, 就点击安装Ubuntu, 跳转到下面<a href="#开始安装">开始安装</a>教程</p><hr><p>点击试用之后, 会出现如下界面</p><p>点击该图标, 再打开设置, 找到显示器, 缩放比例选择100%, 点击保存(我使用的虚拟机没有该选项, 就在红框的位置. 保存在夜灯右边位置, 修改后会出现)</p><p>保存之后再选择安装Ubuntu就可以了</p><hr><h2 id="开始安装"><a href="#开始安装" class="headerlink" title="开始安装"></a>开始安装</h2><blockquote><p>逆天虚拟机看不到鼠标, 还死机. 我在真机上也用过24.04, 也有不少Bug, 又重装了22.04. 这个后面再填坑</p></blockquote>]]></content>
-      
-      
-      <categories>
-          
-          <category> 教程及说明 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> Ubuntu </tag>
-            
-            <tag> 安装教程 </tag>
-            
-            <tag> 未完成 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>Git 安装及配置教程</title>
       <link href="/2024/05/cbf708ce.html"/>
       <url>/2024/05/cbf708ce.html</url>
@@ -207,35 +118,6 @@
     
     
     <entry>
-      <title>学习笔记——流体力学基本方程（二）（未完成）</title>
-      <link href="/2024/04/7c8cd580.html"/>
-      <url>/2024/04/7c8cd580.html</url>
-      
-        <content type="html"><![CDATA[<h1 id="学习视频"><a href="#学习视频" class="headerlink" title="学习视频"></a>学习视频</h1><h2 id="Bilibili-流体力学基础科普-北斗导航Compass"><a href="#Bilibili-流体力学基础科普-北斗导航Compass" class="headerlink" title="Bilibili-流体力学基础科普-北斗导航Compass"></a><a href="https://www.bilibili.com/video/BV1Ty4y1M7Fx/?share_source=copy_web&amp;vd_source=374d2addde246f63ad679abfc5ab707c">Bilibili-流体力学基础科普-北斗导航Compass</a></h2><p>参考教材：<a href="https://pan.baidu.com/s/1fbj6e9Xk6LmWW2Vjmu0oIw?pwd=eavw">Fundamentals of AERODYNAMICS by John D. Anderson, Jr.</a></p><hr><h1 id="二、基本方程"><a href="#二、基本方程" class="headerlink" title="二、基本方程"></a>二、基本方程</h1><h2 id="1-质量守恒方程-连续方程"><a href="#1-质量守恒方程-连续方程" class="headerlink" title="1. 质量守恒方程(连续方程)"></a>1. 质量守恒方程(连续方程)</h2><p> <strong>控制体内流体总质量的增量 = 流入控制体的流体质量</strong></p><p>积分形式的质量守恒方程</p><script type="math/tex; mode=display">{\iiint}_{cv}\Big[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}\Big]dV=0</script><p>微分形式的质量守恒方程</p><script type="math/tex; mode=display">\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}=0</script><p>用哈密顿算子表示,可写为</p><script type="math/tex; mode=display">\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})=0</script><hr><h2 id="2-动量守恒方程"><a href="#2-动量守恒方程" class="headerlink" title="2. 动量守恒方程"></a>2. 动量守恒方程</h2><p> <strong>控制体内流体总动量的增量 = 流入控制体的流体动量 + 外界的力产生的动量增量</strong></p><h2 id="3-能量守恒方程"><a href="#3-能量守恒方程" class="headerlink" title="3. 能量守恒方程"></a>3. 能量守恒方程</h2><p> <strong>控制体内流体的总能量的增量 = 流入控制体的流体能量 + 外界的作用产生的能量增量</strong></p>]]></content>
-      
-      
-      <categories>
-          
-          <category> 学习笔记 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> 流体力学 </tag>
-            
-            <tag> 动量守恒方程 </tag>
-            
-            <tag> 未完成 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>Git 工作流程</title>
       <link href="/2024/04/5dbdb580.html"/>
       <url>/2024/04/5dbdb580.html</url>
@@ -265,7 +147,7 @@
     
     
     <entry>
-      <title>学习笔记——流体力学基本方程（一）</title>
+      <title>学习笔记——流体力学基本方程 (一)</title>
       <link href="/2024/04/98e90823.html"/>
       <url>/2024/04/98e90823.html</url>
       
