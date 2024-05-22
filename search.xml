@@ -13,8 +13,6 @@
       
       <categories>
           
-          <category> 学习笔记 </category>
-          
           <category> 编程语言 </category>
           
       </categories>
@@ -27,6 +25,8 @@
             <tag> C++ </tag>
             
             <tag> 语言转换 </tag>
+            
+            <tag> 学习笔记 </tag>
             
         </tags>
       
@@ -44,8 +44,6 @@
       
       <categories>
           
-          <category> 教程及说明 </category>
-          
           <category> Git </category>
           
       </categories>
@@ -58,6 +56,8 @@
             <tag> 安装教程 </tag>
             
             <tag> Windows </tag>
+            
+            <tag> 教程及说明 </tag>
             
         </tags>
       
@@ -75,8 +75,6 @@
       
       <categories>
           
-          <category> 学习笔记 </category>
-          
           <category> Ubuntu </category>
           
       </categories>
@@ -87,6 +85,8 @@
             <tag> Webdav </tag>
             
             <tag> 云服务 </tag>
+            
+            <tag> 学习笔记 </tag>
             
         </tags>
       
@@ -104,8 +104,6 @@
       
       <categories>
           
-          <category> 学习笔记 </category>
-          
           <category> Git </category>
           
       </categories>
@@ -118,6 +116,8 @@
             <tag> Github </tag>
             
             <tag> 工作流程 </tag>
+            
+            <tag> 学习笔记 </tag>
             
         </tags>
       
@@ -135,8 +135,6 @@
       
       <categories>
           
-          <category> 教程及说明 </category>
-          
           <category> Ubuntu </category>
           
       </categories>
@@ -146,9 +144,11 @@
             
             <tag> Ubuntu </tag>
             
-            <tag> 安装教程 </tag>
-            
             <tag> 硬盘分区 </tag>
+            
+            <tag> 教程及说明 </tag>
+            
+            <tag> 系统安装 </tag>
             
         </tags>
       
@@ -166,8 +166,6 @@
       
       <categories>
           
-          <category> 学习笔记 </category>
-          
           <category> Git </category>
           
       </categories>
@@ -180,6 +178,8 @@
             <tag> Github </tag>
             
             <tag> 工作流程 </tag>
+            
+            <tag> 学习笔记 </tag>
             
         </tags>
       
@@ -197,8 +197,6 @@
       
       <categories>
           
-          <category> 学习笔记 </category>
-          
           <category> 流体力学 </category>
           
       </categories>
@@ -209,6 +207,8 @@
             <tag> 流体力学 </tag>
             
             <tag> 质量守恒方程 </tag>
+            
+            <tag> 学习笔记 </tag>
             
         </tags>
       
@@ -226,8 +226,6 @@
       
       <categories>
           
-          <category> 教程及说明 </category>
-          
           <category> 边坡 </category>
           
       </categories>
@@ -242,6 +240,8 @@
             <tag> 孔压 </tag>
             
             <tag> 有限元 </tag>
+            
+            <tag> 教程及说明 </tag>
             
         </tags>
       
@@ -258,8 +258,6 @@
       
       
       <categories>
-          
-          <category> 教程及说明 </category>
           
           <category> 边坡 </category>
           
@@ -278,6 +276,8 @@
             
             <tag> 有限元 </tag>
             
+            <tag> 教程及说明 </tag>
+            
         </tags>
       
     </entry>
@@ -293,8 +293,6 @@
       
       
       <categories>
-          
-          <category> 教程及说明 </category>
           
           <category> 边坡 </category>
           
@@ -314,6 +312,8 @@
             <tag> Python </tag>
             
             <tag> 有限元 </tag>
+            
+            <tag> 教程及说明 </tag>
             
         </tags>
       
