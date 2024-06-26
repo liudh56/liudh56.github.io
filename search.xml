@@ -4,41 +4,6 @@
   
     
     <entry>
-      <title>基于Hexo和Github部署个人博客完整教程</title>
-      <link href="/2024/06/4a79202d.html"/>
-      <url>/2024/06/4a79202d.html</url>
-      
-        <content type="html"><![CDATA[<h2 id="安装流程"><a href="#安装流程" class="headerlink" title="安装流程"></a>安装流程</h2><p><a href="#1. 安装node.js">1. 安装node.js</a></p><p><a href="https://fireflye.asia/2024/05/cbf708ce.html">2. 安装Git</a></p><p><a href="#3. 安装Hexo">3. 安装Hexo</a></p><p><a href="#3. 安装上传插件">3. 安装上传插件</a></p><p><a href="#4. 更改配置">4. 更改配置</a></p><p><a href="#5. 安装主题(可选">5. 安装主题(可选)</a>)</p><h2 id="1-安装node-js"><a href="#1-安装node-js" class="headerlink" title="1. 安装node.js"></a>1. 安装node.js</h2><p>打开node.js官网<a href="https://nodejs.org/en">Node.js — Run JavaScript Everywhere (nodejs.org)</a>点击下载</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616123133.png" alt="image-20240616123122227" style="zoom: 25%;" /></p><p>打开安装至<strong>默认位置</strong>即可</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616133443.png" alt="image-20240616133442122" style="zoom:50%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616133515.png" alt="image-20240616133513544" style="zoom: 50%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616134516.png" alt="image-20240616134514733" style="zoom:50%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616134543.png" alt="image-20240616134540912" style="zoom:50%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616134642.png" alt="image-20240616134640367" style="zoom:50%;" /></p><p>自动安装一些工具, 可以选上, 然后安装. 等待安装完成</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616134808.png" alt="image-20240616134806827" style="zoom:50%;" /></p><p>点击完成, 会弹出一些窗口</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616134924.png" alt="image-20240616134922113" style="zoom:50%;" /></p><p>按<strong>任意键</strong>继续即可, 等待安装完成. </p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616135112.png" alt="image-20240616135110217" style="zoom:33%;" /></p><p>过程较长, 耐心等待安装完成. </p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202406/16/20240616214419.png" alt="image-20240616214328211"></p><h2 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2. 安装Git"></a>2. 安装Git</h2><p>查看往期安装教程<a href="https://fireflye.asia/2024/05/cbf708ce.html">Git 安装及配置教程 | Firefly Blog | 萤火虫博客 (fireflye.asia)</a></p><h2 id="3-安装Hexo"><a href="#3-安装Hexo" class="headerlink" title="3. 安装Hexo"></a>3. 安装Hexo</h2><h2 id="4-创建Github仓库"><a href="#4-创建Github仓库" class="headerlink" title="4. 创建Github仓库"></a>4. 创建Github仓库</h2><h2 id="5-安装上传插件"><a href="#5-安装上传插件" class="headerlink" title="5. 安装上传插件"></a>5. 安装上传插件</h2>]]></content>
-      
-      
-      <categories>
-          
-          <category> Github </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> Git </tag>
-            
-            <tag> 教程及说明 </tag>
-            
-            <tag> Hexo </tag>
-            
-            <tag> 静态网页 </tag>
-            
-            <tag> Blog </tag>
-            
-            <tag> 博客 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>Fortran转C++的一些注意事项</title>
       <link href="/2024/05/5a883584.html"/>
       <url>/2024/05/5a883584.html</url>
