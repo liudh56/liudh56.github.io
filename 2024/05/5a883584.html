@@ -7,7 +7,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://fireflye.asia/img/cover/2024-05-13-16-37-32.jpg">
 <meta property="article:published_time" content="2024-05-13T08:33:30.000Z">
-<meta property="article:modified_time" content="2024-06-18T15:09:03.952Z">
+<meta property="article:modified_time" content="2024-07-07T09:19:03.860Z">
 <meta property="article:author" content="Liudh">
 <meta property="article:tag" content="Fortran">
 <meta property="article:tag" content="C++">
@@ -66,7 +66,7 @@
   isHome: false,
   isHighlightShrink: false,
   isToc: true,
-  postUpdate: '2024-06-18 23:09:03'
+  postUpdate: '2024-07-07 17:19:03'
 }</script><script>(win=>{
       win.saveToLocal = {
         set: (key, value, ttl) => {
@@ -170,16 +170,12 @@
 document.addEventListener('pjax:send', () => {
   Pace.restart()
 })
-</script><link rel="stylesheet" href="/css/barber-shop.css"><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/luban.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">29</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><hr class="custom-hr"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/cover/2024-05-13-16-37-32.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Firefly Blog | 萤火虫博客"><span class="site-name">Firefly Blog | 萤火虫博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Fortran转C++的一些注意事项</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-05-13T08:33:30.000Z" title="发表于 2024-05-13 16:33:30">2024-05-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-06-18T15:09:03.952Z" title="更新于 2024-06-18 23:09:03">2024-06-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Fortran转C++的一些注意事项"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image: url('/img/cover/2024-05-13-16-37-32.jpg');"></div><article class="post-content" id="article-container"><h2 id="一、命名"><a href="#一、命名" class="headerlink" title="一、命名"></a>一、命名</h2><p>在Fortran中, 所有的字符都是<code>不区分大小写</code>的. 在编译时, 全部使用小写字符. 但是, 在C++中是会<code>区分大小写</code>的. 因此, 在转换时要注意统一大小写. </p>
+</script><link rel="stylesheet" href="/css/barber-shop.css"><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/luban.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">29</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><hr class="custom-hr"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/cover/2024-05-13-16-37-32.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Firefly Blog | 萤火虫博客"><span class="site-name">Firefly Blog | 萤火虫博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Fortran转C++的一些注意事项</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-05-13T08:33:30.000Z" title="发表于 2024-05-13 16:33:30">2024-05-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-07-07T09:19:03.860Z" title="更新于 2024-07-07 17:19:03">2024-07-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>13分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Fortran转C++的一些注意事项"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image: url('/img/cover/2024-05-13-16-37-32.jpg');"></div><article class="post-content" id="article-container"><h2 id="一、命名"><a href="#一、命名" class="headerlink" title="一、命名"></a>一、命名</h2><p>在Fortran中, 所有的字符都是<code>不区分大小写</code>的. 在编译时, 全部使用小写字符. 但是, 在C++中是会<code>区分大小写</code>的. 因此, 在转换时要注意统一大小写. </p>
 <h2 id="二、数据类型"><a href="#二、数据类型" class="headerlink" title="二、数据类型"></a>二、数据类型</h2><h3 id="1-可直接转换的参数类型"><a href="#1-可直接转换的参数类型" class="headerlink" title="1. 可直接转换的参数类型"></a>1. 可直接转换的参数类型</h3><ul>
-<li><p>整型: <code>integer</code>  = <code>int</code></p>
-</li>
-<li><p>浮点数: <code>real</code>  = <code>float</code></p>
-</li>
-<li><p>双浮点数: <code>real(8)</code>  = <code>double</code></p>
-</li>
-<li><p>逻辑: <code>logical</code> = <code>bool</code></p>
-</li>
+<li>整型: <code>integer</code>  = <code>int</code></li>
+<li>浮点数: <code>real</code>  = <code>float</code></li>
+<li>双浮点数: <code>real(8)</code>  = <code>double</code></li>
+<li>逻辑: <code>logical</code> = <code>bool</code></li>
 </ul>
 <blockquote>
 <p>对于科学计数法, Fortran中<code>d</code>表示双精度浮点数, 如<code>1.2d3</code>. 在C++中并不能直接识别, 但是C++中默认使用双精度浮点数. 因此可直接使用<code>1.2e3</code>来代替.</p>
@@ -252,7 +248,25 @@ document.addEventListener('pjax:send', () => {
 <p>第4行, 将<code>i</code>中元素的值,对应赋值给<code>j</code>数组, <code>j</code>中元素也都变为了<code>2</code>.  </p>
 <p>第5行, 将<code>i</code>中的元素对应减去<code>j</code>中的元素并赋值给<code>i</code>,  这时, <code>i</code>中的元素全部变为了<code>1</code>.  </p>
 </blockquote>
-<p>这些在C++中是无法直接做到的, 可以借助一些库或者使用循环来完成这些操作. </p>
+<p>这些在C++中是无法直接做到的, 可以借助一些库或者使用循环或者STL中的一些标准函数来完成这些操作. </p>
+<ul>
+<li><p><code>copy</code>从一个数组复制到另一个数组 (std::copy(first,last,dest)前两个参数控制复制到数组的开始和结尾, 第三个为要复制的数组)</p>
+</li>
+<li><p><code>fill</code>填充数组,用于数组的初始化 (std::fill(first,last,init)前两个控制范围,最后一个为填充值)</p>
+</li>
+<li><p><code>transform</code>转换</p>
+<blockquote>
+<p><code>transform</code>算法接受一个或两个输入范围, 以及一个输出范围, 并根据提供的一元函数对象或二元函数对象对”输入范围内的元素” 进行转换;</p>
+<ul>
+<li><code>InputIt first1</code>参数: 输入容器的起始迭代器(包含);</li>
+<li><code>InputIt last1</code>参数: 输入容器的终止迭代器(不包含);</li>
+<li><code>InputIt2 first2</code>参数: 第二个输入容器的起始迭代器(包含);</li>
+<li><code>OutputIt d_first</code>参数: 输出容器的开始迭代器, 输出元素个数根据输入元素的范围确定,transform会将变换结果存储到输出容器中;</li>
+<li><code>UnaryOperation unary_op</code>参数: 一元函数对象, 将输入容器的每个元素输入到该一元函数对象中, 将计算结果输出到输出容器中;</li>
+</ul>
+</blockquote>
+</li>
+</ul>
 <h2 id="三、运算符号"><a href="#三、运算符号" class="headerlink" title="三、运算符号"></a>三、运算符号</h2><ul>
 <li><p><code>+</code> <code>-</code> <code>*</code> <code>/</code> 都可以直接转换, 除了上面提到的应用在数组的计算上时</p>
 </li>
