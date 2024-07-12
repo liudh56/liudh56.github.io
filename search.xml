@@ -4,6 +4,33 @@
   
     
     <entry>
+      <title>物质点法--学习笔记(一)</title>
+      <link href="/2024/07/af38f644.html"/>
+      <url>/2024/07/af38f644.html</url>
+      
+        <content type="html"><![CDATA[<h2 id="1-物质点法"><a href="#1-物质点法" class="headerlink" title="1. 物质点法"></a>1. 物质点法</h2><p>​    物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到计算网格得到, 求解后将计算网格结点的运动量映射回各质点, 从而得到这些质点在下一时刻的运动量(对流计算步). </p><p>​    物质点法是一种完全的拉格朗日质点类方法, 在每步中质点和计算网格没有相对运动, 避免了欧拉法因非线性对流项产生的数值困难. 质点已经携带了连续体的所有物质信息, 因此物质点法在每个时间步结束时抛弃变形后的计算网格, 在新的时间步中仍可以采用未变形的计算网格. </p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202407/12/20240712103901.png" alt="image-20240712103857244" style="zoom:33%;" /></p><p>​    在并行算法方面, 主要基于消息传递模型(MPI)和信息共享模型(OpenMP)实现. </p><h2 id="2-控制方程"><a href="#2-控制方程" class="headerlink" title="2. 控制方程"></a>2. 控制方程</h2><h3 id="2-1-物体运动和变形的描述"><a href="#2-1-物体运动和变形的描述" class="headerlink" title="2.1 物体运动和变形的描述"></a>2.1 物体运动和变形的描述</h3><p>​    物体在 t = 0 时刻所占据的空间区域称为<code>初始构形</code>. 物体在 t 时刻所占据的空间区域成为<code>现时构形</code>. 为了度量物体的运动, 需要选取一个特定的构形作为基准, 称为<code>参考构形</code>. </p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202407/12/20240712105211.png" alt="image-20240712105208694" style="zoom: 33%;" /></p><p>​    在参考构形中质点的矢径 $X$ 可以表示为</p><script type="math/tex; mode=display">X = X_i e_i, i = 1,2,3</script><p>​    其中 $e_i$ 为直角坐标系的基矢量, $X_i$ 为参考构形中质点矢径 $X$ 在 $e_i$ 上的投影. 质点在参考构形中的矢径 $X$ 不随时间 $t$ 变化, $X_i$ 称为<code>物质坐标</code>或<code>拉格朗日坐标</code>, 它可以作为该质点的标记. </p><p>​    在现时构形中质点 $X$ 的矢径 $x$ 可以表示为</p><script type="math/tex; mode=display">x = x_i e_i , i = 1, 2, 3</script><p>​    其中 $x_i$ 为矢径 $x$ 在 $e_i$ 上的投影, 坐标 $x_i$ 给出了质点 $X$ 在空间中的位置,称为<code>空间坐标</code>或<code>欧拉坐标</code>. 质点 $X$ 的运动方程可以表示为</p><script type="math/tex; mode=display">x_i = x_i(X,t)</script><p>​    在拉格朗日描述中, 质点 $X$ 的位移为</p><script type="math/tex; mode=display">u_i = x_i (X, t) - X_i</script><p>​    在欧拉描述中, 质点 $X$ 的位移为</p><script type="math/tex; mode=display">u_i = x_i - X_i(x,t)</script><p>​    质点的速度等于其矢径 $x$ 的变化率, 即令 $X$ 保持不变时矢径 $x$ 对时间的偏导数. 令 $X$ 保持不变时物理量对时间的导数称为<code>物质导数</code>, 也称为<code>全导数</code>或<code>拉格朗日导数</code>. 可以得到质点的速度为</p><script type="math/tex; mode=display">v_i = \frac{\partial x_i(X, t)}{\partial t} = \frac{\partial u_i(X, t)}{\partial t} \equiv \dot{u}_i</script><p>​    质点的加速度为其速度的物质导数, 即</p><script type="math/tex; mode=display">\alpha_i = \frac{\partial v_i(X,t)}{\partial t} = \frac{\partial^2 u_i (X, t)}{\partial t^2} \equiv \ddot{u}_i</script><p>​    </p><p>​    如果物理量 $F$ 是用空间坐标 $x$ 和时间 $t$ 描述的, 即 $F = F(x,t)$, 可以把它变换为复合函数 $F = F(x(X, t), t)$, 它的物质导数为</p><script type="math/tex; mode=display">\frac{DF(x, t)}{Dt} = \frac{\partial F(x, t)}{\partial t} + \frac{\partial F(x, t)}{\partial x_i}\frac{\partial x_i(X, t)}{\partial t}\\= \frac{\partial F(x, t)}{\partial t} + \frac{\partial F(x, t)}{\partial x_i}v_i</script><p>​    </p>]]></content>
+      
+      
+      <categories>
+          
+          <category> MPM </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 学习笔记 </tag>
+            
+            <tag> 物质点法 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>基于Hexo和Github部署个人博客完整教程</title>
       <link href="/2024/06/4a79202d.html"/>
       <url>/2024/06/4a79202d.html</url>
