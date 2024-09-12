@@ -4,64 +4,6 @@
   
     
     <entry>
-      <title>ArcGis批处理</title>
-      <link href="/2024/09/a6603e91.html"/>
-      <url>/2024/09/a6603e91.html</url>
-      
-        <content type="html"><![CDATA[<h2 id="1-ASC转栅格-tiff"><a href="#1-ASC转栅格-tiff" class="headerlink" title="1. ASC转栅格(tiff)"></a>1. ASC转栅格(tiff)</h2><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/12/20240912172942.png" alt="image-20240912172930951" style="zoom:33%;" /></p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 输入文件夹路径(绝对路径)</span></span><br><span class="line">input_folder = <span class="string">&quot;f:/Dev/arcpy&quot;</span> <span class="comment"># 如果arcpy不是默认环境, 必须使用绝对路径</span></span><br><span class="line"><span class="comment"># 输出文件夹路径</span></span><br><span class="line">output_tiff_folder = <span class="string">&quot;f:/Dev/arcpy/outputtiff&quot;</span> <span class="comment"># 输出文件夹位置(自动创建)</span></span><br></pre></td></tr></table></figure><h2 id="2-ASC文件做山体阴影效果-单一类型"><a href="#2-ASC文件做山体阴影效果-单一类型" class="headerlink" title="2. ASC文件做山体阴影效果(单一类型)"></a>2. ASC文件做山体阴影效果(单一类型)</h2><h3 id="2-1-ASC文件前处理-—-计算表面高程"><a href="#2-1-ASC文件前处理-—-计算表面高程" class="headerlink" title="2.1 ASC文件前处理 — 计算表面高程"></a>2.1 ASC文件前处理 — 计算表面高程</h3><p>深度平均程序计算得到的h为滑体厚度或水深, 需要再此基础上加上基础表面的高程. </p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/12/20240912172900.png" alt="image-20240912172850684" style="zoom:33%;" /></p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置输入和输出文件夹路径</span></span><br><span class="line">input_folder = <span class="string">&#x27;./h&#x27;</span> <span class="comment"># 计算得到的厚度asc文件</span></span><br><span class="line">dem_folder = <span class="string">&#x27;./slippery_surface&#x27;</span> <span class="comment"># 基础表面高程asc文件, 必须命名为 &quot;DEM.asc&quot;</span></span><br><span class="line">output_folder = <span class="string">&#x27;output_h&#x27;</span> <span class="comment"># 输出文件夹名称(位于当前目录, 自动创建)</span></span><br></pre></td></tr></table></figure><h3 id="2-2-创建工程文件及模板图层"><a href="#2-2-创建工程文件及模板图层" class="headerlink" title="2.2 创建工程文件及模板图层"></a>2.2 创建工程文件及模板图层</h3><p>在进行处理之前, 需要手动创建一个空的工程项目以及一个套用的模板文件(lyrx图层文件)</p><blockquote><ol><li>创建任意一个项目</li><li>将任意一个asc文件导入工程中</li><li>转换为tiff栅格文件</li><li>创建山体阴影</li><li>修改符号系统、透明度、重采样类型等</li><li>右键 -&gt; 共享 -&gt; 保存为图层文件 -&gt; 保存在模板文件夹内(根目录创建rft文件夹, 将文件保存在此文件夹内)</li></ol></blockquote><h3 id="2-3-批处理"><a href="#2-3-批处理" class="headerlink" title="2.3 批处理"></a>2.3 批处理</h3><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/12/20240912174008.png" alt="image-20240912174002203" style="zoom:33%;" /></p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 定义项目路径</span></span><br><span class="line">root_folder = <span class="string">&quot;E:/ArcGis/测试/&quot;</span></span><br><span class="line">project_path = root_folder + <span class="string">&quot;测试.aprx&quot;</span></span><br><span class="line">arcpy.env.workspace = root_folder + <span class="string">&quot;测试.gdb&quot;</span> <span class="comment"># 项目路径和名称(保持一致)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入文件夹路径(绝对路径)</span></span><br><span class="line">input_folder = <span class="string">&#x27;./output_h&#x27;</span> <span class="comment"># 此处必须改为绝对路径, 为上一步骤输出的文件夹路径</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出文件夹路径</span></span><br><span class="line">output_tiff_folder = root_folder + <span class="string">&quot;outputtiff&quot;</span> <span class="comment"># 输出文件放在工程文件夹内, 便于打包移动</span></span><br><span class="line">output_shaded_folder = root_folder + <span class="string">&quot;outputshaded&quot;</span></span><br><span class="line">output_rendered_folder = root_folder + <span class="string">&quot;outputrendered&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 符号化图层路径</span></span><br><span class="line">symbology_layer = root_folder + <span class="string">&quot;rft/h0000.lyrx&quot;</span> <span class="comment"># 模板图层文件路径(需自行创建)</span></span><br></pre></td></tr></table></figure><h2 id="3-ASC文件做山体阴影效果-多类型"><a href="#3-ASC文件做山体阴影效果-多类型" class="headerlink" title="3. ASC文件做山体阴影效果(多类型)"></a>3. ASC文件做山体阴影效果(多类型)</h2><p>例如, 土加水</p><h3 id="3-1-ASC文件前处理"><a href="#3-1-ASC文件前处理" class="headerlink" title="3.1 ASC文件前处理"></a>3.1 ASC文件前处理</h3><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/12/20240912175352.png" alt="image-20240912175350071" style="zoom:50%;" /></p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dem_folder = <span class="string">&#x27;./dem&#x27;</span> <span class="comment"># 所有输入路径均需修改为绝对路径, dem文件夹内的基础表面高程文件必须命名为 &quot;DEM.asc&quot;</span></span><br></pre></td></tr></table></figure><blockquote><p>本程序的作用:</p><p>将h, erodible_depth和基础表面相加, 得到水的实际高程</p><p>将erodible_depth和基础表面相加, 得到土的高程</p></blockquote><h3 id="3-2-创建山体阴影"><a href="#3-2-创建山体阴影" class="headerlink" title="3.2 创建山体阴影"></a>3.2 创建山体阴影</h3><p>与单一类型相似(包括其所有步骤), 创建多个输入输出和模板等即可(处理部分同样需要添加)</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/12/20240912175222.png" alt="image-20240912175218171" style="zoom:33%;" /></p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 输入文件夹路径(绝对路径)</span></span><br><span class="line">input_folder1 = <span class="string">&quot;./edwoutput&quot;</span></span><br><span class="line">input_folder2 = <span class="string">&quot;./hzwoutput&quot;</span> <span class="comment"># 均为前处理输出的文件夹路径</span></span><br></pre></td></tr></table></figure><h2 id="4-深度图批量处理"><a href="#4-深度图批量处理" class="headerlink" title="4. 深度图批量处理"></a>4. 深度图批量处理</h2><p>与山体阴影的处理类似, 区别在于深度图不需要“创建山体阴影”步骤, 符号系统需要修改拉伸类型为“最大最小值”. 并且需要修改最大最小值至一个合适值(即总文件的最大最小值, 目的是统一颜色拉伸)</p><p>深度图只需要高度(深度, 厚度)即可, 因此不需要前处理. 只需要在处理山体阴影的程序基础上, 做以上修改即可.</p>]]></content>
-      
-      
-      <categories>
-          
-          <category> ArcGis </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> 教程及说明 </tag>
-            
-            <tag> 批处理 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>ArcGis利用asc文件/栅格/点云作3D效果图教程</title>
-      <link href="/2024/09/b9b28598.html"/>
-      <url>/2024/09/b9b28598.html</url>
-      
-        <content type="html"><![CDATA[<h2 id="1-文件转换"><a href="#1-文件转换" class="headerlink" title="1. 文件转换"></a>1. 文件转换</h2><p>ASC文件、栅格(tiff文件)和点云文件(ply文件)可以相互转换. </p><h3 id="asc文件转tiff文件"><a href="#asc文件转tiff文件" class="headerlink" title="asc文件转tiff文件"></a>asc文件转tiff文件</h3><p>将asc文件导入到ArcGis Pro或者ArcMap中, 右键文件选择导出栅格(数据). 格式为tiff.</p><p>ArcGis Pro: </p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907113757.png" alt="image-20240907113748606" style="zoom:33%;" /></p><blockquote><p>若此处修改坐标系会出错, 就不定义坐标系. 在生成之后, 定义投影(教程在后面).</p></blockquote><p>ArcMap: </p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907112817.png" alt="image-20240907112814108" style="zoom:33%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907113926.png" alt="image-20240907113924620" style="zoom:33%;" /></p><h3 id="tiff转ASC文件"><a href="#tiff转ASC文件" class="headerlink" title="tiff转ASC文件"></a>tiff转ASC文件</h3><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907114158.png" alt="image-20240907114146454" style="zoom:33%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907114308.png" alt="image-20240907114306522" style="zoom: 50%;" /></p><p>ArcMap与之类似, 打开地理处理窗口 -&gt; 搜索“栅格转ASCII” -&gt; 输入相应的栅格与保存位置 -&gt; 运行</p><blockquote><p> 与点云文件的互转可借助其它软件</p></blockquote><p>我们最终得到具有坐标系定义的tiff文件, 如果原本就是tiff文件但没有坐标系定义. 需要进行定义投影(ArcGis Pro与ArcMap类似, 此后仅使用ArcGis Pro演示)</p><p>打开地理处理窗口 -&gt; 搜索“定义投影” -&gt; 选择栅格和坐标系 -&gt; 运行</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907115057.png" alt="image-20240907115056120" style="zoom:50%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907115238.png" alt="image-20240907115237519" style="zoom:50%;" /></p><h2 id="2-使用tiff生成山体阴影"><a href="#2-使用tiff生成山体阴影" class="headerlink" title="2. 使用tiff生成山体阴影"></a>2. 使用tiff生成山体阴影</h2><p>打开地理处理窗口 -&gt; 搜索“山体阴影” -&gt; 选择3D的山体阴影 -&gt; 输入栅格和保存位置 -&gt; 运行</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907120051.png" alt="image-20240907120049661" style="zoom:50%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907121210.png" alt="image-20240907121208407" style="zoom:50%;" /></p><h2 id="3-导入高程表面"><a href="#3-导入高程表面" class="headerlink" title="3. 导入高程表面"></a>3. 导入高程表面</h2><p>右键高程表面 -&gt; 选择从源创建表面图层 -&gt; 选择之前的tiff文件(不是刚生成的山体阴影)</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907120423.png" alt="image-20240907120421867" style="zoom:50%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907121322.png" alt="image-20240907121320368" style="zoom:50%;" /></p><h2 id="4-设置浮动表面"><a href="#4-设置浮动表面" class="headerlink" title="4. 设置浮动表面"></a>4. 设置浮动表面</h2><p>右键山体阴影文件 -&gt; 属性 -&gt; 高程 -&gt; 在自定义表面 -&gt; 刚导入的表面图层(ts) -&gt; 确认</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907121455.png" alt="image-20240907121453619" style="zoom:50%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907121634.png" alt="image-20240907121632188" style="zoom:50%;" /></p><h2 id="5-修改符号系统"><a href="#5-修改符号系统" class="headerlink" title="5. 修改符号系统"></a>5. 修改符号系统</h2><p>修改符号系统至合适的颜色, 拉伸模式, 透明度等</p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907121956.png" alt="image-20240907121940067" style="zoom:33%;" /></p><p><img src="https://raw.githubusercontent.com/liudh56/img_readme/main/img/post/202409/07/20240907122028.png" alt="image-20240907122027305" style="zoom:50%;" /></p>]]></content>
-      
-      
-      <categories>
-          
-          <category> ArcGis </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> 教程及说明 </tag>
-            
-            <tag> 作图 </tag>
-            
-            <tag> 3D效果 </tag>
-            
-            <tag> 栅格 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>Mavic 3 classic屏控航线(航点)飞行教程</title>
       <link href="/2024/08/78788d45.html"/>
       <url>/2024/08/78788d45.html</url>
