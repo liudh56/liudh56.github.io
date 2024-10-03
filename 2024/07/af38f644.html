@@ -1,18 +1,18 @@
 <!DOCTYPE html><html lang="zh-CN" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>物质点法--学习笔记(一) | Firefly Blog | 萤火虫博客</title><meta name="author" content="Liudh"><meta name="copyright" content="Liudh"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="1. 物质点法​    物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到">
 <meta property="og:type" content="article">
 <meta property="og:title" content="物质点法--学习笔记(一)">
-<meta property="og:url" content="https://fireflye.asia/2024/07/af38f644.html">
+<meta property="og:url" content="http://fireflye.asia/2024/07/af38f644.html">
 <meta property="og:site_name" content="Firefly Blog | 萤火虫博客">
 <meta property="og:description" content="1. 物质点法​    物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://fireflye.asia/img/cover/2024-7-12-mpm.jpg">
+<meta property="og:image" content="http://fireflye.asia/img/cover/2024-7-12-mpm.jpg">
 <meta property="article:published_time" content="2024-07-12T02:20:43.000Z">
 <meta property="article:modified_time" content="2024-09-14T13:45:54.797Z">
 <meta property="article:author" content="Liudh">
 <meta property="article:tag" content="学习笔记">
 <meta property="article:tag" content="物质点法">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://fireflye.asia/img/cover/2024-7-12-mpm.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://fireflye.asia/2024/07/af38f644.html"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//hm.baidu.com"><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+<meta name="twitter:image" content="http://fireflye.asia/img/cover/2024-7-12-mpm.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://fireflye.asia/2024/07/af38f644.html"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//hm.baidu.com"><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
 (function() {
   var hm = document.createElement("script");
   hm.src = "https://hm.baidu.com/hm.js?fbd96c127ad066860fc10a1737be8075";
