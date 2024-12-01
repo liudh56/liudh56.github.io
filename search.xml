@@ -19,13 +19,13 @@
 <h3 id="计算单元号"><a href="#计算单元号" class="headerlink" title="计算单元号"></a>计算单元号</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (tree_load/=<span class="number">0</span>) <span class="keyword">then</span> <span class="comment">!荷载不为零再进行运算</span></span><br><span class="line">  <span class="built_in">allocate</span>(tree_nodes(nx1+nx2+ny1*ngrad))</span><br><span class="line"></span><br><span class="line">  tree_nodes=<span class="number">0</span></span><br><span class="line">   <span class="comment">! tree_nodes(nx1+nx2+ny1*ngrad)是储存表面单元格的单元号</span></span><br><span class="line"></span><br><span class="line">  itree = <span class="number">2</span> <span class="comment">!用于计数，记录需加荷的单元格数量</span></span><br><span class="line">  tree_nodes(<span class="number">1</span>)=<span class="number">1</span> </span><br><span class="line"></span><br><span class="line">  <span class="comment">! 顶面和斜面前ngrad行</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">2</span>,nx1+ngrad </span><br><span class="line">     tree_nodes(itree) = (i-<span class="number">1</span>)*nye+<span class="number">1</span></span><br><span class="line">     itree = itree + <span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 斜面ngrad行以后</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">1</span>,ny1-<span class="number">1</span></span><br><span class="line">    <span class="keyword">do</span> j=<span class="number">1</span>,ngrad</span><br><span class="line">       <span class="keyword">if</span> (j==<span class="number">1</span>) <span class="keyword">then</span></span><br><span class="line">          tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+nye-i+<span class="number">1</span></span><br><span class="line">       <span class="keyword">else</span></span><br><span class="line">          tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+nye-i</span><br><span class="line">       <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">       itree = itree + <span class="number">1</span></span><br><span class="line">    <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 底面第一列</span></span><br><span class="line">  tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+ny2+<span class="number">1</span></span><br><span class="line">  itree = itree + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 底面以后</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">2</span>,nx2</span><br><span class="line">     tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+ny2</span><br><span class="line">     itree = itree + <span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  tree_nodes_= tree_nodes(nel_left:nel_right) <span class="comment">! 储存实际需要加荷的单元格的序号</span></span><br></pre></td></tr></table></figure>
 <h3 id="分配荷载到节点"><a href="#分配荷载到节点" class="headerlink" title="分配荷载到节点"></a>分配荷载到节点</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">  <span class="built_in">ALLOCATE</span>(weight_load(<span class="number">8</span>),tree(ndof))</span><br><span class="line">  <span class="comment">!荷载在节点上的分布权重</span></span><br><span class="line">  weight_load = (/<span class="number">0.166667</span>,<span class="number">0.0</span>,<span class="number">0.0</span>,<span class="number">0.666667</span>,<span class="number">0.0</span>,<span class="number">0.166667</span>,<span class="number">0.0</span>,<span class="number">0.0</span>/)</span><br><span class="line"></span><br><span class="line">  <span class="comment">!计算各节点荷载大小</span></span><br><span class="line">  tree=zero</span><br><span class="line">  tree(<span class="number">6</span>)=tree_load*weight_load(<span class="number">1</span>)</span><br><span class="line">  tree(<span class="number">8</span>)=tree_load*weight_load(<span class="number">4</span>)</span><br><span class="line">  tree(<span class="number">10</span>)=tree_load*weight_load(<span class="number">6</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">! 此处注意区分(见下图)</span></span><br><span class="line">  <span class="comment">! g数组按3x 3y 2x 2y 1x 1y 4x 4y 6x 6y 7x 7y 8x 8y 5x 5y的顺序保存</span></span><br><span class="line">  <span class="comment">! weight_load按1 2 3 4 5 6 7 8来保存</span></span><br><span class="line">  <span class="comment">! 则1 4 6号节点的y方向对应g(6),g(8),g(10)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">if</span></span><br></pre></td></tr></table></figure>
 <p><img src="/img/post/202405/202405051036468.png" title="" alt="单元节点" data-align="center"></p>
-<h3 id="叠加荷载"><a href="#叠加荷载" class="headerlink" title="叠加荷载"></a>叠加荷载</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">itree=<span class="number">1</span> <span class="comment">! 作tree_nodes_数组的索引，将序号依次读出</span></span><br><span class="line"></span><br><span class="line">elements_2: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line"></span><br><span class="line">   ...</span><br><span class="line"></span><br><span class="line">   gravlo(g)=gravlo(g)-eld*prop(<span class="number">4</span>,etype(iel))</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (tree_load.ne<span class="number">.0</span><span class="number">.0</span>) <span class="keyword">then</span> <span class="comment">!荷载不为零时计算</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> ((iel==tree_nodes_(itree)).and.(itree.le.<span class="built_in">size</span>(tree_nodes_))) <span class="keyword">then</span> <span class="comment">!判断是否为需加荷的单元</span></span><br><span class="line"></span><br><span class="line">         gravlo(g) = gravlo(g) - tree <span class="comment">!根据自由度编号加到指定位置</span></span><br><span class="line"></span><br><span class="line">         itree=itree+<span class="number">1</span></span><br><span class="line">      <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">   <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">END</span> <span class="keyword">DO</span> elements_2</span><br></pre></td></tr></table></figure>
+<h3 id="叠加荷载"><a href="#叠加荷载" class="headerlink" title="叠加荷载"></a>叠加荷载</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">itree=<span class="number">1</span> <span class="comment">! 作tree_nodes_数组的索引，将序号依次读出</span></span><br><span class="line"></span><br><span class="line">elements_2: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line"></span><br><span class="line">   ...</span><br><span class="line"></span><br><span class="line">   gravlo(g)=gravlo(g)-eld*prop(<span class="number">4</span>,etype(iel))</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (tree_load.ne<span class="number">.0</span><span class="number">.0</span>) <span class="keyword">then</span> <span class="comment">!荷载不为零时计算</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> ((iel==tree_nodes_(itree))<span class="keyword">.and.</span>(itree<span class="keyword">.le.</span><span class="built_in">size</span>(tree_nodes_))) <span class="keyword">then</span> <span class="comment">!判断是否为需加荷的单元</span></span><br><span class="line"></span><br><span class="line">         gravlo(g) = gravlo(g) - tree <span class="comment">!根据自由度编号加到指定位置</span></span><br><span class="line"></span><br><span class="line">         itree=itree+<span class="number">1</span></span><br><span class="line">      <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">   <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">END</span> <span class="keyword">DO</span> elements_2</span><br></pre></td></tr></table></figure>
 <hr>
 <h3 id="叠加外部水荷载"><a href="#叠加外部水荷载" class="headerlink" title="叠加外部水荷载"></a>叠加外部水荷载</h3><p>叠加外部水荷载的方式与上方叠加外部荷载的方法类似，将水的压力 $\gamma_w*h$ 叠加到相应的表面节点上</p>
 <figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">IF</span>(wl&gt;g_coord(<span class="number">2</span>,<span class="number">1</span>))<span class="keyword">THEN</span>  <span class="comment">! 水位淹没整个边坡</span></span><br><span class="line">      p3=(wl-g_coord(<span class="number">2</span>,<span class="number">1</span>))*gam_w</span><br><span class="line">      <span class="keyword">DO</span> i=<span class="number">1</span>,nx1</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">DO</span> i=nx1+<span class="number">1</span>,nx1+ny1*ngrad</span><br><span class="line">         <span class="keyword">if</span> (<span class="built_in">mod</span>(i-nx1,ngrad)/=<span class="number">0</span>)<span class="keyword">then</span></span><br><span class="line">            y5=g_coord(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">            p5=(wl-y5)*gam_w</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">         <span class="keyword">else</span></span><br><span class="line">            y5=g_coord(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">            p5=(wl-y5)*gam_w</span><br><span class="line">            y7=g_coord(<span class="number">2</span>,g_num(<span class="number">7</span>,tree_nodes(i)))</span><br><span class="line">            p7=(wl-y7)*gam_w</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))-dx*(p5+p7)/d3</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))-dx*p7/d6</span><br><span class="line">         <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">IF</span>(ny2&gt;<span class="number">0</span>)<span class="keyword">THEN</span> <span class="comment">! 如果有破角台阶</span></span><br><span class="line">         p3=(wl-g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))*gam_w <span class="comment">!p3==p5</span></span><br><span class="line">         <span class="keyword">DO</span> i=nx1+ny1*ngrad+<span class="number">1</span>,nx1+ny1*ngrad+nx2</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">   <span class="keyword">ELSE</span> <span class="keyword">IF</span>(wl&gt;g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))<span class="keyword">THEN</span> <span class="comment">! 水面在斜面位置(低于坡顶,高于坡脚)</span></span><br><span class="line">      nw=<span class="built_in">int</span>((-wl)/dx)</span><br><span class="line">      <span class="keyword">do</span> i=nx1+nw*ngrad+ngrad,nx1+ny1*ngrad</span><br><span class="line">         y5=g_coord(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">         y7=g_coord(<span class="number">2</span>,g_num(<span class="number">7</span>,tree_nodes(i)))</span><br><span class="line">         p5=(wl-y5)*gam_w</span><br><span class="line">         p7=(wl-y7)*gam_w</span><br><span class="line">         <span class="keyword">if</span>(i==nx1+nw*ngrad+ngrad)<span class="keyword">then</span> <span class="comment">! 如果水面恰好穿过某行单元格</span></span><br><span class="line">            cx=y5-wl</span><br><span class="line">            cy=cx</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               +p7*cy*(cy**<span class="number">2</span>-two*cy*dx+dx**<span class="number">2</span>)/(d6*dx**<span class="number">2</span>)</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               -p7*(cy**<span class="number">3</span>-cy**<span class="number">2</span>*dx-cy*dx**<span class="number">2</span>+dx**<span class="number">3</span>)/(d3*dx**<span class="number">2</span>)</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               -p7*(dx**<span class="number">3</span>-cy**<span class="number">3</span>)/(d6*dx*dx)</span><br><span class="line">         <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">mod</span>(i-nx1,ngrad)/=<span class="number">0</span>)<span class="keyword">then</span> <span class="comment">! 方格斜面台阶内部(仅有上表面接触水)</span></span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">         <span class="keyword">else</span> <span class="comment">! 方格斜面台阶最外部的单元格(上表面和右表面接触水)</span></span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))-dx*(p5+p7)/d3</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))-dx*p7/d6</span><br><span class="line">         <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">IF</span>(ny2&gt;<span class="number">0</span>)<span class="keyword">THEN</span> </span><br><span class="line">         p3=(wl-g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))*gam_w</span><br><span class="line">         <span class="keyword">DO</span> i=nx1+ny1*ngrad+<span class="number">1</span>,nx1+ny1*ngrad+nx2</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">   <span class="keyword">END</span> <span class="keyword">IF</span></span><br></pre></td></tr></table></figure>
 <h3 id="叠加孔压"><a href="#叠加孔压" class="headerlink" title="叠加孔压"></a>叠加孔压</h3><p>根据Vanapalli公式, 使用体积含水率、孔压等参数计算出基质吸力项, 叠加到正应力上</p>
 <p><img src="/img/post/202405/202405051036317.png" alt="17143599364091714359936244png"></p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">elements_3: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line">            bload=zero</span><br><span class="line">            phi=prop(<span class="number">1</span>,iel)</span><br><span class="line">            tnph=<span class="built_in">TAN</span>(phi*pi/d180)</span><br><span class="line">            phif=<span class="built_in">ATAN</span>(tnph/srf(iy))*d180/pi</span><br><span class="line">            psi=prop(<span class="number">3</span>,iel)</span><br><span class="line">            tnps=<span class="built_in">TAN</span>(psi*pi/d180)</span><br><span class="line">            psif=<span class="built_in">ATAN</span>(tnps/srf(iy))*d180/pi</span><br><span class="line">            cf=prop(<span class="number">2</span>,iel)/srf(iy)</span><br><span class="line">            e=prop(<span class="number">5</span>,iel)</span><br><span class="line">            v=prop(<span class="number">6</span>,iel)</span><br><span class="line">            <span class="keyword">CALL</span> deemat(dee,e,v)</span><br><span class="line">            num=g_num(:,iel)</span><br><span class="line">            coord=<span class="built_in">TRANSPOSE</span>(g_coord(:,num))</span><br><span class="line">            <span class="keyword">do</span> i=<span class="number">1</span>,nod</span><br><span class="line">               <span class="keyword">call</span> Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) <span class="comment">! 计算基质吸力项</span></span><br><span class="line">            <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line">            g=g_g(:,iel)</span><br><span class="line">            eld=loads(g)</span><br><span class="line">            gauss_pts_2: <span class="keyword">DO</span> i=<span class="number">1</span>,nip</span><br><span class="line">               <span class="keyword">call</span> shape_fun(fun,points,i)</span><br><span class="line">               pore(iel,i)=<span class="built_in">dot_product</span>(fun,suc_sig)</span><br><span class="line">               <span class="keyword">CALL</span> bee8(bee,coord,points(i,<span class="number">1</span>),points(i,<span class="number">2</span>),det)</span><br><span class="line">               eps=<span class="built_in">MATMUL</span>(bee,eld)</span><br><span class="line">               eps=eps-evpt(:,i,iel)</span><br><span class="line">               sigma=<span class="built_in">MATMUL</span>(dee,eps)</span><br><span class="line">               sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)-pore(iel,i) <span class="comment">! 此处124为正应力项, 3为剪应力项</span></span><br><span class="line">               sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)-pore(iel,i)</span><br><span class="line">               sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)-pore(iel,i)</span><br><span class="line">               <span class="keyword">CALL</span> invar(sigma,sigm,dsbar,lode_theta)</span><br><span class="line">               <span class="comment">!-----------------------check whether yield is violated-------------------</span></span><br><span class="line">               <span class="keyword">CALL</span> mocouf(phif,cf,sigm,dsbar,lode_theta,f)</span><br><span class="line">               <span class="keyword">IF</span>(f&gt;fmax)fmax=f</span><br><span class="line">               <span class="keyword">IF</span>(converged.OR.iters==limit)<span class="keyword">THEN</span></span><br><span class="line">                  sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)+pore(iel,i)</span><br><span class="line">                  devp=sigma</span><br><span class="line">               <span class="keyword">ELSE</span></span><br><span class="line">                  <span class="keyword">IF</span>(f&gt;=zero.OR.(converged.OR.iters==limit))<span class="keyword">THEN</span></span><br><span class="line">                     <span class="keyword">CALL</span> mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)</span><br><span class="line">                     <span class="keyword">CALL</span> formm(sigma,m1,m2,m3)</span><br><span class="line">                     flow=f*(m1*dq1+m2*dq2+m3*dq3)</span><br><span class="line">                     erate=<span class="built_in">MATMUL</span>(flow,sigma)</span><br><span class="line">                     evp=erate*dt</span><br><span class="line">                     evpt(:,i,iel)=evpt(:,i,iel)+evp</span><br><span class="line">                     devp=<span class="built_in">MATMUL</span>(dee,evp)</span><br><span class="line">                  <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">IF</span>(f&gt;=zero)<span class="keyword">THEN</span></span><br><span class="line">                  eload=<span class="built_in">MATMUL</span>(devp,bee)</span><br><span class="line">                  bload=bload+eload*det*weights(i)</span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">            <span class="keyword">END</span> <span class="keyword">DO</span> gauss_pts_2</span><br><span class="line">            <span class="comment">!-----------------------compute the total bodyloads vector----------------</span></span><br><span class="line">            bdylds(g)=bdylds(g)+bload</span><br><span class="line">            bdylds(<span class="number">0</span>)=zero</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span> elements_3</span><br></pre></td></tr></table></figure>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">elements_3: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line">            bload=zero</span><br><span class="line">            phi=prop(<span class="number">1</span>,iel)</span><br><span class="line">            tnph=<span class="built_in">TAN</span>(phi*pi/d180)</span><br><span class="line">            phif=<span class="built_in">ATAN</span>(tnph/srf(iy))*d180/pi</span><br><span class="line">            psi=prop(<span class="number">3</span>,iel)</span><br><span class="line">            tnps=<span class="built_in">TAN</span>(psi*pi/d180)</span><br><span class="line">            psif=<span class="built_in">ATAN</span>(tnps/srf(iy))*d180/pi</span><br><span class="line">            cf=prop(<span class="number">2</span>,iel)/srf(iy)</span><br><span class="line">            e=prop(<span class="number">5</span>,iel)</span><br><span class="line">            v=prop(<span class="number">6</span>,iel)</span><br><span class="line">            <span class="keyword">CALL</span> deemat(dee,e,v)</span><br><span class="line">            num=g_num(:,iel)</span><br><span class="line">            coord=<span class="built_in">TRANSPOSE</span>(g_coord(:,num))</span><br><span class="line">            <span class="keyword">do</span> i=<span class="number">1</span>,nod</span><br><span class="line">               <span class="keyword">call</span> Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) <span class="comment">! 计算基质吸力项</span></span><br><span class="line">            <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line">            g=g_g(:,iel)</span><br><span class="line">            eld=loads(g)</span><br><span class="line">            gauss_pts_2: <span class="keyword">DO</span> i=<span class="number">1</span>,nip</span><br><span class="line">               <span class="keyword">call</span> shape_fun(fun,points,i)</span><br><span class="line">               pore(iel,i)=<span class="built_in">dot_product</span>(fun,suc_sig)</span><br><span class="line">               <span class="keyword">CALL</span> bee8(bee,coord,points(i,<span class="number">1</span>),points(i,<span class="number">2</span>),det)</span><br><span class="line">               eps=<span class="built_in">MATMUL</span>(bee,eld)</span><br><span class="line">               eps=eps-evpt(:,i,iel)</span><br><span class="line">               sigma=<span class="built_in">MATMUL</span>(dee,eps)</span><br><span class="line">               sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)-pore(iel,i) <span class="comment">! 此处124为正应力项, 3为剪应力项</span></span><br><span class="line">               sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)-pore(iel,i)</span><br><span class="line">               sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)-pore(iel,i)</span><br><span class="line">               <span class="keyword">CALL</span> invar(sigma,sigm,dsbar,lode_theta)</span><br><span class="line">               <span class="comment">!-----------------------check whether yield is violated-------------------</span></span><br><span class="line">               <span class="keyword">CALL</span> mocouf(phif,cf,sigm,dsbar,lode_theta,f)</span><br><span class="line">               <span class="keyword">IF</span>(f&gt;fmax)fmax=f</span><br><span class="line">               <span class="keyword">IF</span>(converged<span class="keyword">.OR.</span>iters==limit)<span class="keyword">THEN</span></span><br><span class="line">                  sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)+pore(iel,i)</span><br><span class="line">                  devp=sigma</span><br><span class="line">               <span class="keyword">ELSE</span></span><br><span class="line">                  <span class="keyword">IF</span>(f&gt;=zero<span class="keyword">.OR.</span>(converged<span class="keyword">.OR.</span>iters==limit))<span class="keyword">THEN</span></span><br><span class="line">                     <span class="keyword">CALL</span> mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)</span><br><span class="line">                     <span class="keyword">CALL</span> formm(sigma,m1,m2,m3)</span><br><span class="line">                     flow=f*(m1*dq1+m2*dq2+m3*dq3)</span><br><span class="line">                     erate=<span class="built_in">MATMUL</span>(flow,sigma)</span><br><span class="line">                     evp=erate*dt</span><br><span class="line">                     evpt(:,i,iel)=evpt(:,i,iel)+evp</span><br><span class="line">                     devp=<span class="built_in">MATMUL</span>(dee,evp)</span><br><span class="line">                  <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">IF</span>(f&gt;=zero)<span class="keyword">THEN</span></span><br><span class="line">                  eload=<span class="built_in">MATMUL</span>(devp,bee)</span><br><span class="line">                  bload=bload+eload*det*weights(i)</span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">            <span class="keyword">END</span> <span class="keyword">DO</span> gauss_pts_2</span><br><span class="line">            <span class="comment">!-----------------------compute the total bodyloads vector----------------</span></span><br><span class="line">            bdylds(g)=bdylds(g)+bload</span><br><span class="line">            bdylds(<span class="number">0</span>)=zero</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span> elements_3</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>边坡</category>
@@ -157,6 +157,126 @@
         <tag>Fortran</tag>
         <tag>有限元</tag>
         <tag>孔压</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>学习笔记——流体力学基本方程 (一)</title>
+    <url>/2024/04/98e90823.html</url>
+    <content><![CDATA[<h2 id="学习视频"><a href="#学习视频" class="headerlink" title="学习视频"></a>学习视频</h2><h3 id="Bilibili-流体力学基础科普-北斗导航Compass"><a href="#Bilibili-流体力学基础科普-北斗导航Compass" class="headerlink" title="Bilibili-流体力学基础科普-北斗导航Compass"></a><a href="https://www.bilibili.com/video/BV1Ty4y1M7Fx/?share_source=copy_web&amp;vd_source=374d2addde246f63ad679abfc5ab707c">Bilibili-流体力学基础科普-北斗导航Compass</a></h3><p>参考教材：<a href="https://pan.baidu.com/s/1fbj6e9Xk6LmWW2Vjmu0oIw?pwd=eavw">Fundamentals of AERODYNAMICS by John D. Anderson, Jr.</a></p>
+<h2 id="一、基本概念"><a href="#一、基本概念" class="headerlink" title="一、基本概念"></a>一、基本概念</h2><h3 id="1-什么是流体？"><a href="#1-什么是流体？" class="headerlink" title="1. 什么是流体？"></a>1. 什么是流体？</h3><ul>
+<li>对比固体和流体的区别</li>
+</ul>
+<blockquote>
+<p>对于固体剪切力与<strong>形变量</strong>成正比</p>
+<p>对于流体剪切力与<strong>形变量的时间变化率</strong>成正比</p>
+</blockquote>
+<ul>
+<li>解释流体为什么能流起来？</li>
+</ul>
+<blockquote>
+<p>对于流体如果流体中的<strong>剪切力</strong>是常数，则其形变量的时间变化率也应为常数，即流体一直发生形变（流动）</p>
+</blockquote>
+<ul>
+<li>流体在抗压时可以静止，在抗剪时一定在运动</li>
+</ul>
+<h3 id="2-流体质点"><a href="#2-流体质点" class="headerlink" title="2. 流体质点"></a>2. 流体质点</h3><p>将流体看作无穷多的质点的结合，符合连续介质假设</p>
+<h3 id="3-描述流体的物理量"><a href="#3-描述流体的物理量" class="headerlink" title="3. 描述流体的物理量"></a>3. 描述流体的物理量</h3><blockquote>
+<p>包括速度、密度、压强、温度等等</p>
+</blockquote>
+<ul>
+<li>压强(压力) Pressure 单位Pa</li>
+</ul>
+<script type="math/tex; mode=display">
+P=\frac{F}{A}\ \ \ \ 当A\rightarrow0时\ \ \ P=frac{dF}{dA}</script><ul>
+<li>密度 单位 $kg/m^3$ </li>
+</ul>
+<script type="math/tex; mode=display">
+\rho=\frac{m}{V}\ \ \ 当V\rightarrow0时\ \ \ \rho=\frac{dm}{dV}</script><ul>
+<li>温度 单位K</li>
+</ul>
+<script type="math/tex; mode=display">
+0°C=273.15K</script><h3 id="4-描述流体运动的方法"><a href="#4-描述流体运动的方法" class="headerlink" title="4. 描述流体运动的方法"></a>4. 描述流体运动的方法</h3><ul>
+<li>拉格朗日法</li>
+</ul>
+<blockquote>
+<p>以质点为研究对象,跟踪质点的运动</p>
+</blockquote>
+<ul>
+<li>欧拉法</li>
+</ul>
+<blockquote>
+<p>以确定空间为研究对象,研究某一空间点不同时间下,在此空间点的质点的运动</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">积分方法</th>
+<th style="text-align:center">微分方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">拉格朗日法</td>
+<td style="text-align:center">一坨流体</td>
+<td style="text-align:center">质点</td>
+</tr>
+<tr>
+<td style="text-align:center">欧拉法</td>
+<td style="text-align:center">控制体</td>
+<td style="text-align:center">空间点</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="二、基本方程"><a href="#二、基本方程" class="headerlink" title="二、基本方程"></a>二、基本方程</h2><h3 id="1-质量守恒方程-连续方程"><a href="#1-质量守恒方程-连续方程" class="headerlink" title="1. 质量守恒方程(连续方程)"></a>1. 质量守恒方程(连续方程)</h3><p> <strong>控制体内流体总质量的增量 = 流入控制体的流体质量</strong></p>
+<p>欧拉法连续方程的微分形式</p>
+<script type="math/tex; mode=display">
+\frac{\partial \rho}{\partial t}+\frac{\partial (\rho u)}{\partial x}+\frac{\partial (\rho v)}{\partial y}+\frac{\partial (\rho w)}{\partial z}=0</script><p>其中 $\rho,u,v,w$ 均是 $x,y,z,t$ 的函数,如 $\rho(x,y,z,t)$ </p>
+<p><strong>方程左边:</strong> 单位时间 控制体内流体总质量的增量(为负数就是减量)</p>
+<p>首先,表示总质量</p>
+<script type="math/tex; mode=display">
+m={\iiint}_{cv}\rho dV</script><p>对时间t求偏导,得</p>
+<script type="math/tex; mode=display">
+\frac{\partial m}{\partial t}=\frac{\partial ({\iiint}_{cv}\rho dV)}{\partial t}={\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV</script><p><strong>方程右边:</strong> 单位时间 流入控制体的流体质量</p>
+<p><img src="/img/post/202405/202405051038892.png" alt="" style="zoom:50%;" center/></p>
+<blockquote>
+<p>质量=密度*体积</p>
+</blockquote>
+<script type="math/tex; mode=display">
+h=v*\Delta t\cos\theta</script><script type="math/tex; mode=display">
+V=Sh=Sv*\Delta t\cos\theta</script><p>则 $\Delta t$ 时间范围内</p>
+<script type="math/tex; mode=display">
+m=\rho V=\rho Sv\Delta t\cos\theta</script><script type="math/tex; mode=display">
+m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
+<script type="math/tex; mode=display">
+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>规定控制体表面的外法线方向为正,则方程右边应为添加负号</p>
+<p>即</p>
+<script type="math/tex; mode=display">
+-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>则可得到积分形式的质量守恒方程</p>
+<script type="math/tex; mode=display">
+{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV=-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>也即</p>
+<script type="math/tex; mode=display">
+{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}=0</script><p>根据高斯定理</p>
+<script type="math/tex; mode=display">
+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}={\iiint}_{cv}[\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV</script><p>则积分形式的质量守恒方程可以合并为</p>
+<script type="math/tex; mode=display">
+{\iiint}_{cv}[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV=0</script><p>可得微分形式的质量守恒方程</p>
+<script type="math/tex; mode=display">
+\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}=0</script><p>用哈密顿算子表示,可写为</p>
+<script type="math/tex; mode=display">
+\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})=0</script><p>下期内容：</p>
+<h3 id="2-动量守恒方程"><a href="#2-动量守恒方程" class="headerlink" title="2. 动量守恒方程"></a>2. 动量守恒方程</h3><p> <strong>控制体内流体总动量的增量 = 流入控制体的流体动量 + 外界的力产生的动量增量</strong></p>
+<h3 id="3-能量守恒方程"><a href="#3-能量守恒方程" class="headerlink" title="3. 能量守恒方程"></a>3. 能量守恒方程</h3><p> <strong>控制体内流体的总能量的增量 = 流入控制体的流体能量 + 外界的作用产生的能量增量</strong></p>
+]]></content>
+      <categories>
+        <category>流体力学</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>流体力学</tag>
+        <tag>质量守恒方程</tag>
       </tags>
   </entry>
   <entry>
@@ -573,126 +693,6 @@
       </tags>
   </entry>
   <entry>
-    <title>学习笔记——流体力学基本方程 (一)</title>
-    <url>/2024/04/98e90823.html</url>
-    <content><![CDATA[<h2 id="学习视频"><a href="#学习视频" class="headerlink" title="学习视频"></a>学习视频</h2><h3 id="Bilibili-流体力学基础科普-北斗导航Compass"><a href="#Bilibili-流体力学基础科普-北斗导航Compass" class="headerlink" title="Bilibili-流体力学基础科普-北斗导航Compass"></a><a href="https://www.bilibili.com/video/BV1Ty4y1M7Fx/?share_source=copy_web&amp;vd_source=374d2addde246f63ad679abfc5ab707c">Bilibili-流体力学基础科普-北斗导航Compass</a></h3><p>参考教材：<a href="https://pan.baidu.com/s/1fbj6e9Xk6LmWW2Vjmu0oIw?pwd=eavw">Fundamentals of AERODYNAMICS by John D. Anderson, Jr.</a></p>
-<h2 id="一、基本概念"><a href="#一、基本概念" class="headerlink" title="一、基本概念"></a>一、基本概念</h2><h3 id="1-什么是流体？"><a href="#1-什么是流体？" class="headerlink" title="1. 什么是流体？"></a>1. 什么是流体？</h3><ul>
-<li>对比固体和流体的区别</li>
-</ul>
-<blockquote>
-<p>对于固体剪切力与<strong>形变量</strong>成正比</p>
-<p>对于流体剪切力与<strong>形变量的时间变化率</strong>成正比</p>
-</blockquote>
-<ul>
-<li>解释流体为什么能流起来？</li>
-</ul>
-<blockquote>
-<p>对于流体如果流体中的<strong>剪切力</strong>是常数，则其形变量的时间变化率也应为常数，即流体一直发生形变（流动）</p>
-</blockquote>
-<ul>
-<li>流体在抗压时可以静止，在抗剪时一定在运动</li>
-</ul>
-<h3 id="2-流体质点"><a href="#2-流体质点" class="headerlink" title="2. 流体质点"></a>2. 流体质点</h3><p>将流体看作无穷多的质点的结合，符合连续介质假设</p>
-<h3 id="3-描述流体的物理量"><a href="#3-描述流体的物理量" class="headerlink" title="3. 描述流体的物理量"></a>3. 描述流体的物理量</h3><blockquote>
-<p>包括速度、密度、压强、温度等等</p>
-</blockquote>
-<ul>
-<li>压强(压力) Pressure 单位Pa</li>
-</ul>
-<script type="math/tex; mode=display">
-P=\frac{F}{A}\ \ \ \ 当A\rightarrow0时\ \ \ P=frac{dF}{dA}</script><ul>
-<li>密度 单位 $kg/m^3$ </li>
-</ul>
-<script type="math/tex; mode=display">
-\rho=\frac{m}{V}\ \ \ 当V\rightarrow0时\ \ \ \rho=\frac{dm}{dV}</script><ul>
-<li>温度 单位K</li>
-</ul>
-<script type="math/tex; mode=display">
-0°C=273.15K</script><h3 id="4-描述流体运动的方法"><a href="#4-描述流体运动的方法" class="headerlink" title="4. 描述流体运动的方法"></a>4. 描述流体运动的方法</h3><ul>
-<li>拉格朗日法</li>
-</ul>
-<blockquote>
-<p>以质点为研究对象,跟踪质点的运动</p>
-</blockquote>
-<ul>
-<li>欧拉法</li>
-</ul>
-<blockquote>
-<p>以确定空间为研究对象,研究某一空间点不同时间下,在此空间点的质点的运动</p>
-</blockquote>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:center"></th>
-<th style="text-align:center">积分方法</th>
-<th style="text-align:center">微分方法</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">拉格朗日法</td>
-<td style="text-align:center">一坨流体</td>
-<td style="text-align:center">质点</td>
-</tr>
-<tr>
-<td style="text-align:center">欧拉法</td>
-<td style="text-align:center">控制体</td>
-<td style="text-align:center">空间点</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h2 id="二、基本方程"><a href="#二、基本方程" class="headerlink" title="二、基本方程"></a>二、基本方程</h2><h3 id="1-质量守恒方程-连续方程"><a href="#1-质量守恒方程-连续方程" class="headerlink" title="1. 质量守恒方程(连续方程)"></a>1. 质量守恒方程(连续方程)</h3><p> <strong>控制体内流体总质量的增量 = 流入控制体的流体质量</strong></p>
-<p>欧拉法连续方程的微分形式</p>
-<script type="math/tex; mode=display">
-\frac{\partial \rho}{\partial t}+\frac{\partial (\rho u)}{\partial x}+\frac{\partial (\rho v)}{\partial y}+\frac{\partial (\rho w)}{\partial z}=0</script><p>其中 $\rho,u,v,w$ 均是 $x,y,z,t$ 的函数,如 $\rho(x,y,z,t)$ </p>
-<p><strong>方程左边:</strong> 单位时间 控制体内流体总质量的增量(为负数就是减量)</p>
-<p>首先,表示总质量</p>
-<script type="math/tex; mode=display">
-m={\iiint}_{cv}\rho dV</script><p>对时间t求偏导,得</p>
-<script type="math/tex; mode=display">
-\frac{\partial m}{\partial t}=\frac{\partial ({\iiint}_{cv}\rho dV)}{\partial t}={\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV</script><p><strong>方程右边:</strong> 单位时间 流入控制体的流体质量</p>
-<p><img src="/img/post/202405/202405051038892.png" alt="" style="zoom:50%;" center/></p>
-<blockquote>
-<p>质量=密度*体积</p>
-</blockquote>
-<script type="math/tex; mode=display">
-h=v*\Delta t\cos\theta</script><script type="math/tex; mode=display">
-V=Sh=Sv*\Delta t\cos\theta</script><p>则 $\Delta t$ 时间范围内</p>
-<script type="math/tex; mode=display">
-m=\rho V=\rho Sv\Delta t\cos\theta</script><script type="math/tex; mode=display">
-m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
-<script type="math/tex; mode=display">
-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>规定控制体表面的外法线方向为正,则方程右边应为添加负号</p>
-<p>即</p>
-<script type="math/tex; mode=display">
--{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>则可得到积分形式的质量守恒方程</p>
-<script type="math/tex; mode=display">
-{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV=-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>也即</p>
-<script type="math/tex; mode=display">
-{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}=0</script><p>根据高斯定理</p>
-<script type="math/tex; mode=display">
-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}={\iiint}_{cv}[\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV</script><p>则积分形式的质量守恒方程可以合并为</p>
-<script type="math/tex; mode=display">
-{\iiint}_{cv}[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV=0</script><p>可得微分形式的质量守恒方程</p>
-<script type="math/tex; mode=display">
-\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}=0</script><p>用哈密顿算子表示,可写为</p>
-<script type="math/tex; mode=display">
-\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})=0</script><p>下期内容：</p>
-<h3 id="2-动量守恒方程"><a href="#2-动量守恒方程" class="headerlink" title="2. 动量守恒方程"></a>2. 动量守恒方程</h3><p> <strong>控制体内流体总动量的增量 = 流入控制体的流体动量 + 外界的力产生的动量增量</strong></p>
-<h3 id="3-能量守恒方程"><a href="#3-能量守恒方程" class="headerlink" title="3. 能量守恒方程"></a>3. 能量守恒方程</h3><p> <strong>控制体内流体的总能量的增量 = 流入控制体的流体能量 + 外界的作用产生的能量增量</strong></p>
-]]></content>
-      <categories>
-        <category>流体力学</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-        <tag>流体力学</tag>
-        <tag>质量守恒方程</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Ubuntu22.04双系统安装教程</title>
     <url>/2024/05/deb026e9.html</url>
     <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><blockquote>
@@ -838,58 +838,51 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
       </tags>
   </entry>
   <entry>
-    <title>Git 安装及配置教程</title>
-    <url>/2024/05/cbf708ce.html</url>
-    <content><![CDATA[<h2 id="1-下载安装包"><a href="#1-下载安装包" class="headerlink" title="1. 下载安装包"></a>1. 下载安装包</h2><p>打开<a href="https://git-scm.com/downloads">Git官网</a>下载安装包, 嫌速度慢可以使用下面的链接下载</p>
-<p>蓝奏云(不限速)：<a href="https://wwt.lanzoul.com/b00rn0x92b密码:gdo1">https://wwt.lanzoul.com/b00rn0x92b密码:gdo1</a></p>
-<p>百度云(会员)：<a href="https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111提取码">https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111提取码</a>: 1111</p>
-<p><img src="/img/post/202405/202405071352070.png" alt="image-20240507135225158"></p>
-<p><img src="/img/post/202405/202405071355950.png" alt="image-20240507135511255"></p>
-<p>下载完成后，双击打开安装包</p>
-<h2 id="2-开始安装"><a href="#2-开始安装" class="headerlink" title="2. 开始安装"></a>2. 开始安装</h2><p><img src="/img/post/202405/202405071437531.png" alt="image-20240507143702625"></p>
-<p><img src="/img/post/202405/202405071438756.png" alt="image-20240507143826832"></p>
-<p><img src="/img/post/202405/202405071442644.png" alt="image-20240507144255668"></p>
-<p><img src="/img/post/202405/202405071443653.png" alt="image-20240507144334722"></p>
-<p><img src="/img/post/202405/202405071446143.png" alt="image-20240507144644121"></p>
-<p><img src="/img/post/202405/202405071449923.png" alt="image-20240507144955949"></p>
-<p><img src="/img/post/202405/202405071451220.png" alt="image-20240507145114067"></p>
-<p><img src="/img/post/202405/202405071455747.png" alt="image-20240507145517679"></p>
-<p><img src="/img/post/202405/202405071456870.png" alt="image-20240507145603852"></p>
-<p><img src="/img/post/202405/202405071502727.png" alt="image-20240507150213743"></p>
-<p><img src="/img/post/202405/202405071504531.png" alt="image-20240507150434447"></p>
-<p><img src="/img/post/202405/202405071515269.png" alt="image-20240507151557254"></p>
-<p><img src="/img/post/202405/202405071518820.png" alt="image-20240507151819793"></p>
-<p><img src="/img/post/202405/202405071520714.png" alt="image-20240507152039835"></p>
-<p>点击安装, 等待安装完成</p>
-<p><img src="/img/post/202405/202405071523934.png" alt="image-20240507152351881"></p>
-<h2 id="3-配置Git"><a href="#3-配置Git" class="headerlink" title="3. 配置Git"></a>3. 配置Git</h2><h3 id="1-配置用户信息"><a href="#1-配置用户信息" class="headerlink" title="(1). 配置用户信息"></a>(1). 配置用户信息</h3><p>输入以下命令配置用户信息, 修改成自己的信息</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;liudh&quot;</span><br><span class="line">git config --global user.email &quot;xxxxxxx@xx.com&quot;</span><br></pre></td></tr></table></figure>
-<p><img src="/img/post/202405/202405071525435.png" alt="image-20240507152545795"></p>
-<p>可以使用以下命令查看配置信息</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config user.name</span><br><span class="line">git config user.email</span><br></pre></td></tr></table></figure>
-<h3 id="2-设置代理-需自备代理"><a href="#2-设置代理-需自备代理" class="headerlink" title="(2). 设置代理(需自备代理)"></a>(2). 设置代理(需自备代理)</h3><p>在向<code>Github</code>推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理</p>
-<p>使用以下命令查看代理配置</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global --get http.proxy</span><br><span class="line">git config --global --get https.proxy</span><br></pre></td></tr></table></figure>
-<p>如果没有内容说明没有代理</p>
-<p>下面使用以下命令配置代理</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global http.proxy 127.0.0.1:7890</span><br><span class="line">git config --global https.proxy 127.0.0.1:7890</span><br></pre></td></tr></table></figure>
+    <title>Ubuntu搭建Webdav</title>
+    <url>/2024/05/e8755f24.html</url>
+    <content><![CDATA[<p>参考文章: <a href="https://colzry.github.io/posts/linux服务/linux搭建webdav服务/">Linux搭建WebDav服务 - Colzry’s Blog</a></p>
 <blockquote>
-<p>具体地址和端口在系统代理的位置查看</p>
+<p>以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决</p>
 </blockquote>
-<p><img src="/img/post/202405/202405071538016.png" alt="image-20240507153841415"></p>
-<p>如果不想使用代理, 使用以下命令取消</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global --unset http.proxy</span><br><span class="line">git config --global --unset https.proxy</span><br></pre></td></tr></table></figure>
-<hr>
-<p>至此, 就可以愉快地开始使用Git了</p>
+<h2 id="步骤一-安装WebDAV服务"><a href="#步骤一-安装WebDAV服务" class="headerlink" title="步骤一: 安装WebDAV服务"></a>步骤一: 安装WebDAV服务</h2><p>首先, 我们需要安装<a href="https://github.com/hacdias/webdav">WebDAV Server</a>, 打开页面下载合适的版本, 本文以<a href="https://github.com/hacdias/webdav/releases/download/v4.2.0/linux-amd64-webdav.tar.gz"><code>linux-amd64-webdav.tar.gz</code></a>为例, 其中<code>amd64</code>表示<code>x64</code>架构</p>
+<p>然后, 解压并移动文件到<code>/usr/bin/</code>, 其余的README和LICENSE文件可删除</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -zxvf linux-amd64-webdav.tar.gz</span><br><span class="line">mv webdav /usr/bin/</span><br></pre></td></tr></table></figure>
+<h2 id="步骤二-配置WebDAV服务"><a href="#步骤二-配置WebDAV服务" class="headerlink" title="步骤二: 配置WebDAV服务"></a>步骤二: 配置WebDAV服务</h2><p>安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 <code>/home/liudh/webdav</code>的目录, 注意修改用户名<code>liudh</code>为自己的用户名</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir /home/liudh/webdav</span><br></pre></td></tr></table></figure>
+<p>然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
+<p>在配置文件中, 我们需要添加以下内容. </p>
+<blockquote>
+<p>注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容</p>
+<p>注意缩进, <code>cors</code>和<code>users</code>后的参数均需要两个空格的缩进, 带<code>-</code>的参数需再缩进两个空格(四个)</p>
+<p>每一个参数<code>:</code>后均有一个空格</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Server related settings</span><br><span class="line">address: 0.0.0.0</span><br><span class="line">port: 10101</span><br><span class="line"># 如果无需验证填 false</span><br><span class="line">auth: true</span><br><span class="line"># 如果不需要 https 则填 false</span><br><span class="line">tls: false</span><br><span class="line"># https证书和密钥，如果 tls 为 false，cert 和 key 不需要</span><br><span class="line"># cert: cert_path</span><br><span class="line"># key: key_path</span><br><span class="line"># 访问前缀，建议默认</span><br><span class="line">prefix: /</span><br><span class="line">debug: false</span><br><span class="line"># 如果 auth 为 false 生效，文件共享的路径</span><br><span class="line">scope: .</span><br><span class="line">modify: true</span><br><span class="line">rules: []</span><br><span class="line"># 跨域设置</span><br><span class="line">cors:</span><br><span class="line">  enabled: true</span><br><span class="line">  credentials: true</span><br><span class="line">  allowed_headers:</span><br><span class="line">    - Depth</span><br><span class="line">  allowed_hosts:</span><br><span class="line">    - http://localhost:10101</span><br><span class="line">  allowed_methods:</span><br><span class="line">    - GET</span><br><span class="line">  exposed_headers:</span><br><span class="line">    - Content-Length</span><br><span class="line">    - Content-Range</span><br><span class="line"># 用户信息，如果 auth 为 true 生效</span><br><span class="line">users:</span><br><span class="line">  - username: liudh</span><br><span class="line">    password: passwd</span><br><span class="line">    scope: /home/liudh/webdav/</span><br><span class="line">    # 是否允许修改</span><br><span class="line">    modify: true</span><br><span class="line"># 可以根据此模板继续添加其他用户</span><br></pre></td></tr></table></figure>
+<p>保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/bin/webdav -c /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="步骤三-添加守护进程"><a href="#步骤三-添加守护进程" class="headerlink" title="步骤三: 添加守护进程"></a>步骤三: 添加守护进程</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /usr/lib/systemd/system/webdav.service</span><br></pre></td></tr></table></figure>
+<p>将以下内容添加到文件中</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=WebDAV server</span><br><span class="line">After=network.target</span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">ExecStart=/usr/bin/webdav -c /opt/webdav_config.yaml</span><br><span class="line">Restart=on-failure</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start webdav.service</span><br><span class="line">systemctl status webdav.service</span><br><span class="line">systemctl enable webdav.service</span><br></pre></td></tr></table></figure>
+<p>之后修改配置文件后, 可以使用以下命令重启服务</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl restart webdav.service</span><br></pre></td></tr></table></figure>
+<h2 id="步骤四-挂载webdav测试服务"><a href="#步骤四-挂载webdav测试服务" class="headerlink" title="步骤四: 挂载webdav测试服务"></a>步骤四: 挂载webdav测试服务</h2><p>使用任意webdav挂载软件, 挂载测试, 注意填写参数如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">协议: http # 如果配置了ssl证书就用https</span><br><span class="line">主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号</span><br><span class="line">	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/</span><br><span class="line">端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要</span><br><span class="line">用户名: liudh # 都改成自己的</span><br><span class="line">密码: passwd</span><br></pre></td></tr></table></figure>
+<p>之后就可以上传下载文件测试一下了, 如果有错误就用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl status webdav.service</span><br></pre></td></tr></table></figure>
+<p>查看错误日志. </p>
+<blockquote>
+<p>如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下</p>
+</blockquote>
 ]]></content>
       <categories>
-        <category>Git</category>
+        <category>Ubuntu</category>
       </categories>
       <tags>
-        <tag>教程及说明</tag>
-        <tag>Git</tag>
-        <tag>安装教程</tag>
-        <tag>Windows</tag>
+        <tag>学习笔记</tag>
+        <tag>Webdav</tag>
+        <tag>云服务</tag>
       </tags>
   </entry>
   <entry>
@@ -1013,7 +1006,7 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
 <p>同时这两个运算符的优先级是要高于其它的</p>
 <figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">b = <span class="number">1</span> + a--; <span class="comment">//先计算a--再计算+1</span></span><br></pre></td></tr></table></figure>
 <p>三个运算符相连时</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">b = a++<span class="number">-1</span>; <span class="comment">//等价于b=(a++)-1</span></span><br><span class="line">b = a+++<span class="number">1</span>; <span class="comment">//等价于b=(a++)+1, 但不建议这样做</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">b = a++<span class="number">-1</span>; <span class="comment">//等价于b=(a++)-1</span></span><br><span class="line">b = a++<span class="number">+1</span>; <span class="comment">//等价于b=(a++)+1, 但不建议这样做</span></span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>C++中内置了(cmath)一些数学运算函数, 下面是常用的一些函数:</p>
 <figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">double</span> <span class="title">cos</span><span class="params">(<span class="type">double</span>)</span></span>; <span class="comment">//返回弧度角的余弦</span></span><br><span class="line"><span class="function"><span class="type">double</span> <span class="title">sin</span><span class="params">(<span class="type">double</span>)</span></span>; <span class="comment">//正弦</span></span><br><span class="line"><span class="function"><span class="type">double</span> <span class="title">tan</span><span class="params">(<span class="type">double</span>)</span></span>; <span class="comment">//正切</span></span><br><span class="line"><span class="function"><span class="type">double</span> <span class="title">log</span><span class="params">(<span class="type">double</span>)</span></span>; <span class="comment">//返回输入参数的自然对数-ln</span></span><br><span class="line"><span class="function"><span class="type">double</span> <span class="title">pow</span><span class="params">(<span class="type">double</span>, <span class="type">double</span>)</span></span>; <span class="comment">//返回第一个参数的第二个参数次方</span></span><br><span class="line"><span class="function"><span class="type">double</span> <span class="title">hypot</span><span class="params">(<span class="type">double</span>, <span class="type">double</span>)</span></span>; <span class="comment">//返回两个参数平方和的平方根</span></span><br><span class="line"><span class="function"><span class="type">double</span> <span class="title">sqrt</span><span class="params">(<span class="type">double</span>)</span></span>; <span class="comment">//返回参数的平方根</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">abs</span><span class="params">(<span class="type">int</span>)</span></span>; <span class="comment">//返回整数的绝对值</span></span><br><span class="line"><span class="function"><span class="type">double</span> <span class="title">fabs</span><span class="params">(<span class="type">double</span>)</span></span>; <span class="comment">//返回浮点数的绝对值</span></span><br><span class="line"><span class="function"><span class="type">double</span> <span class="title">floor</span><span class="params">(<span class="type">double</span>)</span></span>; <span class="comment">//返回小于或等于传入的参数的最大整数</span></span><br></pre></td></tr></table></figure>
@@ -1033,7 +1026,7 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
 <p>相当于Fortran的选择语句中, 所有的<code>case</code>都带有一个<code>break</code>. </p>
 <p>如果将<code>do while(.true.)</code>与<code>select case()</code>语句结合, 当某个case中有一个<code>exit</code>语句, 它会结束do while的循环. 而在c++中, <code>while</code>和<code>switch</code>都使用<code>break</code>来打断, 所以case中的<code>break</code>只会结束switch而不会结束while(true). 因此, 在转换时需要增加while结束的条件.  </p>
 <p>例如:</p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">do</span> <span class="keyword">while</span>(.true.)</span><br><span class="line">    key = Keyord(kw,nbkw)</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">case</span>(key)</span><br><span class="line">        <span class="keyword">case</span>(<span class="number">1</span>)</span><br><span class="line">        	<span class="keyword">exit</span></span><br><span class="line">        <span class="keyword">case</span>(<span class="number">2</span>)</span><br><span class="line">        	<span class="keyword">call</span> GetString(Title)</span><br><span class="line">        <span class="keyword">case</span>(<span class="number">3</span>)</span><br><span class="line">        	nb_particle = GetInt()</span><br><span class="line">        	<span class="built_in">write</span>(*,<span class="string">&quot;(a,i12)&quot;</span>) <span class="string">&#x27;Number of particles = &#x27;</span>,nb_particle</span><br><span class="line">        	<span class="built_in">write</span>(<span class="keyword">iomsg</span>,<span class="string">&quot;(a,i12)&quot;</span>) <span class="string">&#x27;Number of particles = &#x27;</span>,nb_particle</span><br><span class="line">       		<span class="built_in">allocate</span>(particle_list(nb_particle))</span><br><span class="line">        	<span class="keyword">call</span> InitParticle()</span><br><span class="line">        <span class="keyword">case</span> <span class="keyword">default</span></span><br><span class="line">        	<span class="keyword">stop</span> <span class="string">&#x27;STOP - Error encountered in reading data&#x27;</span></span><br><span class="line">    <span class="keyword">end</span> <span class="keyword">select</span></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">do</span> </span><br></pre></td></tr></table></figure>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">do</span> <span class="keyword">while</span>(<span class="literal">.true.</span>)</span><br><span class="line">    key = Keyord(kw,nbkw)</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">case</span>(key)</span><br><span class="line">        <span class="keyword">case</span>(<span class="number">1</span>)</span><br><span class="line">        	<span class="keyword">exit</span></span><br><span class="line">        <span class="keyword">case</span>(<span class="number">2</span>)</span><br><span class="line">        	<span class="keyword">call</span> GetString(Title)</span><br><span class="line">        <span class="keyword">case</span>(<span class="number">3</span>)</span><br><span class="line">        	nb_particle = GetInt()</span><br><span class="line">        	<span class="built_in">write</span>(*,<span class="string">&quot;(a,i12)&quot;</span>) <span class="string">&#x27;Number of particles = &#x27;</span>,nb_particle</span><br><span class="line">        	<span class="built_in">write</span>(<span class="keyword">iomsg</span>,<span class="string">&quot;(a,i12)&quot;</span>) <span class="string">&#x27;Number of particles = &#x27;</span>,nb_particle</span><br><span class="line">       		<span class="built_in">allocate</span>(particle_list(nb_particle))</span><br><span class="line">        	<span class="keyword">call</span> InitParticle()</span><br><span class="line">        <span class="keyword">case</span> <span class="keyword">default</span></span><br><span class="line">        	<span class="keyword">stop</span> <span class="string">&#x27;STOP - Error encountered in reading data&#x27;</span></span><br><span class="line">    <span class="keyword">end</span> <span class="keyword">select</span></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">do</span> </span><br></pre></td></tr></table></figure>
 <p>改为c++</p>
 <figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">&#123;</span><br><span class="line">    key = <span class="built_in">KeyWord</span>(kw, nbkw);</span><br><span class="line">    <span class="keyword">switch</span> (key + <span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">            Title = <span class="built_in">GetString</span>();</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">            nb_particle = <span class="built_in">GetInt</span>();</span><br><span class="line">            cout &lt;&lt; <span class="string">&quot;Number of particles = &quot;</span> &lt;&lt; nb_particle &lt;&lt; endl;</span><br><span class="line">            outfile &lt;&lt; <span class="string">&quot;Number of particles = &quot;</span> &lt;&lt; nb_particle &lt;&lt; endl;</span><br><span class="line">            particle_list.<span class="built_in">assign</span>(nb_particle, <span class="built_in">Particle</span>());</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            cout &lt;&lt; <span class="string">&quot;STOP - Error encountered in reading data&quot;</span> &lt;&lt; endl;</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (key == <span class="number">0</span>) <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>或者使用<code>do...while</code></p>
@@ -1095,6 +1088,61 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
         <tag>学习笔记</tag>
         <tag>C++</tag>
         <tag>语言转换</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git 安装及配置教程</title>
+    <url>/2024/05/cbf708ce.html</url>
+    <content><![CDATA[<h2 id="1-下载安装包"><a href="#1-下载安装包" class="headerlink" title="1. 下载安装包"></a>1. 下载安装包</h2><p>打开<a href="https://git-scm.com/downloads">Git官网</a>下载安装包, 嫌速度慢可以使用下面的链接下载</p>
+<p>蓝奏云(不限速)：<a href="https://wwt.lanzoul.com/b00rn0x92b密码:gdo1">https://wwt.lanzoul.com/b00rn0x92b密码:gdo1</a></p>
+<p>百度云(会员)：<a href="https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111提取码">https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111提取码</a>: 1111</p>
+<p><img src="/img/post/202405/202405071352070.png" alt="image-20240507135225158"></p>
+<p><img src="/img/post/202405/202405071355950.png" alt="image-20240507135511255"></p>
+<p>下载完成后，双击打开安装包</p>
+<h2 id="2-开始安装"><a href="#2-开始安装" class="headerlink" title="2. 开始安装"></a>2. 开始安装</h2><p><img src="/img/post/202405/202405071437531.png" alt="image-20240507143702625"></p>
+<p><img src="/img/post/202405/202405071438756.png" alt="image-20240507143826832"></p>
+<p><img src="/img/post/202405/202405071442644.png" alt="image-20240507144255668"></p>
+<p><img src="/img/post/202405/202405071443653.png" alt="image-20240507144334722"></p>
+<p><img src="/img/post/202405/202405071446143.png" alt="image-20240507144644121"></p>
+<p><img src="/img/post/202405/202405071449923.png" alt="image-20240507144955949"></p>
+<p><img src="/img/post/202405/202405071451220.png" alt="image-20240507145114067"></p>
+<p><img src="/img/post/202405/202405071455747.png" alt="image-20240507145517679"></p>
+<p><img src="/img/post/202405/202405071456870.png" alt="image-20240507145603852"></p>
+<p><img src="/img/post/202405/202405071502727.png" alt="image-20240507150213743"></p>
+<p><img src="/img/post/202405/202405071504531.png" alt="image-20240507150434447"></p>
+<p><img src="/img/post/202405/202405071515269.png" alt="image-20240507151557254"></p>
+<p><img src="/img/post/202405/202405071518820.png" alt="image-20240507151819793"></p>
+<p><img src="/img/post/202405/202405071520714.png" alt="image-20240507152039835"></p>
+<p>点击安装, 等待安装完成</p>
+<p><img src="/img/post/202405/202405071523934.png" alt="image-20240507152351881"></p>
+<h2 id="3-配置Git"><a href="#3-配置Git" class="headerlink" title="3. 配置Git"></a>3. 配置Git</h2><h3 id="1-配置用户信息"><a href="#1-配置用户信息" class="headerlink" title="(1). 配置用户信息"></a>(1). 配置用户信息</h3><p>输入以下命令配置用户信息, 修改成自己的信息</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;liudh&quot;</span><br><span class="line">git config --global user.email &quot;xxxxxxx@xx.com&quot;</span><br></pre></td></tr></table></figure>
+<p><img src="/img/post/202405/202405071525435.png" alt="image-20240507152545795"></p>
+<p>可以使用以下命令查看配置信息</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config user.name</span><br><span class="line">git config user.email</span><br></pre></td></tr></table></figure>
+<h3 id="2-设置代理-需自备代理"><a href="#2-设置代理-需自备代理" class="headerlink" title="(2). 设置代理(需自备代理)"></a>(2). 设置代理(需自备代理)</h3><p>在向<code>Github</code>推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理</p>
+<p>使用以下命令查看代理配置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global --get http.proxy</span><br><span class="line">git config --global --get https.proxy</span><br></pre></td></tr></table></figure>
+<p>如果没有内容说明没有代理</p>
+<p>下面使用以下命令配置代理</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global http.proxy 127.0.0.1:7890</span><br><span class="line">git config --global https.proxy 127.0.0.1:7890</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>具体地址和端口在系统代理的位置查看</p>
+</blockquote>
+<p><img src="/img/post/202405/202405071538016.png" alt="image-20240507153841415"></p>
+<p>如果不想使用代理, 使用以下命令取消</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global --unset http.proxy</span><br><span class="line">git config --global --unset https.proxy</span><br></pre></td></tr></table></figure>
+<hr>
+<p>至此, 就可以愉快地开始使用Git了</p>
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Git</tag>
+        <tag>安装教程</tag>
+        <tag>Windows</tag>
       </tags>
   </entry>
   <entry>
@@ -1474,54 +1522,6 @@ c_{ij} = \delta_{ij} + \Omega_{ij}dt
       <tags>
         <tag>学习笔记</tag>
         <tag>物质点法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ubuntu搭建Webdav</title>
-    <url>/2024/05/e8755f24.html</url>
-    <content><![CDATA[<p>参考文章: <a href="https://colzry.github.io/posts/linux服务/linux搭建webdav服务/">Linux搭建WebDav服务 - Colzry’s Blog</a></p>
-<blockquote>
-<p>以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决</p>
-</blockquote>
-<h2 id="步骤一-安装WebDAV服务"><a href="#步骤一-安装WebDAV服务" class="headerlink" title="步骤一: 安装WebDAV服务"></a>步骤一: 安装WebDAV服务</h2><p>首先, 我们需要安装<a href="https://github.com/hacdias/webdav">WebDAV Server</a>, 打开页面下载合适的版本, 本文以<a href="https://github.com/hacdias/webdav/releases/download/v4.2.0/linux-amd64-webdav.tar.gz"><code>linux-amd64-webdav.tar.gz</code></a>为例, 其中<code>amd64</code>表示<code>x64</code>架构</p>
-<p>然后, 解压并移动文件到<code>/usr/bin/</code>, 其余的README和LICENSE文件可删除</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -zxvf linux-amd64-webdav.tar.gz</span><br><span class="line">mv webdav /usr/bin/</span><br></pre></td></tr></table></figure>
-<h2 id="步骤二-配置WebDAV服务"><a href="#步骤二-配置WebDAV服务" class="headerlink" title="步骤二: 配置WebDAV服务"></a>步骤二: 配置WebDAV服务</h2><p>安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 <code>/home/liudh/webdav</code>的目录, 注意修改用户名<code>liudh</code>为自己的用户名</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir /home/liudh/webdav</span><br></pre></td></tr></table></figure>
-<p>然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
-<p>在配置文件中, 我们需要添加以下内容. </p>
-<blockquote>
-<p>注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容</p>
-<p>注意缩进, <code>cors</code>和<code>users</code>后的参数均需要两个空格的缩进, 带<code>-</code>的参数需再缩进两个空格(四个)</p>
-<p>每一个参数<code>:</code>后均有一个空格</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Server related settings</span><br><span class="line">address: 0.0.0.0</span><br><span class="line">port: 10101</span><br><span class="line"># 如果无需验证填 false</span><br><span class="line">auth: true</span><br><span class="line"># 如果不需要 https 则填 false</span><br><span class="line">tls: false</span><br><span class="line"># https证书和密钥，如果 tls 为 false，cert 和 key 不需要</span><br><span class="line"># cert: cert_path</span><br><span class="line"># key: key_path</span><br><span class="line"># 访问前缀，建议默认</span><br><span class="line">prefix: /</span><br><span class="line">debug: false</span><br><span class="line"># 如果 auth 为 false 生效，文件共享的路径</span><br><span class="line">scope: .</span><br><span class="line">modify: true</span><br><span class="line">rules: []</span><br><span class="line"># 跨域设置</span><br><span class="line">cors:</span><br><span class="line">  enabled: true</span><br><span class="line">  credentials: true</span><br><span class="line">  allowed_headers:</span><br><span class="line">    - Depth</span><br><span class="line">  allowed_hosts:</span><br><span class="line">    - http://localhost:10101</span><br><span class="line">  allowed_methods:</span><br><span class="line">    - GET</span><br><span class="line">  exposed_headers:</span><br><span class="line">    - Content-Length</span><br><span class="line">    - Content-Range</span><br><span class="line"># 用户信息，如果 auth 为 true 生效</span><br><span class="line">users:</span><br><span class="line">  - username: liudh</span><br><span class="line">    password: passwd</span><br><span class="line">    scope: /home/liudh/webdav/</span><br><span class="line">    # 是否允许修改</span><br><span class="line">    modify: true</span><br><span class="line"># 可以根据此模板继续添加其他用户</span><br></pre></td></tr></table></figure>
-<p>保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/bin/webdav -c /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
-<h2 id="步骤三-添加守护进程"><a href="#步骤三-添加守护进程" class="headerlink" title="步骤三: 添加守护进程"></a>步骤三: 添加守护进程</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /usr/lib/systemd/system/webdav.service</span><br></pre></td></tr></table></figure>
-<p>将以下内容添加到文件中</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=WebDAV server</span><br><span class="line">After=network.target</span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">ExecStart=/usr/bin/webdav -c /opt/webdav_config.yaml</span><br><span class="line">Restart=on-failure</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-<p>保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start webdav.service</span><br><span class="line">systemctl status webdav.service</span><br><span class="line">systemctl enable webdav.service</span><br></pre></td></tr></table></figure>
-<p>之后修改配置文件后, 可以使用以下命令重启服务</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl restart webdav.service</span><br></pre></td></tr></table></figure>
-<h2 id="步骤四-挂载webdav测试服务"><a href="#步骤四-挂载webdav测试服务" class="headerlink" title="步骤四: 挂载webdav测试服务"></a>步骤四: 挂载webdav测试服务</h2><p>使用任意webdav挂载软件, 挂载测试, 注意填写参数如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">协议: http # 如果配置了ssl证书就用https</span><br><span class="line">主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号</span><br><span class="line">	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/</span><br><span class="line">端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要</span><br><span class="line">用户名: liudh # 都改成自己的</span><br><span class="line">密码: passwd</span><br></pre></td></tr></table></figure>
-<p>之后就可以上传下载文件测试一下了, 如果有错误就用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl status webdav.service</span><br></pre></td></tr></table></figure>
-<p>查看错误日志. </p>
-<blockquote>
-<p>如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>Ubuntu</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-        <tag>Webdav</tag>
-        <tag>云服务</tag>
       </tags>
   </entry>
   <entry>
