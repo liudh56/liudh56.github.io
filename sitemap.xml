@@ -227,13 +227,6 @@
   </url>
   
   <url>
-    <loc>http://fireflye.asia/tags/%E5%AD%94%E5%8E%8B/</loc>
-    <lastmod>2024-12-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>http://fireflye.asia/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
@@ -249,6 +242,13 @@
   
   <url>
     <loc>http://fireflye.asia/tags/%E8%B4%A8%E9%87%8F%E5%AE%88%E6%81%92%E6%96%B9%E7%A8%8B/</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://fireflye.asia/tags/%E5%AD%94%E5%8E%8B/</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -311,6 +311,20 @@
   </url>
   
   <url>
+    <loc>http://fireflye.asia/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://fireflye.asia/tags/Windows/</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://fireflye.asia/tags/C/</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
@@ -319,34 +333,6 @@
   
   <url>
     <loc>http://fireflye.asia/tags/%E8%AF%AD%E8%A8%80%E8%BD%AC%E6%8D%A2/</loc>
-    <lastmod>2024-12-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://fireflye.asia/tags/%E7%89%A9%E8%B4%A8%E7%82%B9%E6%B3%95/</loc>
-    <lastmod>2024-12-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://fireflye.asia/tags/DJI/</loc>
-    <lastmod>2024-12-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://fireflye.asia/tags/Mavic-3-classic/</loc>
-    <lastmod>2024-12-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://fireflye.asia/tags/%E6%AD%A3%E5%B0%84%E8%88%AA%E7%BA%BF/</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -381,14 +367,28 @@
   </url>
   
   <url>
-    <loc>http://fireflye.asia/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/</loc>
+    <loc>http://fireflye.asia/tags/%E7%89%A9%E8%B4%A8%E7%82%B9%E6%B3%95/</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://fireflye.asia/tags/Windows/</loc>
+    <loc>http://fireflye.asia/tags/DJI/</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://fireflye.asia/tags/Mavic-3-classic/</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://fireflye.asia/tags/%E6%AD%A3%E5%B0%84%E8%88%AA%E7%BA%BF/</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -432,6 +432,13 @@
   </url>
   
   <url>
+    <loc>http://fireflye.asia/categories/Github/</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://fireflye.asia/categories/MPM/</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
@@ -440,13 +447,6 @@
   
   <url>
     <loc>http://fireflye.asia/categories/%E6%97%A0%E4%BA%BA%E6%9C%BA/</loc>
-    <lastmod>2024-12-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://fireflye.asia/categories/Github/</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
