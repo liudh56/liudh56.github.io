@@ -4,13 +4,13 @@
     <title>非饱和土边坡稳定性计算程序说明文件</title>
     <url>/2024/04/71e392b0.html</url>
     <content><![CDATA[<h2 id="一、数据文件"><a href="#一、数据文件" class="headerlink" title="一、数据文件"></a>一、数据文件</h2><h3 id="注意：以下文件内不要输入注释文字"><a href="#注意：以下文件内不要输入注释文字" class="headerlink" title="注意：以下文件内不要输入注释文字"></a>注意：以下文件内不要输入注释文字</h3><h4 id="1-dat文件"><a href="#1-dat文件" class="headerlink" title="1. dat文件"></a>1. dat文件</h4><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="comment">!dx  h2v</span></span><br><span class="line"><span class="number">1.0</span>  <span class="number">2.0</span></span><br><span class="line"><span class="comment">!nx1 nx2 ny1 ny2</span></span><br><span class="line"><span class="number">20</span>  <span class="number">20</span>  <span class="number">10</span>  <span class="number">5</span></span><br><span class="line"><span class="comment">!树荷载的左列和右列数，单位长度的树荷载kN/m</span></span><br><span class="line"><span class="number">27</span> <span class="number">32</span> <span class="number">10.0</span></span><br><span class="line"><span class="comment">!内摩擦角，粘聚力，剪胀角，重度，弹性模量，泊松比, a, m, n, theta_s 其中,重度=ρ_d*gam_w,theta_s=1-ρ_d/G_s</span></span><br><span class="line"><span class="number">20.0</span>  <span class="number">15.0</span>  <span class="number">0.0</span>  <span class="number">20.0</span>  <span class="number">1.0e5</span>  <span class="number">0.3</span> <span class="number">15</span> <span class="number">0.2</span> <span class="number">4</span> <span class="number">0.907749</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">20</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span> <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">6</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.55</span> <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
-<p><img src="/img/post/202405/202405051034316.png" alt="模型"></p>
+<p><img src="/2024/04/71e392b0.htm/post/202405/202405051034316.png" alt="模型"></p>
 <p>其中,第三行表示荷载的加荷位置和大小</p>
 <figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="number">27</span> <span class="comment">! 表示起点在第27列（从左至右）</span></span><br><span class="line"><span class="number">32</span> <span class="comment">! 表示终点在第32列（从左至右）</span></span><br><span class="line"><span class="number">30</span> <span class="comment">! 表示荷载为30kN/m</span></span><br></pre></td></tr></table></figure>
 <p>对应下图中的红色位置</p>
-<p><img src="/img/post/202405/202405051036737.png" alt="加载位置"></p>
+<p><img src="/2024/04/71e392b0.htm/post/202405/202405051036737.png" alt="加载位置"></p>
 <h4 id="2-孔压文件x-f-txt"><a href="#2-孔压文件x-f-txt" class="headerlink" title="2. 孔压文件x_f.txt"></a>2. 孔压文件x_f.txt</h4><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">按节点列依次输入节点处的孔压</span><br><span class="line">每个单元格有<span class="number">3</span>列共<span class="number">8</span>个节点，呈<span class="number">323</span>分布，如下图所示，阴影部分为一个单元格，黄色为单元格号</span><br><span class="line">按照节点的<span class="number">1234.</span>..顺序竖向填写x_f.txt文件，每节点占一行 </span><br></pre></td></tr></table></figure>
-<p><img src="/img/post/202405/202405051036959.png" alt="17143576814081714357680903png"></p>
+<p><img src="/2024/04/71e392b0.htm/post/202405/202405051036959.png" alt="17143576814081714357680903png"></p>
 <h2 id="二、源代码"><a href="#二、源代码" class="headerlink" title="二、源代码"></a>二、源代码</h2><p>本程序单元格序号是从上至下，从左至右依次排序,如下例</p>
 <figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="number">1</span> <span class="number">6</span> </span><br><span class="line"><span class="number">2</span> <span class="number">7</span>  <span class="number">11</span></span><br><span class="line"><span class="number">3</span> <span class="number">8</span>  <span class="number">12</span> <span class="number">15</span></span><br><span class="line"><span class="number">4</span> <span class="number">9</span>  <span class="number">13</span> <span class="number">16</span> <span class="number">18</span> <span class="number">20</span></span><br><span class="line"><span class="number">5</span> <span class="number">10</span> <span class="number">14</span> <span class="number">17</span> <span class="number">19</span> <span class="number">21</span></span><br></pre></td></tr></table></figure>
 <p>在叠加荷载时，因为所有单元格的g都是按照3 2 1 4 6 7 8 5 的顺序保存，因此我们仅需找到对应的单元格号以及146号节点的相对位置</p>
@@ -18,13 +18,13 @@
 <p>接下来只需找到单元格号即可。</p>
 <h3 id="计算单元号"><a href="#计算单元号" class="headerlink" title="计算单元号"></a>计算单元号</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (tree_load/=<span class="number">0</span>) <span class="keyword">then</span> <span class="comment">!荷载不为零再进行运算</span></span><br><span class="line">  <span class="built_in">allocate</span>(tree_nodes(nx1+nx2+ny1*ngrad))</span><br><span class="line"></span><br><span class="line">  tree_nodes=<span class="number">0</span></span><br><span class="line">   <span class="comment">! tree_nodes(nx1+nx2+ny1*ngrad)是储存表面单元格的单元号</span></span><br><span class="line"></span><br><span class="line">  itree = <span class="number">2</span> <span class="comment">!用于计数，记录需加荷的单元格数量</span></span><br><span class="line">  tree_nodes(<span class="number">1</span>)=<span class="number">1</span> </span><br><span class="line"></span><br><span class="line">  <span class="comment">! 顶面和斜面前ngrad行</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">2</span>,nx1+ngrad </span><br><span class="line">     tree_nodes(itree) = (i-<span class="number">1</span>)*nye+<span class="number">1</span></span><br><span class="line">     itree = itree + <span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 斜面ngrad行以后</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">1</span>,ny1-<span class="number">1</span></span><br><span class="line">    <span class="keyword">do</span> j=<span class="number">1</span>,ngrad</span><br><span class="line">       <span class="keyword">if</span> (j==<span class="number">1</span>) <span class="keyword">then</span></span><br><span class="line">          tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+nye-i+<span class="number">1</span></span><br><span class="line">       <span class="keyword">else</span></span><br><span class="line">          tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+nye-i</span><br><span class="line">       <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">       itree = itree + <span class="number">1</span></span><br><span class="line">    <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 底面第一列</span></span><br><span class="line">  tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+ny2+<span class="number">1</span></span><br><span class="line">  itree = itree + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 底面以后</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">2</span>,nx2</span><br><span class="line">     tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+ny2</span><br><span class="line">     itree = itree + <span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  tree_nodes_= tree_nodes(nel_left:nel_right) <span class="comment">! 储存实际需要加荷的单元格的序号</span></span><br></pre></td></tr></table></figure>
 <h3 id="分配荷载到节点"><a href="#分配荷载到节点" class="headerlink" title="分配荷载到节点"></a>分配荷载到节点</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">  <span class="built_in">ALLOCATE</span>(weight_load(<span class="number">8</span>),tree(ndof))</span><br><span class="line">  <span class="comment">!荷载在节点上的分布权重</span></span><br><span class="line">  weight_load = (/<span class="number">0.166667</span>,<span class="number">0.0</span>,<span class="number">0.0</span>,<span class="number">0.666667</span>,<span class="number">0.0</span>,<span class="number">0.166667</span>,<span class="number">0.0</span>,<span class="number">0.0</span>/)</span><br><span class="line"></span><br><span class="line">  <span class="comment">!计算各节点荷载大小</span></span><br><span class="line">  tree=zero</span><br><span class="line">  tree(<span class="number">6</span>)=tree_load*weight_load(<span class="number">1</span>)</span><br><span class="line">  tree(<span class="number">8</span>)=tree_load*weight_load(<span class="number">4</span>)</span><br><span class="line">  tree(<span class="number">10</span>)=tree_load*weight_load(<span class="number">6</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">! 此处注意区分(见下图)</span></span><br><span class="line">  <span class="comment">! g数组按3x 3y 2x 2y 1x 1y 4x 4y 6x 6y 7x 7y 8x 8y 5x 5y的顺序保存</span></span><br><span class="line">  <span class="comment">! weight_load按1 2 3 4 5 6 7 8来保存</span></span><br><span class="line">  <span class="comment">! 则1 4 6号节点的y方向对应g(6),g(8),g(10)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">if</span></span><br></pre></td></tr></table></figure>
-<p><img src="/img/post/202405/202405051036468.png" title="" alt="单元节点" data-align="center"></p>
+<p><img src="/2024/04/71e392b0.htm/post/202405/202405051036468.png" title alt="单元节点" data-align="center"></p>
 <h3 id="叠加荷载"><a href="#叠加荷载" class="headerlink" title="叠加荷载"></a>叠加荷载</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">itree=<span class="number">1</span> <span class="comment">! 作tree_nodes_数组的索引，将序号依次读出</span></span><br><span class="line"></span><br><span class="line">elements_2: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line"></span><br><span class="line">   ...</span><br><span class="line"></span><br><span class="line">   gravlo(g)=gravlo(g)-eld*prop(<span class="number">4</span>,etype(iel))</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (tree_load.ne<span class="number">.0</span><span class="number">.0</span>) <span class="keyword">then</span> <span class="comment">!荷载不为零时计算</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> ((iel==tree_nodes_(itree))<span class="keyword">.and.</span>(itree<span class="keyword">.le.</span><span class="built_in">size</span>(tree_nodes_))) <span class="keyword">then</span> <span class="comment">!判断是否为需加荷的单元</span></span><br><span class="line"></span><br><span class="line">         gravlo(g) = gravlo(g) - tree <span class="comment">!根据自由度编号加到指定位置</span></span><br><span class="line"></span><br><span class="line">         itree=itree+<span class="number">1</span></span><br><span class="line">      <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">   <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">END</span> <span class="keyword">DO</span> elements_2</span><br></pre></td></tr></table></figure>
 <hr>
 <h3 id="叠加外部水荷载"><a href="#叠加外部水荷载" class="headerlink" title="叠加外部水荷载"></a>叠加外部水荷载</h3><p>叠加外部水荷载的方式与上方叠加外部荷载的方法类似，将水的压力 $\gamma_w*h$ 叠加到相应的表面节点上</p>
 <figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">IF</span>(wl&gt;g_coord(<span class="number">2</span>,<span class="number">1</span>))<span class="keyword">THEN</span>  <span class="comment">! 水位淹没整个边坡</span></span><br><span class="line">      p3=(wl-g_coord(<span class="number">2</span>,<span class="number">1</span>))*gam_w</span><br><span class="line">      <span class="keyword">DO</span> i=<span class="number">1</span>,nx1</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">DO</span> i=nx1+<span class="number">1</span>,nx1+ny1*ngrad</span><br><span class="line">         <span class="keyword">if</span> (<span class="built_in">mod</span>(i-nx1,ngrad)/=<span class="number">0</span>)<span class="keyword">then</span></span><br><span class="line">            y5=g_coord(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">            p5=(wl-y5)*gam_w</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">         <span class="keyword">else</span></span><br><span class="line">            y5=g_coord(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">            p5=(wl-y5)*gam_w</span><br><span class="line">            y7=g_coord(<span class="number">2</span>,g_num(<span class="number">7</span>,tree_nodes(i)))</span><br><span class="line">            p7=(wl-y7)*gam_w</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))-dx*(p5+p7)/d3</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))-dx*p7/d6</span><br><span class="line">         <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">IF</span>(ny2&gt;<span class="number">0</span>)<span class="keyword">THEN</span> <span class="comment">! 如果有破角台阶</span></span><br><span class="line">         p3=(wl-g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))*gam_w <span class="comment">!p3==p5</span></span><br><span class="line">         <span class="keyword">DO</span> i=nx1+ny1*ngrad+<span class="number">1</span>,nx1+ny1*ngrad+nx2</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">   <span class="keyword">ELSE</span> <span class="keyword">IF</span>(wl&gt;g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))<span class="keyword">THEN</span> <span class="comment">! 水面在斜面位置(低于坡顶,高于坡脚)</span></span><br><span class="line">      nw=<span class="built_in">int</span>((-wl)/dx)</span><br><span class="line">      <span class="keyword">do</span> i=nx1+nw*ngrad+ngrad,nx1+ny1*ngrad</span><br><span class="line">         y5=g_coord(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">         y7=g_coord(<span class="number">2</span>,g_num(<span class="number">7</span>,tree_nodes(i)))</span><br><span class="line">         p5=(wl-y5)*gam_w</span><br><span class="line">         p7=(wl-y7)*gam_w</span><br><span class="line">         <span class="keyword">if</span>(i==nx1+nw*ngrad+ngrad)<span class="keyword">then</span> <span class="comment">! 如果水面恰好穿过某行单元格</span></span><br><span class="line">            cx=y5-wl</span><br><span class="line">            cy=cx</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               +p7*cy*(cy**<span class="number">2</span>-two*cy*dx+dx**<span class="number">2</span>)/(d6*dx**<span class="number">2</span>)</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               -p7*(cy**<span class="number">3</span>-cy**<span class="number">2</span>*dx-cy*dx**<span class="number">2</span>+dx**<span class="number">3</span>)/(d3*dx**<span class="number">2</span>)</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               -p7*(dx**<span class="number">3</span>-cy**<span class="number">3</span>)/(d6*dx*dx)</span><br><span class="line">         <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">mod</span>(i-nx1,ngrad)/=<span class="number">0</span>)<span class="keyword">then</span> <span class="comment">! 方格斜面台阶内部(仅有上表面接触水)</span></span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">         <span class="keyword">else</span> <span class="comment">! 方格斜面台阶最外部的单元格(上表面和右表面接触水)</span></span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))-dx*(p5+p7)/d3</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))-dx*p7/d6</span><br><span class="line">         <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">IF</span>(ny2&gt;<span class="number">0</span>)<span class="keyword">THEN</span> </span><br><span class="line">         p3=(wl-g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))*gam_w</span><br><span class="line">         <span class="keyword">DO</span> i=nx1+ny1*ngrad+<span class="number">1</span>,nx1+ny1*ngrad+nx2</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">   <span class="keyword">END</span> <span class="keyword">IF</span></span><br></pre></td></tr></table></figure>
 <h3 id="叠加孔压"><a href="#叠加孔压" class="headerlink" title="叠加孔压"></a>叠加孔压</h3><p>根据Vanapalli公式, 使用体积含水率、孔压等参数计算出基质吸力项, 叠加到正应力上</p>
-<p><img src="/img/post/202405/202405051036317.png" alt="17143599364091714359936244png"></p>
+<p><img src="/2024/04/71e392b0.htm/post/202405/202405051036317.png" alt="17143599364091714359936244png"></p>
 <figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">elements_3: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line">            bload=zero</span><br><span class="line">            phi=prop(<span class="number">1</span>,iel)</span><br><span class="line">            tnph=<span class="built_in">TAN</span>(phi*pi/d180)</span><br><span class="line">            phif=<span class="built_in">ATAN</span>(tnph/srf(iy))*d180/pi</span><br><span class="line">            psi=prop(<span class="number">3</span>,iel)</span><br><span class="line">            tnps=<span class="built_in">TAN</span>(psi*pi/d180)</span><br><span class="line">            psif=<span class="built_in">ATAN</span>(tnps/srf(iy))*d180/pi</span><br><span class="line">            cf=prop(<span class="number">2</span>,iel)/srf(iy)</span><br><span class="line">            e=prop(<span class="number">5</span>,iel)</span><br><span class="line">            v=prop(<span class="number">6</span>,iel)</span><br><span class="line">            <span class="keyword">CALL</span> deemat(dee,e,v)</span><br><span class="line">            num=g_num(:,iel)</span><br><span class="line">            coord=<span class="built_in">TRANSPOSE</span>(g_coord(:,num))</span><br><span class="line">            <span class="keyword">do</span> i=<span class="number">1</span>,nod</span><br><span class="line">               <span class="keyword">call</span> Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) <span class="comment">! 计算基质吸力项</span></span><br><span class="line">            <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line">            g=g_g(:,iel)</span><br><span class="line">            eld=loads(g)</span><br><span class="line">            gauss_pts_2: <span class="keyword">DO</span> i=<span class="number">1</span>,nip</span><br><span class="line">               <span class="keyword">call</span> shape_fun(fun,points,i)</span><br><span class="line">               pore(iel,i)=<span class="built_in">dot_product</span>(fun,suc_sig)</span><br><span class="line">               <span class="keyword">CALL</span> bee8(bee,coord,points(i,<span class="number">1</span>),points(i,<span class="number">2</span>),det)</span><br><span class="line">               eps=<span class="built_in">MATMUL</span>(bee,eld)</span><br><span class="line">               eps=eps-evpt(:,i,iel)</span><br><span class="line">               sigma=<span class="built_in">MATMUL</span>(dee,eps)</span><br><span class="line">               sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)-pore(iel,i) <span class="comment">! 此处124为正应力项, 3为剪应力项</span></span><br><span class="line">               sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)-pore(iel,i)</span><br><span class="line">               sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)-pore(iel,i)</span><br><span class="line">               <span class="keyword">CALL</span> invar(sigma,sigm,dsbar,lode_theta)</span><br><span class="line">               <span class="comment">!-----------------------check whether yield is violated-------------------</span></span><br><span class="line">               <span class="keyword">CALL</span> mocouf(phif,cf,sigm,dsbar,lode_theta,f)</span><br><span class="line">               <span class="keyword">IF</span>(f&gt;fmax)fmax=f</span><br><span class="line">               <span class="keyword">IF</span>(converged<span class="keyword">.OR.</span>iters==limit)<span class="keyword">THEN</span></span><br><span class="line">                  sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)+pore(iel,i)</span><br><span class="line">                  devp=sigma</span><br><span class="line">               <span class="keyword">ELSE</span></span><br><span class="line">                  <span class="keyword">IF</span>(f&gt;=zero<span class="keyword">.OR.</span>(converged<span class="keyword">.OR.</span>iters==limit))<span class="keyword">THEN</span></span><br><span class="line">                     <span class="keyword">CALL</span> mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)</span><br><span class="line">                     <span class="keyword">CALL</span> formm(sigma,m1,m2,m3)</span><br><span class="line">                     flow=f*(m1*dq1+m2*dq2+m3*dq3)</span><br><span class="line">                     erate=<span class="built_in">MATMUL</span>(flow,sigma)</span><br><span class="line">                     evp=erate*dt</span><br><span class="line">                     evpt(:,i,iel)=evpt(:,i,iel)+evp</span><br><span class="line">                     devp=<span class="built_in">MATMUL</span>(dee,evp)</span><br><span class="line">                  <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">IF</span>(f&gt;=zero)<span class="keyword">THEN</span></span><br><span class="line">                  eload=<span class="built_in">MATMUL</span>(devp,bee)</span><br><span class="line">                  bload=bload+eload*det*weights(i)</span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">            <span class="keyword">END</span> <span class="keyword">DO</span> gauss_pts_2</span><br><span class="line">            <span class="comment">!-----------------------compute the total bodyloads vector----------------</span></span><br><span class="line">            bdylds(g)=bdylds(g)+bload</span><br><span class="line">            bdylds(<span class="number">0</span>)=zero</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span> elements_3</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
@@ -130,126 +130,6 @@
         <tag>失效概率</tag>
         <tag>Monte-Carlo</tag>
         <tag>Python</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>学习笔记——流体力学基本方程 (一)</title>
-    <url>/2024/04/98e90823.html</url>
-    <content><![CDATA[<h2 id="学习视频"><a href="#学习视频" class="headerlink" title="学习视频"></a>学习视频</h2><h3 id="Bilibili-流体力学基础科普-北斗导航Compass"><a href="#Bilibili-流体力学基础科普-北斗导航Compass" class="headerlink" title="Bilibili-流体力学基础科普-北斗导航Compass"></a><a href="https://www.bilibili.com/video/BV1Ty4y1M7Fx/?share_source=copy_web&amp;vd_source=374d2addde246f63ad679abfc5ab707c">Bilibili-流体力学基础科普-北斗导航Compass</a></h3><p>参考教材：<a href="https://pan.baidu.com/s/1fbj6e9Xk6LmWW2Vjmu0oIw?pwd=eavw">Fundamentals of AERODYNAMICS by John D. Anderson, Jr.</a></p>
-<h2 id="一、基本概念"><a href="#一、基本概念" class="headerlink" title="一、基本概念"></a>一、基本概念</h2><h3 id="1-什么是流体？"><a href="#1-什么是流体？" class="headerlink" title="1. 什么是流体？"></a>1. 什么是流体？</h3><ul>
-<li>对比固体和流体的区别</li>
-</ul>
-<blockquote>
-<p>对于固体剪切力与<strong>形变量</strong>成正比</p>
-<p>对于流体剪切力与<strong>形变量的时间变化率</strong>成正比</p>
-</blockquote>
-<ul>
-<li>解释流体为什么能流起来？</li>
-</ul>
-<blockquote>
-<p>对于流体如果流体中的<strong>剪切力</strong>是常数，则其形变量的时间变化率也应为常数，即流体一直发生形变（流动）</p>
-</blockquote>
-<ul>
-<li>流体在抗压时可以静止，在抗剪时一定在运动</li>
-</ul>
-<h3 id="2-流体质点"><a href="#2-流体质点" class="headerlink" title="2. 流体质点"></a>2. 流体质点</h3><p>将流体看作无穷多的质点的结合，符合连续介质假设</p>
-<h3 id="3-描述流体的物理量"><a href="#3-描述流体的物理量" class="headerlink" title="3. 描述流体的物理量"></a>3. 描述流体的物理量</h3><blockquote>
-<p>包括速度、密度、压强、温度等等</p>
-</blockquote>
-<ul>
-<li>压强(压力) Pressure 单位Pa</li>
-</ul>
-<script type="math/tex; mode=display">
-P=\frac{F}{A}\ \ \ \ 当A\rightarrow0时\ \ \ P=frac{dF}{dA}</script><ul>
-<li>密度 单位 $kg/m^3$ </li>
-</ul>
-<script type="math/tex; mode=display">
-\rho=\frac{m}{V}\ \ \ 当V\rightarrow0时\ \ \ \rho=\frac{dm}{dV}</script><ul>
-<li>温度 单位K</li>
-</ul>
-<script type="math/tex; mode=display">
-0°C=273.15K</script><h3 id="4-描述流体运动的方法"><a href="#4-描述流体运动的方法" class="headerlink" title="4. 描述流体运动的方法"></a>4. 描述流体运动的方法</h3><ul>
-<li>拉格朗日法</li>
-</ul>
-<blockquote>
-<p>以质点为研究对象,跟踪质点的运动</p>
-</blockquote>
-<ul>
-<li>欧拉法</li>
-</ul>
-<blockquote>
-<p>以确定空间为研究对象,研究某一空间点不同时间下,在此空间点的质点的运动</p>
-</blockquote>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:center"></th>
-<th style="text-align:center">积分方法</th>
-<th style="text-align:center">微分方法</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">拉格朗日法</td>
-<td style="text-align:center">一坨流体</td>
-<td style="text-align:center">质点</td>
-</tr>
-<tr>
-<td style="text-align:center">欧拉法</td>
-<td style="text-align:center">控制体</td>
-<td style="text-align:center">空间点</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h2 id="二、基本方程"><a href="#二、基本方程" class="headerlink" title="二、基本方程"></a>二、基本方程</h2><h3 id="1-质量守恒方程-连续方程"><a href="#1-质量守恒方程-连续方程" class="headerlink" title="1. 质量守恒方程(连续方程)"></a>1. 质量守恒方程(连续方程)</h3><p> <strong>控制体内流体总质量的增量 = 流入控制体的流体质量</strong></p>
-<p>欧拉法连续方程的微分形式</p>
-<script type="math/tex; mode=display">
-\frac{\partial \rho}{\partial t}+\frac{\partial (\rho u)}{\partial x}+\frac{\partial (\rho v)}{\partial y}+\frac{\partial (\rho w)}{\partial z}=0</script><p>其中 $\rho,u,v,w$ 均是 $x,y,z,t$ 的函数,如 $\rho(x,y,z,t)$ </p>
-<p><strong>方程左边:</strong> 单位时间 控制体内流体总质量的增量(为负数就是减量)</p>
-<p>首先,表示总质量</p>
-<script type="math/tex; mode=display">
-m={\iiint}_{cv}\rho dV</script><p>对时间t求偏导,得</p>
-<script type="math/tex; mode=display">
-\frac{\partial m}{\partial t}=\frac{\partial ({\iiint}_{cv}\rho dV)}{\partial t}={\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV</script><p><strong>方程右边:</strong> 单位时间 流入控制体的流体质量</p>
-<p><img src="/img/post/202405/202405051038892.png" alt="" style="zoom:50%;" center/></p>
-<blockquote>
-<p>质量=密度*体积</p>
-</blockquote>
-<script type="math/tex; mode=display">
-h=v*\Delta t\cos\theta</script><script type="math/tex; mode=display">
-V=Sh=Sv*\Delta t\cos\theta</script><p>则 $\Delta t$ 时间范围内</p>
-<script type="math/tex; mode=display">
-m=\rho V=\rho Sv\Delta t\cos\theta</script><script type="math/tex; mode=display">
-m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
-<script type="math/tex; mode=display">
-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>规定控制体表面的外法线方向为正,则方程右边应为添加负号</p>
-<p>即</p>
-<script type="math/tex; mode=display">
--{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>则可得到积分形式的质量守恒方程</p>
-<script type="math/tex; mode=display">
-{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV=-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>也即</p>
-<script type="math/tex; mode=display">
-{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}=0</script><p>根据高斯定理</p>
-<script type="math/tex; mode=display">
-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}={\iiint}_{cv}[\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV</script><p>则积分形式的质量守恒方程可以合并为</p>
-<script type="math/tex; mode=display">
-{\iiint}_{cv}[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV=0</script><p>可得微分形式的质量守恒方程</p>
-<script type="math/tex; mode=display">
-\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}=0</script><p>用哈密顿算子表示,可写为</p>
-<script type="math/tex; mode=display">
-\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})=0</script><p>下期内容：</p>
-<h3 id="2-动量守恒方程"><a href="#2-动量守恒方程" class="headerlink" title="2. 动量守恒方程"></a>2. 动量守恒方程</h3><p> <strong>控制体内流体总动量的增量 = 流入控制体的流体动量 + 外界的力产生的动量增量</strong></p>
-<h3 id="3-能量守恒方程"><a href="#3-能量守恒方程" class="headerlink" title="3. 能量守恒方程"></a>3. 能量守恒方程</h3><p> <strong>控制体内流体的总能量的增量 = 流入控制体的流体能量 + 外界的作用产生的能量增量</strong></p>
-]]></content>
-      <categories>
-        <category>流体力学</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-        <tag>流体力学</tag>
-        <tag>质量守恒方程</tag>
       </tags>
   </entry>
   <entry>
@@ -710,26 +590,26 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
 <h2 id="装机需谨慎-做好数据备份"><a href="#装机需谨慎-做好数据备份" class="headerlink" title="装机需谨慎, 做好数据备份"></a>装机需谨慎, 做好数据备份</h2><h2 id="1-系统镜像的下载"><a href="#1-系统镜像的下载" class="headerlink" title="1. 系统镜像的下载"></a>1. 系统镜像的下载</h2><p>打开<a href="https://cn.ubuntu.com/download">Ubuntu系统下载 | Ubuntu</a> 此页面,点击<strong>下载Ubuntu桌面版</strong>, </p>
 <p>或者从网盘中下载: </p>
 <p>百度云：<a href="https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111">https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111</a> 提取码: 1111</p>
-<p><img title="" src="/img/post/202405/202405051039370.png" alt="" data-align="center"></p>
+<p><img title src="/2024/05/deb026e9.htm/post/202405/202405051039370.png" alt data-align="center"></p>
 <p>再选择Ubuntu22.04.4 LTS,点击<strong>下载22.04.4</strong></p>
-<p><img src="/img/post/202405/202405051041029.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051041029.png" title alt data-align="center"></p>
 <p>将此文件下载保存至<strong>易寻找的位置</strong>, 以<code>F:/Ubuntu</code>为例, 稍后会使用. </p>
 <p>其他版本可在官网下载<a href="https://ubuntu.com/download">Get Ubuntu | Download | Ubuntu</a> 安装步骤大致相同</p>
 <h2 id="2-安装写盘工具Rufus"><a href="#2-安装写盘工具Rufus" class="headerlink" title="2. 安装写盘工具Rufus"></a>2. 安装写盘工具Rufus</h2><p>打开<a href="https://rufus.ie/zh/">Rufus - 轻松创建 USB 启动盘</a> 页面, 找到下载,选择Windows x64平台的便携版, 下载打开即用. </p>
-<p><img title="" src="/img/post/202405/202405051041560.png" alt="Rufus" width="427" data-align="center"></p>
+<p><img title src="/2024/05/deb026e9.htm/post/202405/202405051041560.png" alt="Rufus" width="427" data-align="center"></p>
 <p>插入U盘,打开软件</p>
-<p><img title="" src="/img/post/202405/202405051042395.png" alt="rufus" data-align="center" width="330"></p>
+<p><img title src="/2024/05/deb026e9.htm/post/202405/202405051042395.png" alt="rufus" data-align="center" width="330"></p>
 <p>点击选择, 设备选择刚刚插入的U盘, 镜像文件点击右侧<strong>选择</strong>, 选中刚刚下载的镜像文件, 我的是位于<code>F:/Ubuntu</code>, 选项如下图即可, 点击开始, 等待写入完成, 点击关闭, 弹出U盘</p>
-<p><img title="" src="/img/post/202405/202405051042474.png" alt="写盘例子" data-align="center" width="343"></p>
+<p><img title src="/2024/05/deb026e9.htm/post/202405/202405051042474.png" alt="写盘例子" data-align="center" width="343"></p>
 <h2 id="3-关闭Bitlocker或者备份Bitlocker恢复密钥"><a href="#3-关闭Bitlocker或者备份Bitlocker恢复密钥" class="headerlink" title="3. 关闭Bitlocker或者备份Bitlocker恢复密钥"></a>3. 关闭Bitlocker或者备份Bitlocker恢复密钥</h2><p>如果硬盘设置了Bitlocker, 一定要提前找到恢复密钥, 可以先保存到手机上, 一般在微软账户里会有备份<a href="https://account.microsoft.com/devices/recoverykey">恢复密钥</a></p>
 <p>如果找不到了, 开始前一定要关闭Bitlocker. 改动引导顺序和安全启动选项会触发BitLocker, 要求输入恢复密钥. 否则你将无法打开Windows系统或已加密数据</p>
 <p>关闭过程时间可能较长</p>
 <h2 id="4-压缩硬盘空间-双系统需要-若全新安装不需要"><a href="#4-压缩硬盘空间-双系统需要-若全新安装不需要" class="headerlink" title="4. 压缩硬盘空间(双系统需要,若全新安装不需要)"></a>4. 压缩硬盘空间(双系统需要,若全新安装不需要)</h2><p>打开Windows的磁盘管理工具, 右键开始菜单图标, 选择磁盘管理</p>
-<p><img title="" src="/img/post/202405/202405051042717.png" alt="磁盘管理" data-align="center" width="99"></p>
+<p><img title src="/2024/05/deb026e9.htm/post/202405/202405051042717.png" alt="磁盘管理" data-align="center" width="99"></p>
 <p>找到需要压缩的分区, 右键点击压缩卷</p>
-<p><img src="/img/post/202405/202405051042369.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051042369.png" title alt data-align="center"></p>
 <p>输入合适的空间, 建议40GB以上, 最低不低于官网要求的25GB, 点击压缩即可</p>
-<p><img title="" src="/img/post/202405/202405051042487.png" alt="压缩盘" data-align="center" width="523"></p>
+<p><img title src="/2024/05/deb026e9.htm/post/202405/202405051042487.png" alt="压缩盘" data-align="center" width="523"></p>
 <h2 id="5-关闭安全启动-设置U盘启动"><a href="#5-关闭安全启动-设置U盘启动" class="headerlink" title="5. 关闭安全启动, 设置U盘启动"></a>5. 关闭安全启动, 设置U盘启动</h2><p>网络上搜索自己的电脑进入BIOS的方法, surface go系列是按音量加键, 一般电脑是按F2或者F10, 以自己的电脑为准, 进入BIOS,关闭安全启动, 设置启动顺序, 将<strong>USB设备</strong>设置到最上面, 由于每台设备情况不同, 此处设置请自行搜索自己电脑的教程. </p>
 <blockquote>
 <p>surface go系列安全启动会有三个选项</p>
@@ -747,24 +627,24 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
 <blockquote>
 <p> Try or Install Ubuntu</p>
 </blockquote>
-<p><img title="" src="/img/post/202405/202405051042783.png" alt="" data-align="center" width="411"></p>
+<p><img title src="/2024/05/deb026e9.htm/post/202405/202405051042783.png" alt data-align="center" width="411"></p>
 <p>等待进入安装界面, 选择中文</p>
-<p><img src="/img/post/202405/202405051042996.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051042996.png" title alt data-align="center"></p>
 <p>如果出现窗口显示不全, 点击试用Ubuntu,如果像我一样可以看到全部窗口, 就点击安装Ubuntu, 跳转到下面<a href="#开始安装">开始安装</a>教程</p>
 <hr>
 <p>点击试用之后, 会出现如下界面</p>
-<p><img src="/img/post/202405/202405051043674.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051043674.png" title alt data-align="center"></p>
 <p>点击该图标, 再打开设置, 找到显示器, 缩放比例选择100%, 点击保存(我使用的虚拟机没有该选项, 就在红框的位置. 保存在夜灯右边位置, 修改后会出现)</p>
-<p><img src="/img/post/202405/202405051043419.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051043419.png" title alt data-align="center"></p>
 <p>保存之后再选择安装Ubuntu就可以了</p>
 <hr>
 <h3 id="开始安装"><a href="#开始安装" class="headerlink" title="开始安装"></a>开始安装</h3><p>键盘布局默认即可</p>
-<p><img src="/img/post/202405/202405051043870.png" title="" alt="" data-align="center"></p>
-<p><img src="/img/post/202405/202405051043577.png" title="" alt="" data-align="center"></p>
-<p><img src="/img/post/202405/202405051043254.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051043870.png" title alt data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051043577.png" title alt data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051043254.png" title alt data-align="center"></p>
 <hr>
 <p>双系统手动分区</p>
-<p><img src="/img/post/202405/202405051043453.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051043453.png" title alt data-align="center"></p>
 <p>建议分区</p>
 <ol>
 <li>创建交换空间</li>
@@ -806,12 +686,12 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
 <p>挂载点: /home</p>
 </blockquote>
 <p>最终效果如下</p>
-<p><img src="/img/post/202405/202405051043246.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051043246.png" title alt data-align="center"></p>
 <hr>
 <p> 点击<strong>现在安装</strong>  —&gt; <strong>继续</strong>, 时区选择上海, 点击<strong>继续</strong></p>
-<p><img src="/img/post/202405/202405051043725.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051043725.png" title alt data-align="center"></p>
 <p>用户信息按自己的填写即可. 可以勾选自动登录, 每次开机不需要选择用户, 自动登录.</p>
-<p><img src="/img/post/202405/202405051043618.png" title="" alt="" data-align="center"></p>
+<p><img src="/2024/05/deb026e9.htm/post/202405/202405051043618.png" title alt data-align="center"></p>
 <p>点击<strong>继续</strong>即可安装, 安装之后选择重启, 根据提示会让你拔掉U盘, 按ENTER(回车键)</p>
 <hr>
 <p>至此双系统就安装好了. 每次启动时, 系统会提示选择Ubuntu还是Windows系统一般是4个选项</p>
@@ -891,28 +771,28 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
     <content><![CDATA[<h2 id="1-下载安装包"><a href="#1-下载安装包" class="headerlink" title="1. 下载安装包"></a>1. 下载安装包</h2><p>打开<a href="https://git-scm.com/downloads">Git官网</a>下载安装包, 嫌速度慢可以使用下面的链接下载</p>
 <p>蓝奏云(不限速)：<a href="https://wwt.lanzoul.com/b00rn0x92b密码:gdo1">https://wwt.lanzoul.com/b00rn0x92b密码:gdo1</a></p>
 <p>百度云(会员)：<a href="https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111提取码">https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111提取码</a>: 1111</p>
-<p><img src="/img/post/202405/202405071352070.png" alt="image-20240507135225158"></p>
-<p><img src="/img/post/202405/202405071355950.png" alt="image-20240507135511255"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071352070.png" alt="image-20240507135225158"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071355950.png" alt="image-20240507135511255"></p>
 <p>下载完成后，双击打开安装包</p>
-<h2 id="2-开始安装"><a href="#2-开始安装" class="headerlink" title="2. 开始安装"></a>2. 开始安装</h2><p><img src="/img/post/202405/202405071437531.png" alt="image-20240507143702625"></p>
-<p><img src="/img/post/202405/202405071438756.png" alt="image-20240507143826832"></p>
-<p><img src="/img/post/202405/202405071442644.png" alt="image-20240507144255668"></p>
-<p><img src="/img/post/202405/202405071443653.png" alt="image-20240507144334722"></p>
-<p><img src="/img/post/202405/202405071446143.png" alt="image-20240507144644121"></p>
-<p><img src="/img/post/202405/202405071449923.png" alt="image-20240507144955949"></p>
-<p><img src="/img/post/202405/202405071451220.png" alt="image-20240507145114067"></p>
-<p><img src="/img/post/202405/202405071455747.png" alt="image-20240507145517679"></p>
-<p><img src="/img/post/202405/202405071456870.png" alt="image-20240507145603852"></p>
-<p><img src="/img/post/202405/202405071502727.png" alt="image-20240507150213743"></p>
-<p><img src="/img/post/202405/202405071504531.png" alt="image-20240507150434447"></p>
-<p><img src="/img/post/202405/202405071515269.png" alt="image-20240507151557254"></p>
-<p><img src="/img/post/202405/202405071518820.png" alt="image-20240507151819793"></p>
-<p><img src="/img/post/202405/202405071520714.png" alt="image-20240507152039835"></p>
+<h2 id="2-开始安装"><a href="#2-开始安装" class="headerlink" title="2. 开始安装"></a>2. 开始安装</h2><p><img src="/2024/05/cbf708ce.htm/post/202405/202405071437531.png" alt="image-20240507143702625"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071438756.png" alt="image-20240507143826832"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071442644.png" alt="image-20240507144255668"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071443653.png" alt="image-20240507144334722"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071446143.png" alt="image-20240507144644121"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071449923.png" alt="image-20240507144955949"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071451220.png" alt="image-20240507145114067"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071455747.png" alt="image-20240507145517679"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071456870.png" alt="image-20240507145603852"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071502727.png" alt="image-20240507150213743"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071504531.png" alt="image-20240507150434447"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071515269.png" alt="image-20240507151557254"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071518820.png" alt="image-20240507151819793"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071520714.png" alt="image-20240507152039835"></p>
 <p>点击安装, 等待安装完成</p>
-<p><img src="/img/post/202405/202405071523934.png" alt="image-20240507152351881"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071523934.png" alt="image-20240507152351881"></p>
 <h2 id="3-配置Git"><a href="#3-配置Git" class="headerlink" title="3. 配置Git"></a>3. 配置Git</h2><h3 id="1-配置用户信息"><a href="#1-配置用户信息" class="headerlink" title="(1). 配置用户信息"></a>(1). 配置用户信息</h3><p>输入以下命令配置用户信息, 修改成自己的信息</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;liudh&quot;</span><br><span class="line">git config --global user.email &quot;xxxxxxx@xx.com&quot;</span><br></pre></td></tr></table></figure>
-<p><img src="/img/post/202405/202405071525435.png" alt="image-20240507152545795"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071525435.png" alt="image-20240507152545795"></p>
 <p>可以使用以下命令查看配置信息</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config user.name</span><br><span class="line">git config user.email</span><br></pre></td></tr></table></figure>
 <h3 id="2-设置代理-需自备代理"><a href="#2-设置代理-需自备代理" class="headerlink" title="(2). 设置代理(需自备代理)"></a>(2). 设置代理(需自备代理)</h3><p>在向<code>Github</code>推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理</p>
@@ -924,7 +804,7 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
 <blockquote>
 <p>具体地址和端口在系统代理的位置查看</p>
 </blockquote>
-<p><img src="/img/post/202405/202405071538016.png" alt="image-20240507153841415"></p>
+<p><img src="/2024/05/cbf708ce.htm/post/202405/202405071538016.png" alt="image-20240507153841415"></p>
 <p>如果不想使用代理, 使用以下命令取消</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global --unset http.proxy</span><br><span class="line">git config --global --unset https.proxy</span><br></pre></td></tr></table></figure>
 <hr>
@@ -1165,31 +1045,31 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
 </li>
 </ol>
 <h2 id="1-安装node-js"><a href="#1-安装node-js" class="headerlink" title="1. 安装node.js"></a>1. 安装node.js</h2><p>打开node.js官网<a href="https://nodejs.org/en">Node.js — Run JavaScript Everywhere (nodejs.org)</a>点击下载</p>
-<p><img src="/img/post/202406/16/20240616123133.png" alt="image-20240616123122227" style="zoom: 25%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616123133.png" alt="image-20240616123122227" style="zoom: 25%;"></p>
 <p>打开安装至<strong>默认位置</strong>即可</p>
-<p><img src="/img/post/202406/16/20240616133443.png" alt="image-20240616133442122" style="zoom:50%;" /></p>
-<p><img src="/img/post/202406/16/20240616133515.png" alt="image-20240616133513544" style="zoom: 50%;" /></p>
-<p><img src="/img/post/202406/16/20240616134516.png" alt="image-20240616134514733" style="zoom:50%;" /></p>
-<p><img src="/img/post/202406/16/20240616134543.png" alt="image-20240616134540912" style="zoom:50%;" /></p>
-<p><img src="/img/post/202406/16/20240616134642.png" alt="image-20240616134640367" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616133443.png" alt="image-20240616133442122" style="zoom:50%;"></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616133515.png" alt="image-20240616133513544" style="zoom: 50%;"></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616134516.png" alt="image-20240616134514733" style="zoom:50%;"></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616134543.png" alt="image-20240616134540912" style="zoom:50%;"></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616134642.png" alt="image-20240616134640367" style="zoom:50%;"></p>
 <p>自动安装一些工具, 可以选上, 然后安装. 等待安装完成</p>
-<p><img src="/img/post/202406/16/20240616134808.png" alt="image-20240616134806827" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616134808.png" alt="image-20240616134806827" style="zoom:50%;"></p>
 <p>点击完成, 会弹出一些窗口</p>
-<p><img src="/img/post/202406/16/20240616134924.png" alt="image-20240616134922113" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616134924.png" alt="image-20240616134922113" style="zoom:50%;"></p>
 <p>按<strong>任意键</strong>继续即可, 等待安装完成. </p>
-<p><img src="/img/post/202406/16/20240616135112.png" alt="image-20240616135110217" style="zoom:33%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616135112.png" alt="image-20240616135110217" style="zoom:33%;"></p>
 <p>过程较长, 耐心等待安装完成. </p>
-<p><img src="/img/post/202406/16/20240616214419.png" alt="image-20240616214328211" style="zoom: 33%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/16/20240616214419.png" alt="image-20240616214328211" style="zoom: 33%;"></p>
 <h2 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2. 安装Git"></a>2. 安装Git</h2><p>查看往期教程<a href="https://fireflye.asia/2024/05/cbf708ce.html">Git 安装及配置教程 | Firefly Blog | 萤火虫博客 (fireflye.asia)</a></p>
 <h2 id="3-安装Hexo"><a href="#3-安装Hexo" class="headerlink" title="3. 安装Hexo"></a>3. 安装Hexo</h2><p>完成上面的安装后, 可以使用以下命令检查是否安装成功.</p>
 <p>打开<code>git bash</code>,输入</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">node -v</span><br><span class="line">npm -v</span><br><span class="line">git -v</span><br></pre></td></tr></table></figure>
 <p>显示版本信息, 说明安装成功.</p>
-<p><img src="/img/post/202406/30/20240630103342.png" alt="image-20240630103326908"></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630103342.png" alt="image-20240630103326908"></p>
 <p>之后再输入以下命令安装hexo</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install -g hexo-cli</span><br></pre></td></tr></table></figure>
 <p>等待安装完成, 网络问题请自学寻找代理, 或寻找可用镜像源. 显示以下信息说明安装完成</p>
-<p><img src="/img/post/202406/30/20240630103804.png" alt="image-20240630103802987" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630103804.png" alt="image-20240630103802987" style="zoom:50%;"></p>
 <p>还可以使用以下命令来查看安装情况</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo -v</span><br></pre></td></tr></table></figure>
 <p>若显示版本信息, 说明已成功安装</p>
@@ -1198,70 +1078,70 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
 <p>或者 直接打开<code>git bash</code> 输入<code>cd f:\web</code>. 路径替换为自己的路径. </p>
 </blockquote>
 <p>打开后会显示(我使用的虚拟机放在了桌面. 不建议这样做. 文件夹需要妥善保存.)</p>
-<p><img src="/img/post/202406/30/20240630111136.png" alt="image-20240630111134467" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630111136.png" alt="image-20240630111134467" style="zoom:50%;"></p>
 <p>输入以下命令初始化hexo(一定要在刚刚的文件夹内-路径显示)</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo init</span><br></pre></td></tr></table></figure>
 <p>保证网络畅通, 耐心等待初始化完成. </p>
-<p><img src="/img/post/202406/30/20240630111546.png" alt="image-20240630111544780" style="zoom: 67%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630111546.png" alt="image-20240630111544780" style="zoom: 67%;"></p>
 <p>到此, hexo初始化完成. 下面配置github仓库. </p>
 <h2 id="4-创建Github仓库"><a href="#4-创建Github仓库" class="headerlink" title="4. 创建Github仓库"></a>4. 创建Github仓库</h2><p>打开<a href="https://github.com/">Github</a>注册一个自己的账号</p>
-<p><img src="/img/post/202406/30/20240630135454.png" alt="image-20240630104651171" style="zoom: 33%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630135454.png" alt="image-20240630104651171" style="zoom: 33%;"></p>
 <p>输入自己的邮箱, 密码等</p>
-<p><img src="/img/post/202406/30/20240630105025.png" alt="image-20240630104946194" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630105025.png" alt="image-20240630104946194" style="zoom:50%;"></p>
 <p>用户名建议设置简单易记一些, 待会创建的网站域名与自己的用户名有关</p>
-<p><img src="/img/post/202406/30/20240630105356.png" alt="image-20240630105354804" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630105356.png" alt="image-20240630105354804" style="zoom:50%;"></p>
 <p>总览</p>
-<p><img src="/img/post/202406/30/20240630105538.png" alt="image-20240630105536614" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630105538.png" alt="image-20240630105536614" style="zoom:50%;"></p>
 <p>点击继续, 通过验证码和邮箱数字验证就可以注册成功.</p>
-<p><img src="/img/post/202406/30/20240630110321.png" alt="image-20240630110310020" style="zoom: 25%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630110321.png" alt="image-20240630110310020" style="zoom: 25%;"></p>
 <p>点击左侧的绿色按钮新建仓库<code>Create repository</code>. </p>
-<p><img src="/img/post/202406/30/20240630112222.png" alt="image-20240630112211721" style="zoom: 33%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630112222.png" alt="image-20240630112211721" style="zoom: 33%;"></p>
 <p>到此, 仓库已经创建完成</p>
 <hr>
 <p>接下来还需要配置一下上传的密钥对</p>
 <p>打开<code>git bash</code>, 输入以下命令 (“email”替换为自己的邮箱)</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -b 4096 -C <span class="string">&quot;email&quot;</span></span><br></pre></td></tr></table></figure>
 <p>然后按三下回车键, 即均保持默认不设置密码. 也可根据自己需要修改</p>
-<p><img src="/img/post/202406/30/20240630113042.png" alt="image-20240630113030731" style="zoom: 67%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630113042.png" alt="image-20240630113030731" style="zoom: 67%;"></p>
 <blockquote>
 <p>第一次是保存位置</p>
 <p>第二次是密码</p>
 <p>第三次是重复密码</p>
 </blockquote>
 <p>创建完成后, 打开保存的目录. 默认在<code>C:\Users\用户名\.ssh</code></p>
-<p><img src="/img/post/202406/30/20240630113309.png" alt="image-20240630113306685" style="zoom: 50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630113309.png" alt="image-20240630113306685" style="zoom: 50%;"></p>
 <p>第一个是私钥, 自己一定要保存好, 不能给别人.</p>
 <p>将第二个pub结尾的用<code>记事本</code>打开, 将里面的内容复制出来.</p>
-<p><img src="/img/post/202406/30/20240630113557.png" alt="image-20240630113555419" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630113557.png" alt="image-20240630113555419" style="zoom:50%;"></p>
 <p>复制好后, 返回Github</p>
-<p><img src="/img/post/202406/30/20240630113804.png" alt="image-20240630113747970" style="zoom: 33%;" /></p>
-<p><img src="/img/post/202406/30/20240630113926.png" alt="image-20240630113916419" style="zoom:33%;" /></p>
-<p><img src="/img/post/202406/30/20240630114019.png" alt="image-20240630114006001" style="zoom:33%;" /></p>
-<p><img src="/img/post/202406/30/20240630114156.png" alt="image-20240630114146715" style="zoom:33%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630113804.png" alt="image-20240630113747970" style="zoom: 33%;"></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630113926.png" alt="image-20240630113916419" style="zoom:33%;"></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630114019.png" alt="image-20240630114006001" style="zoom:33%;"></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630114156.png" alt="image-20240630114146715" style="zoom:33%;"></p>
 <p>密钥添加完成</p>
 <h2 id="5-安装上传插件"><a href="#5-安装上传插件" class="headerlink" title="5. 安装上传插件"></a>5. 安装上传插件</h2><p>打开<code>git bash</code></p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
-<p><img src="/img/post/202406/30/20240630125113.png" alt="image-20240630125111158" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630125113.png" alt="image-20240630125111158" style="zoom:50%;"></p>
 <p>安装完成</p>
 <h2 id="6-更改配置"><a href="#6-更改配置" class="headerlink" title="6. 更改配置"></a>6. 更改配置</h2><p>打开网站文件夹</p>
-<p><img src="/img/post/202406/30/20240630125231.png" alt="image-20240630125228295" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630125231.png" alt="image-20240630125228295" style="zoom:50%;"></p>
 <p>用记事本打开<code>_config.yml</code></p>
-<p><img src="/img/post/202406/30/20240630125343.png" alt="image-20240630125338327" style="zoom: 33%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630125343.png" alt="image-20240630125338327" style="zoom: 33%;"></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 配置说明, 不要复制. 按说明修改</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># Hexo Configuration</span><br><span class="line">## Docs: https://hexo.io/docs/configuration.html</span><br><span class="line">## Source: https://github.com/hexojs/hexo/</span><br><span class="line"></span><br><span class="line"># Site</span><br><span class="line">title: Hexo  # 网站的大标题</span><br><span class="line">subtitle: &#x27;&#x27;  # 副标题</span><br><span class="line">description: &#x27;&#x27; # 描述</span><br><span class="line">keywords:  # 网站的关键词</span><br><span class="line">author: John Doe # 作者</span><br><span class="line">language: en  # 语言 中文 zh-CN</span><br><span class="line">timezone: &#x27;&#x27; # 时区 Asia/Shanghai</span><br><span class="line"></span><br><span class="line"># URL</span><br><span class="line">## Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;</span><br><span class="line">url: https://fireflyblog.github.io # 改成自己网址 https://用户名.github.io # 注意是https</span><br><span class="line">permalink: :year/:month/:day/:title/  # 其他默认转到最后一项</span><br><span class="line">permalink_defaults:</span><br><span class="line">pretty_urls:</span><br><span class="line">  trailing_index: true # Set to false to remove trailing &#x27;index.html&#x27; from permalinks</span><br><span class="line">  trailing_html: true # Set to false to remove trailing &#x27;.html&#x27; from permalinks</span><br><span class="line"></span><br><span class="line"># Directory</span><br><span class="line">source_dir: source</span><br><span class="line">public_dir: public</span><br><span class="line">tag_dir: tags</span><br><span class="line">archive_dir: archives</span><br><span class="line">category_dir: categories</span><br><span class="line">code_dir: downloads/code</span><br><span class="line">i18n_dir: :lang</span><br><span class="line">skip_render:</span><br><span class="line"></span><br><span class="line"># Writing</span><br><span class="line">new_post_name: :title.md # File name of new posts</span><br><span class="line">default_layout: post</span><br><span class="line">titlecase: false # Transform title into titlecase</span><br><span class="line">external_link:</span><br><span class="line">  enable: true # Open external links in new tab</span><br><span class="line">  field: site # Apply to the whole site</span><br><span class="line">  exclude: &#x27;&#x27;</span><br><span class="line">filename_case: 0</span><br><span class="line">render_drafts: false</span><br><span class="line">post_asset_folder: false</span><br><span class="line">relative_link: false</span><br><span class="line">future: true</span><br><span class="line">syntax_highlighter: highlight.js</span><br><span class="line">highlight:</span><br><span class="line">  line_number: true</span><br><span class="line">  auto_detect: false</span><br><span class="line">  tab_replace: &#x27;&#x27;</span><br><span class="line">  wrap: true</span><br><span class="line">  hljs: false</span><br><span class="line">prismjs:</span><br><span class="line">  preprocess: true</span><br><span class="line">  line_number: true</span><br><span class="line">  tab_replace: &#x27;&#x27;</span><br><span class="line"></span><br><span class="line"># Home page setting</span><br><span class="line"># path: Root path for your blogs index page. (default = &#x27;&#x27;)</span><br><span class="line"># per_page: Posts displayed per page. (0 = disable pagination)</span><br><span class="line"># order_by: Posts order. (Order by date descending by default)</span><br><span class="line">index_generator:</span><br><span class="line">  path: &#x27;&#x27;</span><br><span class="line">  per_page: 10</span><br><span class="line">  order_by: -date</span><br><span class="line"></span><br><span class="line"># Category &amp; Tag</span><br><span class="line">default_category: uncategorized</span><br><span class="line">category_map:</span><br><span class="line">tag_map:</span><br><span class="line"></span><br><span class="line"># Metadata elements</span><br><span class="line">## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta</span><br><span class="line">meta_generator: true</span><br><span class="line"></span><br><span class="line"># Date / Time format</span><br><span class="line">## Hexo uses Moment.js to parse and display date</span><br><span class="line">## You can customize the date format as defined in</span><br><span class="line">## http://momentjs.com/docs/#/displaying/format/</span><br><span class="line">date_format: YYYY-MM-DD</span><br><span class="line">time_format: HH:mm:ss</span><br><span class="line">## updated_option supports &#x27;mtime&#x27;, &#x27;date&#x27;, &#x27;empty&#x27;</span><br><span class="line">updated_option: &#x27;mtime&#x27;</span><br><span class="line"></span><br><span class="line"># Pagination</span><br><span class="line">## Set per_page to 0 to disable pagination</span><br><span class="line">per_page: 10</span><br><span class="line">pagination_dir: page</span><br><span class="line"></span><br><span class="line"># Include / Exclude file(s)</span><br><span class="line">## include:/exclude: options only apply to the &#x27;source/&#x27; folder</span><br><span class="line">include:</span><br><span class="line">exclude:</span><br><span class="line">ignore:</span><br><span class="line"></span><br><span class="line"># Extensions</span><br><span class="line">## Plugins: https://hexo.io/plugins/</span><br><span class="line">## Themes: https://hexo.io/themes/</span><br><span class="line">theme: landscape</span><br><span class="line"></span><br><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line">deploy:</span><br><span class="line">  type: &#x27;&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>这一部分单拿出来修改(注意缩进为2个空格, 冒号后面一个空格)</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repository:</span><br><span class="line">  branch: main</span><br></pre></td></tr></table></figure>
 <p>仓库地址在<a href="https://github.com/dashboard">Github</a>, 打开找到自己的仓库</p>
-<p><img src="/img/post/202406/30/20240630131332.png" alt="image-20240630131146011" style="zoom: 33%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630131332.png" alt="image-20240630131146011" style="zoom: 33%;"></p>
 <p>复制好后粘贴到仓库参数后面, 完整的配置修改如下</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repository: git@github.com:fireflyblog/fireflyblog.github.io.git #替换为自己的链接</span><br><span class="line">  branch: main</span><br></pre></td></tr></table></figure>
 <h2 id="7-上传网页"><a href="#7-上传网页" class="headerlink" title="7. 上传网页"></a>7. 上传网页</h2><p>一切配置好之后, 打开网站文件夹. 右键选择<code>open git bash here</code></p>
 <p>输入以下命令生成和上传网页</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-<p><img src="/img/post/202406/30/20240630132526.png" alt="image-20240630132524270" style="zoom:50%;" /></p>
-<p><img src="/img/post/202406/30/20240630132738.png" alt="image-20240630132736169" style="zoom:50%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630132526.png" alt="image-20240630132524270" style="zoom:50%;"></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630132738.png" alt="image-20240630132736169" style="zoom:50%;"></p>
 <p>上传成功之后, 等待一会. 就可以打开自己网页查看了(替换自己的用户名)</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://fireflyblog.github.io</span><br></pre></td></tr></table></figure>
-<p><img src="/img/post/202406/30/20240630133040.png" alt="image-20240630132950741" style="zoom:33%;" /></p>
+<p><img src="/2024/06/4a79202d.htm/post/202406/30/20240630133040.png" alt="image-20240630132950741" style="zoom:33%;"></p>
 <p>至此, 网站已经搭建完成</p>
 <hr>
 <p>还有一些其他常使用的命令</p>
@@ -1294,10 +1174,10 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
     <url>/2024/07/af38f644.html</url>
     <content><![CDATA[<h2 id="1-物质点法"><a href="#1-物质点法" class="headerlink" title="1. 物质点法"></a>1. 物质点法</h2><p>​    物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到计算网格得到, 求解后将计算网格结点的运动量映射回各质点, 从而得到这些质点在下一时刻的运动量(对流计算步). </p>
 <p>​    物质点法是一种完全的拉格朗日质点类方法, 在每步中质点和计算网格没有相对运动, 避免了欧拉法因非线性对流项产生的数值困难. 质点已经携带了连续体的所有物质信息, 因此物质点法在每个时间步结束时抛弃变形后的计算网格, 在新的时间步中仍可以采用未变形的计算网格. </p>
-<p><img src="/img/post/202407/12/20240712103901.png" alt="image-20240712103857244" style="zoom:33%;" /></p>
+<p><img src="/2024/07/af38f644.htm/post/202407/12/20240712103901.png" alt="image-20240712103857244" style="zoom:33%;"></p>
 <p>​    在并行算法方面, 主要基于消息传递模型(MPI)和信息共享模型(OpenMP)实现. </p>
 <h2 id="2-控制方程"><a href="#2-控制方程" class="headerlink" title="2. 控制方程"></a>2. 控制方程</h2><h3 id="2-1-物体运动和变形的描述"><a href="#2-1-物体运动和变形的描述" class="headerlink" title="2.1 物体运动和变形的描述"></a>2.1 物体运动和变形的描述</h3><p>​    物体在 t = 0 时刻所占据的空间区域称为<code>初始构形</code>. 物体在 t 时刻所占据的空间区域成为<code>现时构形</code>. 为了度量物体的运动, 需要选取一个特定的构形作为基准, 称为<code>参考构形</code>. </p>
-<p><img src="/img/post/202407/12/20240712105211.png" alt="image-20240712105208694" style="zoom: 33%;" /></p>
+<p><img src="/2024/07/af38f644.htm/post/202407/12/20240712105211.png" alt="image-20240712105208694" style="zoom: 33%;"></p>
 <p>​    在参考构形中质点的矢径 $X$ 可以表示为</p>
 <script type="math/tex; mode=display">
 \begin{equation}
@@ -1380,7 +1260,7 @@ J = e_{ijk}\frac{\partial x_i}{\partial X_1} \frac{\partial x_j}{\partial X_2} \
 e_{plm}J = e_{ijk}\frac{\partial x_i}{\partial X_p} \frac{\partial x_j}{\partial X_l} \frac{\partial x_j}{\partial X_m}
 \end{equation}</script><p>设初始构形中的平行六面体体元的三个线元分别是 $dX$, $\delta X$ 和 $\Delta X$, 它们在现时构形中分别为 $dx$, $\delta x$ 和 $\Delta x$, 且</p>
 <script type="math/tex; mode=display">
-dx_i = \frac{\partial x_i}{\partial X_p}dX_p,\ \delta x_j = \frac{\partial x_j}{\partial X_l}\delta X_l,\ \Delta x_k = \frac{\partial x_k}{\partial X_m} \Delta X_m</script><p><img src="/img/post/202407/14/20240714111451.png" alt="image-20240714111448284" style="zoom:50%;" /></p>
+dx_i = \frac{\partial x_i}{\partial X_p}dX_p,\ \delta x_j = \frac{\partial x_j}{\partial X_l}\delta X_l,\ \Delta x_k = \frac{\partial x_k}{\partial X_m} \Delta X_m</script><p><img src="/2024/07/af38f644.htm/post/202407/14/20240714111451.png" alt="image-20240714111448284" style="zoom:50%;"></p>
 <p>现时构形中由 $dx$, $\delta x$ 和 $\Delta x$ 构成的六面体体元的体积为</p>
 <script type="math/tex; mode=display">
 \begin{equation}
@@ -1459,7 +1339,7 @@ t_i^{(n)} = \lim_{\Delta A \rightarrow 0} \frac{\Delta T_i}{\Delta A} = \frac{dT
 \begin{equation}
 \label{eq227}
 t_i^{(n)} = \sigma_{ki}n_k 
-\end{equation}</script><p><img src="/img/post/202407/21/20240721113930.png" alt="image-20240721113927574" style="zoom:50%;" /></p>
+\end{equation}</script><p><img src="/2024/07/af38f644.htm/post/202407/21/20240721113930.png" alt="image-20240721113927574" style="zoom:50%;"></p>
 <p>​                                 (箭头朝外)</p>
 <p>由现时构形中垂直于坐标轴的三个面元上的应力矢量的九个分量 $\sigma_{ij}$ 定义了一个张量, 称为<strong>柯西应力张量</strong>. 由微元体关于力矩的平衡条件可以证明柯西应力张量是对称的, 即</p>
 <script type="math/tex; mode=display">
@@ -1470,7 +1350,7 @@ t_i^{(n)} = \sigma_{ki}n_k
 <h3 id="2-5-焦曼应力率"><a href="#2-5-焦曼应力率" class="headerlink" title="2.5 焦曼应力率"></a>2.5 焦曼应力率</h3><blockquote>
 <p> 考察一承受单向应力 $\sigma$ 作用并绕 $x_3$ 轴作刚体转动的杆, 如图2.4所示. 在杆平行于 $x_1$ 的瞬时，$\sigma_{11} = \sigma$, $\sigma_{22} = 0$, 而当杆转动到平行于 $x_2$ 轴的位置时, $\sigma_{11} = 0$, $\sigma_{22} = \sigma$. 相对于在空间固定的坐标系 $Px_1x_2$ 而言, 虽然杆内应力状态并未变化, 但刚体转动改变了柯西应力张量的分量, 导致柯西应力 $\sigma_{ij}$ 的变化率,无论是空间导数 $\partial \sigma_{ij}/\partial t$ 还是物质导数 $\dot{\sigma}_{ij}$ 都不等于零. 因此在本构方程中使用与变形率 $D_{ij}$ 相关联的应力率时, 无论 $\partial \sigma_{ij}/\partial t$ 还是 $\dot{\sigma}_{ij}$ 都不是一个适当的度量. 用于本构方程中的应力率必须不受刚体转动的影响, 即必须是客观张量. </p>
 </blockquote>
-<p><img src="/img/post/202407/21/20240721151003.png" alt="image-20240721151001362" style="zoom: 33%;" /></p>
+<p><img src="/2024/07/af38f644.htm/post/202407/21/20240721151003.png" alt="image-20240721151001362" style="zoom: 33%;"></p>
 <blockquote>
 <p>考虑包含 $P$ 点的一个作瞬时转动的物质元, 动坐标系 $P\bar{x}_1\bar{x}_2\bar{x}_3$ 与物质元固连, 跟随物质元一起作瞬时刚体转动. 虽然柯西应力张量在空间固定坐标系 $Px_1x_2x_3$ 中的变化率不为零, 但它在动坐标系 $P\bar{x}_1\bar{x}_2\bar{x}_3$ 中的变化率为零, 是一个客观张量. </p>
 </blockquote>
@@ -1484,7 +1364,7 @@ dv_i = \Omega_{ij}d\bar{x}_j
 \begin{equation}
 \label{eq230}
 dx_i = d\bar{x}_i + dv_i dt = (\delta_{ij} + \Omega_{ij} dt)d\bar{x}_j
-\end{equation}</script><p><img src="/img/post/202407/21/20240721154214.png" alt="image-20240721154212456" style="zoom:50%;" /></p>
+\end{equation}</script><p><img src="/2024/07/af38f644.htm/post/202407/21/20240721154214.png" alt="image-20240721154212456" style="zoom:50%;"></p>
 <p>由式($\ref{eq230}$)可知, 动坐标系和固定坐标系之间的坐标变换的变换系数为</p>
 <script type="math/tex; mode=display">
 \begin{equation}
@@ -1525,6 +1405,126 @@ c_{ij} = \delta_{ij} + \Omega_{ij}dt
       </tags>
   </entry>
   <entry>
+    <title>学习笔记——流体力学基本方程 (一)</title>
+    <url>/2024/04/98e90823.html</url>
+    <content><![CDATA[<h2 id="学习视频"><a href="#学习视频" class="headerlink" title="学习视频"></a>学习视频</h2><h3 id="Bilibili-流体力学基础科普-北斗导航Compass"><a href="#Bilibili-流体力学基础科普-北斗导航Compass" class="headerlink" title="Bilibili-流体力学基础科普-北斗导航Compass"></a><a href="https://www.bilibili.com/video/BV1Ty4y1M7Fx/?share_source=copy_web&amp;vd_source=374d2addde246f63ad679abfc5ab707c">Bilibili-流体力学基础科普-北斗导航Compass</a></h3><p>参考教材：<a href="https://pan.baidu.com/s/1fbj6e9Xk6LmWW2Vjmu0oIw?pwd=eavw">Fundamentals of AERODYNAMICS by John D. Anderson, Jr.</a></p>
+<h2 id="一、基本概念"><a href="#一、基本概念" class="headerlink" title="一、基本概念"></a>一、基本概念</h2><h3 id="1-什么是流体？"><a href="#1-什么是流体？" class="headerlink" title="1. 什么是流体？"></a>1. 什么是流体？</h3><ul>
+<li>对比固体和流体的区别</li>
+</ul>
+<blockquote>
+<p>对于固体剪切力与<strong>形变量</strong>成正比</p>
+<p>对于流体剪切力与<strong>形变量的时间变化率</strong>成正比</p>
+</blockquote>
+<ul>
+<li>解释流体为什么能流起来？</li>
+</ul>
+<blockquote>
+<p>对于流体如果流体中的<strong>剪切力</strong>是常数，则其形变量的时间变化率也应为常数，即流体一直发生形变（流动）</p>
+</blockquote>
+<ul>
+<li>流体在抗压时可以静止，在抗剪时一定在运动</li>
+</ul>
+<h3 id="2-流体质点"><a href="#2-流体质点" class="headerlink" title="2. 流体质点"></a>2. 流体质点</h3><p>将流体看作无穷多的质点的结合，符合连续介质假设</p>
+<h3 id="3-描述流体的物理量"><a href="#3-描述流体的物理量" class="headerlink" title="3. 描述流体的物理量"></a>3. 描述流体的物理量</h3><blockquote>
+<p>包括速度、密度、压强、温度等等</p>
+</blockquote>
+<ul>
+<li>压强(压力) Pressure 单位Pa</li>
+</ul>
+<script type="math/tex; mode=display">
+P=\frac{F}{A}\ \ \ \ 当A\rightarrow0时\ \ \ P=frac{dF}{dA}</script><ul>
+<li>密度 单位 $kg/m^3$ </li>
+</ul>
+<script type="math/tex; mode=display">
+\rho=\frac{m}{V}\ \ \ 当V\rightarrow0时\ \ \ \rho=\frac{dm}{dV}</script><ul>
+<li>温度 单位K</li>
+</ul>
+<script type="math/tex; mode=display">
+0°C=273.15K</script><h3 id="4-描述流体运动的方法"><a href="#4-描述流体运动的方法" class="headerlink" title="4. 描述流体运动的方法"></a>4. 描述流体运动的方法</h3><ul>
+<li>拉格朗日法</li>
+</ul>
+<blockquote>
+<p>以质点为研究对象,跟踪质点的运动</p>
+</blockquote>
+<ul>
+<li>欧拉法</li>
+</ul>
+<blockquote>
+<p>以确定空间为研究对象,研究某一空间点不同时间下,在此空间点的质点的运动</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">积分方法</th>
+<th style="text-align:center">微分方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">拉格朗日法</td>
+<td style="text-align:center">一坨流体</td>
+<td style="text-align:center">质点</td>
+</tr>
+<tr>
+<td style="text-align:center">欧拉法</td>
+<td style="text-align:center">控制体</td>
+<td style="text-align:center">空间点</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="二、基本方程"><a href="#二、基本方程" class="headerlink" title="二、基本方程"></a>二、基本方程</h2><h3 id="1-质量守恒方程-连续方程"><a href="#1-质量守恒方程-连续方程" class="headerlink" title="1. 质量守恒方程(连续方程)"></a>1. 质量守恒方程(连续方程)</h3><p> <strong>控制体内流体总质量的增量 = 流入控制体的流体质量</strong></p>
+<p>欧拉法连续方程的微分形式</p>
+<script type="math/tex; mode=display">
+\frac{\partial \rho}{\partial t}+\frac{\partial (\rho u)}{\partial x}+\frac{\partial (\rho v)}{\partial y}+\frac{\partial (\rho w)}{\partial z}=0</script><p>其中 $\rho,u,v,w$ 均是 $x,y,z,t$ 的函数,如 $\rho(x,y,z,t)$ </p>
+<p><strong>方程左边:</strong> 单位时间 控制体内流体总质量的增量(为负数就是减量)</p>
+<p>首先,表示总质量</p>
+<script type="math/tex; mode=display">
+m={\iiint}_{cv}\rho dV</script><p>对时间t求偏导,得</p>
+<script type="math/tex; mode=display">
+\frac{\partial m}{\partial t}=\frac{\partial ({\iiint}_{cv}\rho dV)}{\partial t}={\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV</script><p><strong>方程右边:</strong> 单位时间 流入控制体的流体质量</p>
+<p><img src="/2024/04/98e90823.htm/post/202405/202405051038892.png" alt style="zoom:50%;" center></p>
+<blockquote>
+<p>质量=密度*体积</p>
+</blockquote>
+<script type="math/tex; mode=display">
+h=v*\Delta t\cos\theta</script><script type="math/tex; mode=display">
+V=Sh=Sv*\Delta t\cos\theta</script><p>则 $\Delta t$ 时间范围内</p>
+<script type="math/tex; mode=display">
+m=\rho V=\rho Sv\Delta t\cos\theta</script><script type="math/tex; mode=display">
+m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
+<script type="math/tex; mode=display">
+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>规定控制体表面的外法线方向为正,则方程右边应为添加负号</p>
+<p>即</p>
+<script type="math/tex; mode=display">
+-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>则可得到积分形式的质量守恒方程</p>
+<script type="math/tex; mode=display">
+{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV=-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}</script><p>也即</p>
+<script type="math/tex; mode=display">
+{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}=0</script><p>根据高斯定理</p>
+<script type="math/tex; mode=display">
+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}={\iiint}_{cv}[\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV</script><p>则积分形式的质量守恒方程可以合并为</p>
+<script type="math/tex; mode=display">
+{\iiint}_{cv}[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV=0</script><p>可得微分形式的质量守恒方程</p>
+<script type="math/tex; mode=display">
+\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}=0</script><p>用哈密顿算子表示,可写为</p>
+<script type="math/tex; mode=display">
+\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})=0</script><p>下期内容：</p>
+<h3 id="2-动量守恒方程"><a href="#2-动量守恒方程" class="headerlink" title="2. 动量守恒方程"></a>2. 动量守恒方程</h3><p> <strong>控制体内流体总动量的增量 = 流入控制体的流体动量 + 外界的力产生的动量增量</strong></p>
+<h3 id="3-能量守恒方程"><a href="#3-能量守恒方程" class="headerlink" title="3. 能量守恒方程"></a>3. 能量守恒方程</h3><p> <strong>控制体内流体的总能量的增量 = 流入控制体的流体能量 + 外界的作用产生的能量增量</strong></p>
+]]></content>
+      <categories>
+        <category>流体力学</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>流体力学</tag>
+        <tag>质量守恒方程</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Mavic 3 classic屏控航线(航点)飞行教程</title>
     <url>/2024/08/78788d45.html</url>
     <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>遥控手柄(带屏)</p>
@@ -1532,31 +1532,31 @@ c_{ij} = \delta_{ij} + \Omega_{ij}dt
 <p>SD卡, 读卡器, 电脑</p>
 <h2 id="1-创建航线"><a href="#1-创建航线" class="headerlink" title="1. 创建航线"></a>1. 创建航线</h2><p>首先, 打开<a href="https://app.flydji.cn/">Rainbow Cloud网站</a>. </p>
 <p>网页界面如下: </p>
-<p><img src="/img/post/202409/07/20240907103046.png" alt="image-20240907103033256" style="zoom: 33%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907103046.png" alt="image-20240907103033256" style="zoom: 33%;"></p>
 <p>点击左侧新建任务. </p>
-<p><img src="/img/post/202409/07/20240907103203.png" alt="image-20240907103201411" style="zoom:33%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907103203.png" alt="image-20240907103201411" style="zoom:33%;"></p>
 <p>选择正射</p>
-<p><img src="/img/post/202409/07/20240907103355.png" alt="image-20240907103352484" style="zoom: 33%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907103355.png" alt="image-20240907103352484" style="zoom: 33%;"></p>
 <p>输入任务名称</p>
-<p><img src="/img/post/202409/07/20240907103444.png" alt="image-20240907103443297" style="zoom:50%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907103444.png" alt="image-20240907103443297" style="zoom:50%;"></p>
 <p>确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围. </p>
-<p><img src="/img/post/202409/07/20240907103635.png" alt="image-20240907103623963" style="zoom:33%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907103635.png" alt="image-20240907103623963" style="zoom:33%;"></p>
 <p>然后, 调整这个范围至合适位置. 可以移动和添加顶点</p>
-<p><img src="/img/post/202409/07/20240907104233.png" alt="image-20240907104221465" style="zoom:33%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907104233.png" alt="image-20240907104221465" style="zoom:33%;"></p>
 <p>然后, 调整右侧参数栏的参数. </p>
-<p><img src="/img/post/202409/07/20240907104901.png" alt="image-20240907104849438" style="zoom:33%;" /></p>
-<p><img src="/img/post/202409/07/20240907105200.png" alt="image-20240907105046748" style="zoom:33%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907104901.png" alt="image-20240907104849438" style="zoom:33%;"></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907105200.png" alt="image-20240907105046748" style="zoom:33%;"></p>
 <p>其余设置与上图保持一致, 保存任务</p>
-<p><img src="/img/post/202409/07/20240907105605.png" alt="image-20240907105604011" style="zoom:50%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907105605.png" alt="image-20240907105604011" style="zoom:50%;"></p>
 <p>点击右上角任务导出</p>
-<p><img src="/img/post/202409/07/20240907105752.png" alt="image-20240907105740750" style="zoom:33%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907105752.png" alt="image-20240907105740750" style="zoom:33%;"></p>
 <p>选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.</p>
-<p><img src="/img/post/202409/07/20240907110020.png" alt="image-20240907110018439" style="zoom:50%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/07/20240907110020.png" alt="image-20240907110018439" style="zoom:50%;"></p>
 <p>点击下载, 将文件下载并导入到SD卡中.</p>
 <h2 id="2-导入航线"><a href="#2-导入航线" class="headerlink" title="2. 导入航线"></a>2. 导入航线</h2><p>根据导入教程导入文件<a href="https://docs.qq.com/doc/DSEpQRFZXUU5ET3JZ">Mavic3系列屏控手动导入Kmz 航点任务 (qq.com)</a></p>
 <h3 id="2-1-创建并备份航线"><a href="#2-1-创建并备份航线" class="headerlink" title="2.1 创建并备份航线"></a>2.1 创建并备份航线</h3><p>创建任意数量的航点, 保存. </p>
 <p>航点文件保存位置如下</p>
-<p><img src="/img/post/202409/13/20240913182709.png" alt="image-20240913182656864" style="zoom:33%;" /></p>
+<p><img src="/2024/08/78788d45.htm/post/202409/13/20240913182709.png" alt="image-20240913182656864" style="zoom:33%;"></p>
 <p>一串英文字符的文件夹内存放的就是航线文件(kmz格式)</p>
 <p>将整个waypoint文件夹复制至SD卡中</p>
 <h3 id="2-2-替换kmz文件"><a href="#2-2-替换kmz文件" class="headerlink" title="2.2 替换kmz文件"></a>2.2 替换kmz文件</h3><p>将已经下载好的Kmz文件同样导入到SD卡的该文件夹内</p>
@@ -1572,6 +1572,60 @@ c_{ij} = \delta_{ij} + \Omega_{ij}dt
         <tag>DJI</tag>
         <tag>Mavic 3 classic</tag>
         <tag>正射航线</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>论文研读心得(一)</title>
+    <url>/2024/12/3e16e77c.html</url>
+    <content><![CDATA[<h2 id="工作内容"><a href="#工作内容" class="headerlink" title="工作内容"></a>工作内容</h2><p>​    针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。</p>
+<h2 id="流体力学和盐度模型"><a href="#流体力学和盐度模型" class="headerlink" title="流体力学和盐度模型"></a>流体力学和盐度模型</h2><p>​    河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程</p>
+<h3 id="浅水方程-Shallow-water-equations"><a href="#浅水方程-Shallow-water-equations" class="headerlink" title="浅水方程(Shallow water equations)"></a>浅水方程(Shallow water equations)</h3><script type="math/tex; mode=display">
+\frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) = 0</script><script type="math/tex; mode=display">
+\frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u = -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}</script><p>其中 t 是时间, $H=h+\eta$ 是水深, h 是水柱参考高度; $f=2\omega\sin \phi$为科里奥利参数, 以$\omega$为地球角速度, 以$\phi$为纬度; k为单位向上矢量; G为重力加速度; $\rho$ 是水的密度, 假设水的密度是恒定的, $P_a$ 是水面的大气压力; $\nu$ 为水平涡动粘度; $\tau_s$和$\tau_b$分别为表面和底部应力矢量. </p>
+<h3 id="深度平均盐度运输方程"><a href="#深度平均盐度运输方程" class="headerlink" title="深度平均盐度运输方程"></a>深度平均盐度运输方程</h3><script type="math/tex; mode=display">
+\frac{\partial (HS)}{\partial t} + \nabla\cdot (HuS) = \nabla \cdot (Hk\nabla S)</script><p>其中k为扩散系数</p>
+<h3 id="水平涡粘性系数"><a href="#水平涡粘性系数" class="headerlink" title="水平涡粘性系数"></a>水平涡粘性系数</h3><p>根据 Smagorinsky（1963）的工作，水平涡粘性系数 $\nu$ 通常按照以下形式给出：</p>
+<script type="math/tex; mode=display">
+ν = C_s^2 * Δx * |S|</script><p>这里，</p>
+<p>$C_s$ 是 Smagorinsky 常数，一般取值在 0.1 到 0.2 之间；<br>$Δx$ 是网格间距，代表了模型分辨率；<br>$|S|$ 是应变率张量 S 的模，它描述了速度场的空间变化，具体为：</p>
+<script type="math/tex; mode=display">
+S = (∇u + (∇u)^T) / 2</script><p>其中 $∇u$ 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：</p>
+<script type="math/tex; mode=display">
+|S| = sqrt(2 * S_ij * S_ij)</script><p>这里的 $S_ij$ 表示应变率张量的分量。</p>
+<h3 id="曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation"><a href="#曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation" class="headerlink" title="曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)"></a>曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)</h3><script type="math/tex; mode=display">
+\tau_b = \rho g n^2 \frac{u||u||}{H^{1/3}}</script><p>其中 n 是曼宁系数. 在大陆架等于$0.0235\ s\ m^{-1/3}$ , 在Antwerp附近, 从河口线性增加到$0.028\ s\ m^{-1/3}$</p>
+<h3 id="扩散系数-k-Okubo"><a href="#扩散系数-k-Okubo" class="headerlink" title="扩散系数 k (Okubo)"></a>扩散系数 k (Okubo)</h3><script type="math/tex; mode=display">
+k = c_k \Delta^{1.15}</script><p>其中 $c_k$ 为常数, $\Delta$ 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 $c_k = 150\ m^{0.85}s^{-1}$. </p>
+<h2 id="泥沙模型"><a href="#泥沙模型" class="headerlink" title="泥沙模型"></a>泥沙模型</h2><p>泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即$C_{ss}$, 悬浮沉积物的深度平均浓度[$kg\ m^{−3}$], 以及$C_{sb}$, 新鲜层中底层沉积物的浓度[$kg\ m^{−2}$]。母层是沉积物的无限来源, 只有当$C_{sb}$局部为零时才会被侵蚀。</p>
+<p>悬浮中的沉积物是通过平流和扩散输送的, 而底部的沉积物则不是。在区域的二维部分, 悬浮泥沙浓度和新沉积泥沙浓度服从如下方程:</p>
+<script type="math/tex; mode=display">
+\frac{\partial (HC_{ss})}{\partial t} + \nabla \cdot (HuC_{ss}) = \nabla \cdot (Hk\nabla C_{ss}) + E_f + E_p - D</script><script type="math/tex; mode=display">
+\frac{\partial C_{sb}}{\partial t} = D - E_f</script><p><img src="/2024/12/3e16e77c.htm/image-20241208170632962.png" alt="image-20241208170632962" style="zoom:50%;"></p>
+<p>式中$E_f$为新鲜层沉积物的侵蚀速率, $E_p$为母层沉积物的侵蚀速率, $D$为新鲜层沉积物的沉积速率。</p>
+<p><strong>假设母层从未供应, 并且两个底层之间没有交换。此外, 也没有考虑床质输运。</strong></p>
+<h3 id="侵蚀速率-Partheniades-1965"><a href="#侵蚀速率-Partheniades-1965" class="headerlink" title="侵蚀速率 (Partheniades(1965))"></a>侵蚀速率 (Partheniades(1965))</h3><script type="math/tex; mode=display">
+E_f = \left\{ \begin{aligned}
+&M\left( \frac{\tau_b}{\tau_e} -1\right) &     & if\ \tau_b > \tau_e\ and\ C_{sb} > 0 \\
+&0 &    &otherwise
+\end{aligned}
+\right.</script><script type="math/tex; mode=display">
+E_p = \left\{ \begin{aligned}
+&M\left( \frac{\tau_b}{\tau_{e,p}} -1\right) &     & if\ \tau_b > \tau_{e,p}\ and\ C_{sb} = 0 \\
+&0 &    &otherwise
+\end{aligned}
+\right.</script><p>当$\tau_b$(底部应力向量的范数$\tau_b$) 高于一个阈值$\tau_e$时, 沉积物从新鲜层被侵蚀, 或者, 如果新鲜层局部是空的, 当$\tau_b$高于另一个阈值$\tau_{e,p}$; M被称为侵蚀速率参数。</p>
+<h3 id="沉积速率-Einstein和Krone-1962"><a href="#沉积速率-Einstein和Krone-1962" class="headerlink" title="沉积速率(Einstein和Krone (1962))"></a>沉积速率(Einstein和Krone (1962))</h3><script type="math/tex; mode=display">
+D=w_sC_{ss}</script><p>其中 $w_s$ 为沉降速度. </p>
+<script type="math/tex; mode=display">
+w_S = w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m</script><p>其中 $C_{ss,0}=0.1\ kg m^{-3}$ 是 Scheldt SSC的参考值, $w_{s,0}$ 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999). </p>
+]]></content>
+      <categories>
+        <category>深度平均</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>深度平均</tag>
+        <tag>心得体会</tag>
       </tags>
   </entry>
   <entry>
@@ -1913,60 +1967,6 @@ c_{ij} = \delta_{ij} + \Omega_{ij}dt
         <tag>Git</tag>
         <tag>Github</tag>
         <tag>工作流程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>论文研读心得(一)</title>
-    <url>/2024/12/3e16e77c.html</url>
-    <content><![CDATA[<h2 id="工作内容"><a href="#工作内容" class="headerlink" title="工作内容"></a>工作内容</h2><p>​    针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。</p>
-<h2 id="流体力学和盐度模型"><a href="#流体力学和盐度模型" class="headerlink" title="流体力学和盐度模型"></a>流体力学和盐度模型</h2><p>​    河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程</p>
-<h3 id="浅水方程-Shallow-water-equations"><a href="#浅水方程-Shallow-water-equations" class="headerlink" title="浅水方程(Shallow water equations)"></a>浅水方程(Shallow water equations)</h3><script type="math/tex; mode=display">
-\frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) = 0</script><script type="math/tex; mode=display">
-\frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u = -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}</script><p>其中 t 是时间, $H=h+\eta$ 是水深, h 是水柱参考高度; $f=2\omega\sin \phi$为科里奥利参数, 以$\omega$为地球角速度, 以$\phi$为纬度; k为单位向上矢量; G为重力加速度; $\rho$ 是水的密度, 假设水的密度是恒定的, $P_a$ 是水面的大气压力; $\nu$ 为水平涡动粘度; $\tau_s$和$\tau_b$分别为表面和底部应力矢量. </p>
-<h3 id="深度平均盐度运输方程"><a href="#深度平均盐度运输方程" class="headerlink" title="深度平均盐度运输方程"></a>深度平均盐度运输方程</h3><script type="math/tex; mode=display">
-\frac{\partial (HS)}{\partial t} + \nabla\cdot (HuS) = \nabla \cdot (Hk\nabla S)</script><p>其中k为扩散系数</p>
-<h3 id="水平涡粘性系数"><a href="#水平涡粘性系数" class="headerlink" title="水平涡粘性系数"></a>水平涡粘性系数</h3><p>根据 Smagorinsky（1963）的工作，水平涡粘性系数 $\nu$ 通常按照以下形式给出：</p>
-<script type="math/tex; mode=display">
-ν = C_s^2 * Δx * |S|</script><p>这里，</p>
-<p>$C_s$ 是 Smagorinsky 常数，一般取值在 0.1 到 0.2 之间；<br>$Δx$ 是网格间距，代表了模型分辨率；<br>$|S|$ 是应变率张量 S 的模，它描述了速度场的空间变化，具体为：</p>
-<script type="math/tex; mode=display">
-S = (∇u + (∇u)^T) / 2</script><p>其中 $∇u$ 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：</p>
-<script type="math/tex; mode=display">
-|S| = sqrt(2 * S_ij * S_ij)</script><p>这里的 $S_ij$ 表示应变率张量的分量。</p>
-<h3 id="曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation"><a href="#曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation" class="headerlink" title="曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)"></a>曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)</h3><script type="math/tex; mode=display">
-\tau_b = \rho g n^2 \frac{u||u||}{H^{1/3}}</script><p>其中 n 是曼宁系数. 在大陆架等于$0.0235\ s\ m^{-1/3}$ , 在Antwerp附近, 从河口线性增加到$0.028\ s\ m^{-1/3}$</p>
-<h3 id="扩散系数-k-Okubo"><a href="#扩散系数-k-Okubo" class="headerlink" title="扩散系数 k (Okubo)"></a>扩散系数 k (Okubo)</h3><script type="math/tex; mode=display">
-k = c_k \Delta^{1.15}</script><p>其中 $c_k$ 为常数, $\Delta$ 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 $c_k = 150\ m^{0.85}s^{-1}$. </p>
-<h2 id="泥沙模型"><a href="#泥沙模型" class="headerlink" title="泥沙模型"></a>泥沙模型</h2><p>泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即$C_{ss}$, 悬浮沉积物的深度平均浓度[$kg\ m^{−3}$], 以及$C_{sb}$, 新鲜层中底层沉积物的浓度[$kg\ m^{−2}$]。母层是沉积物的无限来源, 只有当$C_{sb}$局部为零时才会被侵蚀。</p>
-<p>悬浮中的沉积物是通过平流和扩散输送的, 而底部的沉积物则不是。在区域的二维部分, 悬浮泥沙浓度和新沉积泥沙浓度服从如下方程:</p>
-<script type="math/tex; mode=display">
-\frac{\partial (HC_{ss})}{\partial t} + \nabla \cdot (HuC_{ss}) = \nabla \cdot (Hk\nabla C_{ss}) + E_f + E_p - D</script><script type="math/tex; mode=display">
-\frac{\partial C_{sb}}{\partial t} = D - E_f</script><p><img src="./2024-12-08-read-experience/image-20241208170632962.png" alt="image-20241208170632962" style="zoom:50%;" /></p>
-<p>式中$E_f$为新鲜层沉积物的侵蚀速率, $E_p$为母层沉积物的侵蚀速率, $D$为新鲜层沉积物的沉积速率。</p>
-<p><strong>假设母层从未供应, 并且两个底层之间没有交换。此外, 也没有考虑床质输运。</strong></p>
-<h3 id="侵蚀速率-Partheniades-1965"><a href="#侵蚀速率-Partheniades-1965" class="headerlink" title="侵蚀速率 (Partheniades(1965))"></a>侵蚀速率 (Partheniades(1965))</h3><script type="math/tex; mode=display">
-E_f = \left\{ \begin{aligned}
-&M\left( \frac{\tau_b}{\tau_e} -1\right) &     & if\ \tau_b > \tau_e\ and\ C_{sb} > 0 \\
-&0 &    &otherwise
-\end{aligned}
-\right.</script><script type="math/tex; mode=display">
-E_p = \left\{ \begin{aligned}
-&M\left( \frac{\tau_b}{\tau_{e,p}} -1\right) &     & if\ \tau_b > \tau_{e,p}\ and\ C_{sb} = 0 \\
-&0 &    &otherwise
-\end{aligned}
-\right.</script><p>当$\tau_b$(底部应力向量的范数$\tau_b$) 高于一个阈值$\tau_e$时, 沉积物从新鲜层被侵蚀, 或者, 如果新鲜层局部是空的, 当$\tau_b$高于另一个阈值$\tau_{e,p}$; M被称为侵蚀速率参数。</p>
-<h3 id="沉积速率-Einstein和Krone-1962"><a href="#沉积速率-Einstein和Krone-1962" class="headerlink" title="沉积速率(Einstein和Krone (1962))"></a>沉积速率(Einstein和Krone (1962))</h3><script type="math/tex; mode=display">
-D=w_sC_{ss}</script><p>其中 $w_s$ 为沉降速度. </p>
-<script type="math/tex; mode=display">
-w_S = w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m</script><p>其中 $C_{ss,0}=0.1\ kg m^{-3}$ 是 Scheldt SSC的参考值, $w_{s,0}$ 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999). </p>
-]]></content>
-      <categories>
-        <category>深度平均</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-        <tag>深度平均</tag>
-        <tag>心得体会</tag>
       </tags>
   </entry>
 </search>
