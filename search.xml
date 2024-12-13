@@ -1382,9 +1382,11 @@ c_{ij} = \delta_{ij} + \Omega_{ij}dt
   <entry>
     <title>论文研读心得(一)</title>
     <url>/2024/12/3e16e77c/</url>
-    <content><![CDATA[<h2 id="工作内容"><a href="#工作内容" class="headerlink" title="工作内容"></a>工作内容</h2><p>​    针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。</p>
-<h2 id="流体力学和盐度模型"><a href="#流体力学和盐度模型" class="headerlink" title="流体力学和盐度模型"></a>流体力学和盐度模型</h2><p>​    河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程</p>
-<h3 id="浅水方程-Shallow-water-equations"><a href="#浅水方程-Shallow-water-equations" class="headerlink" title="浅水方程(Shallow water equations)"></a>浅水方程(Shallow water equations)</h3><script type="math/tex; mode=display">
+    <content><![CDATA[<h2 id="原文"><a href="#原文" class="headerlink" title="原文"></a>原文</h2><p><a href="https://www.sciencedirect.com/science/article/pii/S0924796313000833">A depth-averaged two-dimensional sediment transport model for environmental studies in the Scheldt Estuary and tidal river network - ScienceDirect</a></p>
+<p><a href="https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh">附PDF: https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh</a></p>
+<h2 id="工作内容"><a href="#工作内容" class="headerlink" title="工作内容"></a>工作内容</h2><p>针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。</p>
+<h2 id="流体力学和盐度模型"><a href="#流体力学和盐度模型" class="headerlink" title="流体力学和盐度模型"></a>流体力学和盐度模型</h2><p>河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程</p>
+<h3 id="浅水方程-Shallow-water-equations"><a href="#浅水方程-Shallow-water-equations" class="headerlink" title="浅水方程(Shallow water equations)"></a>浅水方程(Shallow water equations)</h3><script type="math/tex; mode=display">{连续方程}
 \frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) = 0</script><script type="math/tex; mode=display">
 \frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u = -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}</script><p>其中 t 是时间, $H=h+\eta$ 是水深, h 是水柱参考高度; $f=2\omega\sin \phi$为科里奥利参数, 以$\omega$为地球角速度, 以$\phi$为纬度; k为单位向上矢量; G为重力加速度; $\rho$ 是水的密度, 假设水的密度是恒定的, $P_a$ 是水面的大气压力; $\nu$ 为水平涡动粘度; $\tau_s$和$\tau_b$分别为表面和底部应力矢量. </p>
 <h3 id="深度平均盐度运输方程"><a href="#深度平均盐度运输方程" class="headerlink" title="深度平均盐度运输方程"></a>深度平均盐度运输方程</h3><script type="math/tex; mode=display">
@@ -1396,9 +1398,9 @@ c_{ij} = \delta_{ij} + \Omega_{ij}dt
 <script type="math/tex; mode=display">
 S = (∇u + (∇u)^T) / 2</script><p>其中 $∇u$ 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：</p>
 <script type="math/tex; mode=display">
-|S| = sqrt(2 * S_ij * S_ij)</script><p>这里的 $S_ij$ 表示应变率张量的分量。</p>
+|S| = sqrt(2 * S_{ij} * S_{ij})</script><p>这里的 $S_ij$ 表示应变率张量的分量。</p>
 <h3 id="曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation"><a href="#曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation" class="headerlink" title="曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)"></a>曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)</h3><script type="math/tex; mode=display">
-\tau_b = \rho g n^2 \frac{u||u||}{H^{1/3}}</script><p>其中 n 是曼宁系数. 在大陆架等于$0.0235\ s\ m^{-1/3}$ , 在Antwerp附近, 从河口线性增加到$0.028\ s\ m^{-1/3}$</p>
+\tau_b = \rho g n^2 \frac{u \begin{Vmatrix} u \end{Vmatrix} }{H^{1/3}}</script><p>其中 n 是曼宁系数. 在大陆架等于$0.0235\ s\ m^{-1/3}$ , 在Antwerp附近, 从河口线性增加到$0.028\ s\ m^{-1/3}$</p>
 <h3 id="扩散系数-k-Okubo"><a href="#扩散系数-k-Okubo" class="headerlink" title="扩散系数 k (Okubo)"></a>扩散系数 k (Okubo)</h3><script type="math/tex; mode=display">
 k = c_k \Delta^{1.15}</script><p>其中 $c_k$ 为常数, $\Delta$ 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 $c_k = 150\ m^{0.85}s^{-1}$. </p>
 <h2 id="泥沙模型"><a href="#泥沙模型" class="headerlink" title="泥沙模型"></a>泥沙模型</h2><p>泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即$C_{ss}$, 悬浮沉积物的深度平均浓度[$kg\ m^{−3}$], 以及$C_{sb}$, 新鲜层中底层沉积物的浓度[$kg\ m^{−2}$]。母层是沉积物的无限来源, 只有当$C_{sb}$局部为零时才会被侵蚀。</p>
@@ -1423,6 +1425,37 @@ E_p = \left\{ \begin{aligned}
 D=w_sC_{ss}</script><p>其中 $w_s$ 为沉降速度. </p>
 <script type="math/tex; mode=display">
 w_S = w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m</script><p>其中 $C_{ss,0}=0.1\ kg m^{-3}$ 是 Scheldt SSC的参考值, $w_{s,0}$ 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999). </p>
+<blockquote>
+<h3 id="连续方程的推导"><a href="#连续方程的推导" class="headerlink" title="连续方程的推导"></a>连续方程的推导</h3><p><img src="/2024/12/3e16e77c/image-20241211171404424.png" alt="image-20241211171404424"></p>
+<p>引入自由表面的运动学条件和底部运动学条件</p>
+<script type="math/tex; mode=display">
+u_z|_{z=z_s} = \frac{dz_s}{dt} = \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x} u_x + \frac{\partial z_s}{\partial y} u_y</script><script type="math/tex; mode=display">
+u_z|_{z=z_b} = \frac{dz_b}{dt} = \frac{\partial z_b}{\partial t} + \frac{\partial z_b}{\partial x} u_x + \frac{\partial z_b}{\partial y} u_y</script><p>对连续性方程沿水深方向进行积分</p>
+<script type="math/tex; mode=display">
+\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j} dz = 0 \ (j=1,2,3)</script><script type="math/tex; mode=display">
+\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j}dz + u_z|_{z_s} - u_z|_{u_b} = 0 \ (j=1,2)</script><p>由牛顿-莱布尼兹公式</p>
+<script type="math/tex; mode=display">
+\frac{\partial}{\partial x_j} \int_a^b f dz = \int_a^b \frac{\partial f}{\partial x_j} dz + f|_b \frac{\partial b}{\partial x_j} - f|_a \frac{\partial a}{\partial x_j}</script><p>将上式第一项展开，可得</p>
+<script type="math/tex; mode=display">
+\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + u_z|_{z_s} - u_z|_{z_b} = 0 \ (j=1,2)</script><p>代入两个运动学条件，可得</p>
+<script type="math/tex; mode=display">
+\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x_j} u_j|_{z_s} - \frac{\partial z_b}{\partial t} - \frac{\partial z_b}{\partial x_j} u_j|_{z_b} = 0 \ (j=1,2)</script><p>化简，得</p>
+<script type="math/tex; mode=display">
+\frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz + \frac{\partial z_s}{\partial x_j} - \frac{\partial z_b}{\partial x_j} = 0 \ (j=1,2)</script><p>由 $H=z_s-z_b$, 进一步化简为</p>
+<script type="math/tex; mode=display">
+\frac{\partial H}{\partial t} + \frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz = 0 \ (j=1,2)</script><p>又有</p>
+<script type="math/tex; mode=display">
+\int_{z_b}^{z_s} u_j dz = HU_j \ (j=1,2)</script><p>代入上式，得</p>
+<script type="math/tex; mode=display">
+\frac{\partial H}{\partial t} + \frac{\partial HU_j}{\partial x_j} = 0 \ (j=1,2)</script><p>即</p>
+<script type="math/tex; mode=display">
+\frac{\partial H}{\partial t} + \frac{\partial HU_x}{\partial x} + \frac{\partial HU_y}{\partial y} = 0</script><p>本篇文章中 $H = h + \eta$, $H$ 为水深，$h$ 为参考水柱高度（河床到基准面的高度），$\eta$ 为水面相对于基准面的高度，是一个瞬时变化量。</p>
+<p>因此，第一项水深随时间的变化率写为 $\frac{\partial \eta}{\partial t}$，第二三项的为水平方向的水流通量，其通过面积可表示为 $H$, 因此此项应写为 $\frac{\partial Hu_j}{\partial x_j}$. </p>
+<p>综上</p>
+<script type="math/tex; mode=display">
+\frac{\partial \eta}{\partial t} + \frac{\partial Hu_j}{\partial x_j} = 0 \ (j=1,2)</script><p>使用哈密顿算子可以表示为</p>
+<script type="math/tex; mode=display">
+\frac{\partial \eta}{\partial t} + \nabla \cdot (Hu) = 0</script></blockquote>
 ]]></content>
       <categories>
         <category>深度平均</category>
