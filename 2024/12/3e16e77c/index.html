@@ -192,7 +192,7 @@ document.addEventListener('pjax:send', () => {
     const countELement = document.getElementById('twikoo-count')
     if(!countELement) return
     twikoo.getCommentsCount({
-      envId: 'https://fireflye-fireflyblog.hf.space',
+      envId: 'https://fireflye-blog.hf.space',
       region: '',
       urls: [window.location.pathname],
       includeReply: false
@@ -206,7 +206,7 @@ document.addEventListener('pjax:send', () => {
   const init = () => {
     twikoo.init(Object.assign({
       el: '#twikoo-wrap',
-      envId: 'https://fireflye-fireflyblog.hf.space',
+      envId: 'https://fireflye-blog.hf.space',
       region: '',
       onCommentLoaded: () => {
         btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
