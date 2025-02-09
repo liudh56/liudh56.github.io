@@ -1,6 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>非饱和土手动迭代计算程序修改说明</title>
+    <url>/2024/04/863a85e0/</url>
+    <content><![CDATA[<h2 id="修改内容"><a href="#修改内容" class="headerlink" title="修改内容"></a>修改内容</h2><h3 id="1、输入参数改变"><a href="#1、输入参数改变" class="headerlink" title="1、输入参数改变"></a>1、输入参数改变</h3><p>t(nl) 每层层底沉积年代(37 行)<br>土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)<br>内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)<br>水位位置（坡顶为 0，y 方向为负值）(58 行)<br>非饱和抗剪强度公式中 κ(59 行)</p>
+<h3 id="2、输入所有节点孔压-53-行"><a href="#2、输入所有节点孔压-53-行" class="headerlink" title="2、输入所有节点孔压(53 行)"></a>2、输入所有节点孔压(53 行)</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">READ(<span class="number">12</span>,*)inpore  <span class="comment">!所有节点孔压</span></span><br></pre></td></tr></table></figure>
+<h3 id="3、输出-prop-nprops-np-types-98-85-行"><a href="#3、输出-prop-nprops-np-types-98-85-行" class="headerlink" title="3、输出 prop(nprops,np_types)(98-85 行)"></a>3、输出 prop(nprops,np_types)(98-85 行)</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">nprops=<span class="number">10</span> <span class="comment">!分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CALL</span> g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;</span><br><span class="line">  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;</span><br><span class="line">  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;</span><br><span class="line">  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，求prop1：一列单元的参数(其中重度为干重度)</span><br><span class="line">其次，求prop：所有单元参数(其中重度为干重度)</span><br><span class="line">之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率</span><br><span class="line">最后，利用含水率计算天然重度</span><br></pre></td></tr></table></figure>
+<h3 id="4、输出-surf-2-nosurf-79-行"><a href="#4、输出-surf-2-nosurf-79-行" class="headerlink" title="4、输出 surf(2,nosurf) (79 行)"></a>4、输出 surf(2,nosurf) (79 行)</h3><p>根据水位计算水位线上各节点坐标</p>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">call</span> WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)</span><br></pre></td></tr></table></figure>
+<h3 id="5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行"><a href="#5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行" class="headerlink" title="5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)"></a>5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)</h3><h3 id="6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行"><a href="#6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行" class="headerlink" title="6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)"></a>6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> water_loads</span><br></pre></td></tr></table></figure>
+<h3 id="7、对于孔压-inpore-的处理"><a href="#7、对于孔压-inpore-的处理" class="headerlink" title="7、对于孔压 inpore 的处理"></a>7、对于孔压 inpore 的处理</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，单元循环内提取该单元所有节点的孔压(172行)</span><br><span class="line">其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)</span><br><span class="line">之后，高斯循环中计算高斯点吸应力pore (181行)</span><br><span class="line">最后，修正正应力(186-188行)</span><br></pre></td></tr></table></figure>
+<h3 id="8、若收敛，对应力进行恢复-193-195-行"><a href="#8、若收敛，对应力进行恢复-193-195-行" class="headerlink" title="8、若收敛，对应力进行恢复(193-195 行)"></a>8、若收敛，对应力进行恢复(193-195 行)</h3><h3 id="9、奇偶分层下的变形图-224-行"><a href="#9、奇偶分层下的变形图-224-行" class="headerlink" title="9、奇偶分层下的变形图(224 行)"></a>9、奇偶分层下的变形图(224 行)</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> dismsh</span><br></pre></td></tr></table></figure>
+<h2 id="输入说明"><a href="#输入说明" class="headerlink" title="输入说明"></a>输入说明</h2><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">w1   s1   w2   h1   h2   nl <span class="comment">!分层数  用于划分黄土古土壤序列情况</span></span><br><span class="line"><span class="number">8</span>    <span class="number">4</span>     <span class="number">4</span>    <span class="number">14</span>   <span class="number">8</span>    <span class="number">4</span></span><br><span class="line">h(nl) <span class="comment">!每层层底距坡顶距离</span></span><br><span class="line"><span class="number">4</span>   <span class="number">12</span>   <span class="number">16</span>   <span class="number">22</span></span><br><span class="line">ny(nl) <span class="comment">!每层划分网格数</span></span><br><span class="line"><span class="number">2</span>    <span class="number">4</span>    <span class="number">2</span>   <span class="number">3</span></span><br><span class="line">t(nl) <span class="comment">!每层层底沉积年代</span></span><br><span class="line"><span class="number">8</span>   <span class="number">12</span>   <span class="number">18</span>   <span class="number">33</span></span><br><span class="line">nx1    nx2   ny1    ny2</span><br><span class="line"><span class="number">4</span>       <span class="number">2</span>     <span class="number">7</span>    <span class="number">4</span></span><br><span class="line"><span class="comment">!土水特征参数a、m、n随沉积年代模型参数</span></span><br><span class="line"><span class="number">0.044</span>     <span class="number">7.062</span>      -<span class="number">0.0000724</span>      <span class="number">0.3318</span>              -<span class="number">0.000161</span>      <span class="number">1.5092</span></span><br><span class="line"><span class="number">24.4397</span>   -<span class="number">113.0186</span>   <span class="number">0.000000176</span>   -<span class="number">0.0000591</span>   <span class="number">0.2077</span>   <span class="number">0.000000331</span>   -<span class="number">0.000128</span>   <span class="number">1.2664</span></span><br><span class="line"><span class="comment">!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">0.17</span>    <span class="number">0</span>      <span class="number">0.0</span>        <span class="number">1.25</span>   <span class="number">0.018</span>    <span class="number">0.4623</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.71</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">3.56</span>   <span class="number">500</span>     <span class="number">0.0</span>        <span class="number">1.39</span>   <span class="number">0.0035</span>   <span class="number">0.6489</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.72</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">100</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">1.4</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span>   <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">9</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">0.8</span>  <span class="number">0.9</span>  <span class="number">1.0</span>  <span class="number">1.1</span>  <span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
+<hr>
+<p>非本人原创内容</p>
+]]></content>
+      <categories>
+        <category>边坡</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>边坡稳定性</tag>
+        <tag>Fortran</tag>
+        <tag>孔压</tag>
+        <tag>有限元</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>非饱和土边坡稳定性计算程序说明文件</title>
     <url>/2024/04/71e392b0/</url>
     <content><![CDATA[<h2 id="一、数据文件"><a href="#一、数据文件" class="headerlink" title="一、数据文件"></a>一、数据文件</h2><h3 id="注意：以下文件内不要输入注释文字"><a href="#注意：以下文件内不要输入注释文字" class="headerlink" title="注意：以下文件内不要输入注释文字"></a>注意：以下文件内不要输入注释文字</h3><h4 id="1-dat文件"><a href="#1-dat文件" class="headerlink" title="1. dat文件"></a>1. dat文件</h4><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="comment">!dx  h2v</span></span><br><span class="line"><span class="number">1.0</span>  <span class="number">2.0</span></span><br><span class="line"><span class="comment">!nx1 nx2 ny1 ny2</span></span><br><span class="line"><span class="number">20</span>  <span class="number">20</span>  <span class="number">10</span>  <span class="number">5</span></span><br><span class="line"><span class="comment">!树荷载的左列和右列数，树荷载kN(各单元格相同)</span></span><br><span class="line"><span class="number">27</span> <span class="number">32</span> <span class="number">10.0</span></span><br><span class="line"><span class="comment">!内摩擦角，粘聚力，剪胀角，重度，弹性模量，泊松比, a, m, n, theta_s 其中,重度=ρ_d*gam_w,theta_s=1-ρ_d/G_s</span></span><br><span class="line"><span class="number">20.0</span>  <span class="number">15.0</span>  <span class="number">0.0</span>  <span class="number">20.0</span>  <span class="number">1.0e5</span>  <span class="number">0.3</span> <span class="number">15</span> <span class="number">0.2</span> <span class="number">4</span> <span class="number">0.907749</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">20</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span> <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">6</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.55</span> <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
@@ -32,28 +59,92 @@
       </categories>
       <tags>
         <tag>教程及说明</tag>
-        <tag>非饱和土</tag>
         <tag>边坡稳定性</tag>
-        <tag>方形网格</tag>
         <tag>Fortran</tag>
         <tag>有限元</tag>
+        <tag>非饱和土</tag>
+        <tag>方形网格</tag>
       </tags>
   </entry>
   <entry>
-    <title>非饱和土手动迭代计算程序修改说明</title>
-    <url>/2024/04/863a85e0/</url>
-    <content><![CDATA[<h2 id="修改内容"><a href="#修改内容" class="headerlink" title="修改内容"></a>修改内容</h2><h3 id="1、输入参数改变"><a href="#1、输入参数改变" class="headerlink" title="1、输入参数改变"></a>1、输入参数改变</h3><p>t(nl) 每层层底沉积年代(37 行)<br>土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)<br>内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)<br>水位位置（坡顶为 0，y 方向为负值）(58 行)<br>非饱和抗剪强度公式中 κ(59 行)</p>
-<h3 id="2、输入所有节点孔压-53-行"><a href="#2、输入所有节点孔压-53-行" class="headerlink" title="2、输入所有节点孔压(53 行)"></a>2、输入所有节点孔压(53 行)</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">READ(<span class="number">12</span>,*)inpore  <span class="comment">!所有节点孔压</span></span><br></pre></td></tr></table></figure>
-<h3 id="3、输出-prop-nprops-np-types-98-85-行"><a href="#3、输出-prop-nprops-np-types-98-85-行" class="headerlink" title="3、输出 prop(nprops,np_types)(98-85 行)"></a>3、输出 prop(nprops,np_types)(98-85 行)</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">nprops=<span class="number">10</span> <span class="comment">!分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CALL</span> g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;</span><br><span class="line">  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;</span><br><span class="line">  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;</span><br><span class="line">  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，求prop1：一列单元的参数(其中重度为干重度)</span><br><span class="line">其次，求prop：所有单元参数(其中重度为干重度)</span><br><span class="line">之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率</span><br><span class="line">最后，利用含水率计算天然重度</span><br></pre></td></tr></table></figure>
-<h3 id="4、输出-surf-2-nosurf-79-行"><a href="#4、输出-surf-2-nosurf-79-行" class="headerlink" title="4、输出 surf(2,nosurf) (79 行)"></a>4、输出 surf(2,nosurf) (79 行)</h3><p>根据水位计算水位线上各节点坐标</p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">call</span> WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)</span><br></pre></td></tr></table></figure>
-<h3 id="5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行"><a href="#5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行" class="headerlink" title="5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)"></a>5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)</h3><h3 id="6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行"><a href="#6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行" class="headerlink" title="6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)"></a>6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> water_loads</span><br></pre></td></tr></table></figure>
-<h3 id="7、对于孔压-inpore-的处理"><a href="#7、对于孔压-inpore-的处理" class="headerlink" title="7、对于孔压 inpore 的处理"></a>7、对于孔压 inpore 的处理</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，单元循环内提取该单元所有节点的孔压(172行)</span><br><span class="line">其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)</span><br><span class="line">之后，高斯循环中计算高斯点吸应力pore (181行)</span><br><span class="line">最后，修正正应力(186-188行)</span><br></pre></td></tr></table></figure>
-<h3 id="8、若收敛，对应力进行恢复-193-195-行"><a href="#8、若收敛，对应力进行恢复-193-195-行" class="headerlink" title="8、若收敛，对应力进行恢复(193-195 行)"></a>8、若收敛，对应力进行恢复(193-195 行)</h3><h3 id="9、奇偶分层下的变形图-224-行"><a href="#9、奇偶分层下的变形图-224-行" class="headerlink" title="9、奇偶分层下的变形图(224 行)"></a>9、奇偶分层下的变形图(224 行)</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> dismsh</span><br></pre></td></tr></table></figure>
-<h2 id="输入说明"><a href="#输入说明" class="headerlink" title="输入说明"></a>输入说明</h2><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">w1   s1   w2   h1   h2   nl <span class="comment">!分层数  用于划分黄土古土壤序列情况</span></span><br><span class="line"><span class="number">8</span>    <span class="number">4</span>     <span class="number">4</span>    <span class="number">14</span>   <span class="number">8</span>    <span class="number">4</span></span><br><span class="line">h(nl) <span class="comment">!每层层底距坡顶距离</span></span><br><span class="line"><span class="number">4</span>   <span class="number">12</span>   <span class="number">16</span>   <span class="number">22</span></span><br><span class="line">ny(nl) <span class="comment">!每层划分网格数</span></span><br><span class="line"><span class="number">2</span>    <span class="number">4</span>    <span class="number">2</span>   <span class="number">3</span></span><br><span class="line">t(nl) <span class="comment">!每层层底沉积年代</span></span><br><span class="line"><span class="number">8</span>   <span class="number">12</span>   <span class="number">18</span>   <span class="number">33</span></span><br><span class="line">nx1    nx2   ny1    ny2</span><br><span class="line"><span class="number">4</span>       <span class="number">2</span>     <span class="number">7</span>    <span class="number">4</span></span><br><span class="line"><span class="comment">!土水特征参数a、m、n随沉积年代模型参数</span></span><br><span class="line"><span class="number">0.044</span>     <span class="number">7.062</span>      -<span class="number">0.0000724</span>      <span class="number">0.3318</span>              -<span class="number">0.000161</span>      <span class="number">1.5092</span></span><br><span class="line"><span class="number">24.4397</span>   -<span class="number">113.0186</span>   <span class="number">0.000000176</span>   -<span class="number">0.0000591</span>   <span class="number">0.2077</span>   <span class="number">0.000000331</span>   -<span class="number">0.000128</span>   <span class="number">1.2664</span></span><br><span class="line"><span class="comment">!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">0.17</span>    <span class="number">0</span>      <span class="number">0.0</span>        <span class="number">1.25</span>   <span class="number">0.018</span>    <span class="number">0.4623</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.71</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">3.56</span>   <span class="number">500</span>     <span class="number">0.0</span>        <span class="number">1.39</span>   <span class="number">0.0035</span>   <span class="number">0.6489</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.72</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">100</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">1.4</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span>   <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">9</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">0.8</span>  <span class="number">0.9</span>  <span class="number">1.0</span>  <span class="number">1.1</span>  <span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
-<hr>
-<p>非本人原创内容</p>
+    <title>可靠度分析程序说明文件</title>
+    <url>/2024/04/74b4d97f/</url>
+    <content><![CDATA[<h2 id="非饱和黄土边坡失效概率计算程序"><a href="#非饱和黄土边坡失效概率计算程序" class="headerlink" title="非饱和黄土边坡失效概率计算程序"></a>非饱和黄土边坡失效概率计算程序</h2><p>本程序是基于有限元的边坡可靠度分析程序，改进自<a href="https://inside.mines.edu/~vgriffit">Griffith教授</a> 的非饱和黄土边坡稳定性计算程序</p>
+<p>本程序使用强度折减法计算稳定系数，使用Monte-Carlo法计算失效概率；</p>
+<p>将计算作业量，分成<strong>线程数量</strong>的段数，将作业量平均分配给每一个线程；</p>
+<p><strong>本程序使用MPI实现并行运算</strong></p>
+<p><strong>程序文件</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">slope_new/Subroutine.py</span><br><span class="line">slope_new/slope2.f90</span><br></pre></td></tr></table></figure>
+<p><strong>示例数据文件</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exmaple/1.dat</span><br><span class="line">exmaple/1_c.txt</span><br><span class="line">exmaple/1_phi.txt</span><br><span class="line">example/1_gamma.txt !未给出</span><br><span class="line">exmaple/1_mstd.txt</span><br><span class="line">exmaple/1_grid.txt</span><br></pre></td></tr></table></figure>
+<p><strong>结果文件</strong> 未给出</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1_fs.res</span><br><span class="line">1_fail.res</span><br></pre></td></tr></table></figure>
+<h3 id="前置安装教程"><a href="#前置安装教程" class="headerlink" title="前置安装教程"></a>前置安装教程</h3><ol>
+<li>Fortran程序前置安装：<a href="https://github.com/sourceryinstitute/OpenCoarrays">OpenCoarrays</a></li>
+</ol>
+<p>以Ubuntu22.04安装Open-coarrays 2.9.2为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install cmake gfortran</span><br><span class="line">wget https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz</span><br><span class="line">tar xf 2.9.2.tar.gz</span><br><span class="line">cd OpenCoarrays-2.9.2</span><br><span class="line">makedir build</span><br><span class="line">cd build</span><br><span class="line">cmake ..</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<p>！若<a href="https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz">OpenCoarrays2.9.2</a> 下载失败可手动下载并上传到<code>/home/username/</code>再解压编译安装</p>
+<ol>
+<li>可选安装—后台运行<a href="https://www.gnu.org/software/screen/">Screen</a></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">安装：</span><br><span class="line">sudo apt-get install screen</span><br><span class="line">列出全部会话：</span><br><span class="line">screen -ls</span><br><span class="line">新建：</span><br><span class="line">screen</span><br><span class="line">screen -S name</span><br><span class="line">删除：</span><br><span class="line">screen -S name -X quit ! 或在窗口内使用快捷键ctrl + D</span><br><span class="line">放置后台：</span><br><span class="line">使用快捷键ctrl+A再ctrl+D </span><br><span class="line">返回窗口：</span><br><span class="line">screen -R</span><br><span class="line">screen -r name </span><br></pre></td></tr></table></figure>
+<ol>
+<li>Python程序须安装<a href="https://www.python.org/downloads/">Python3.x</a> ！无须安装在服务器中，仅做数据处理工作，在本地使用即可</li>
+</ol>
+<p>程序运行依赖<code>numpy</code>库，可使用pip安装：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pip install numpy</span><br></pre></td></tr></table></figure>
+<h3 id="程序使用教程"><a href="#程序使用教程" class="headerlink" title="程序使用教程"></a>程序使用教程</h3><ol>
+<li>运行<a href="https://github.com/liudh56/Slope/blob/main/Slope_new/Subroutine.py">Subroutine.py</a></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd 代码所在目录</span><br><span class="line">python ./Subroutine.py</span><br></pre></td></tr></table></figure>
+<p> 根据提示操作即可<a href="https://github.com/liudh56/Slope/tree/main/example">使用教程</a></p>
+<ol>
+<li>将生成文件与<code>slope2.f90</code>放在同一文件夹内（本文件夹即要上传的文件夹）</li>
+</ol>
+<p>文件包括：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx.dat</span><br><span class="line">xxx_c.txt xxx_phi.txt xxx_gamma.txt #具体文件数量与设为随机的参数有关</span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/liudh56/Slope/blob/main/example/1.dat">dat文件详细</a> </p>
+<p>其他python程序使用文件（无需上传）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx_mstd.txt</span><br><span class="line">xxx_grid.txt</span><br></pre></td></tr></table></figure>
+<h4 id="Fortran程序—在服务器中运行"><a href="#Fortran程序—在服务器中运行" class="headerlink" title="Fortran程序—在服务器中运行"></a>Fortran程序—在服务器中运行</h4><ol>
+<li><p>将上文中的文件夹上传至服务器并打开目录</p>
+</li>
+<li><p>编译命令：</p>
+</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">caf slope2.f90 -o slope</span><br></pre></td></tr></table></figure>
+<ol>
+<li>运行：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cafrun -n 4 slope</span><br><span class="line">！ 4代表线程数，可更改，若线程数报错改用下面的命令</span><br></pre></td></tr></table></figure>
+<p> 或者：使用下面命令适用于多主机的情况，根据主机实际情况分配线程数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mpirun --host host1:40 host2:40 -n 80 filename</span><br><span class="line">mpirun --host hostfile -n 80 filename !使用该命令须先创建hostfile文件</span><br></pre></td></tr></table></figure>
+<ol>
+<li>保存结果文件到本地与Subroutine.py文件放置在同一文件内</li>
+</ol>
+<p>运行Subroutine.py程序并选择功能3计算失效概率，结果保存在<code>xxx_fail.res</code>文件内。</p>
+<h2 id="Subroutine-py程序使用方式"><a href="#Subroutine-py程序使用方式" class="headerlink" title="Subroutine.py程序使用方式"></a>Subroutine.py程序使用方式</h2><h3 id="1-输入项目名称xxx。"><a href="#1-输入项目名称xxx。" class="headerlink" title="1. 输入项目名称xxx。"></a>1. 输入项目名称xxx。</h3><h3 id="2-选择功能（输入序号）。"><a href="#2-选择功能（输入序号）。" class="headerlink" title="2. 选择功能（输入序号）。"></a>2. 选择功能（输入序号）。</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. （首次使用）引导填写并重新生成xxx.dat和xxx_mstd.txt文件</span><br><span class="line">   </span><br><span class="line">2. 根据xxx_mstd.txt生成phi、c和gamma的值</span><br><span class="line">   </span><br><span class="line">3. 计算失效概率,并生成xxx_fail.res文件,储存失效概率</span><br><span class="line">   </span><br><span class="line">4. 生成xxx_grid.txt文件,储存网格点的序号(多层土的情况使用)</span><br><span class="line">   </span><br><span class="line">5. 根据xxx_mstd.txt重新生成某参数值</span><br><span class="line"></span><br><span class="line">0. 退出程序(默认)</span><br></pre></td></tr></table></figure>
+<h3 id="功能使用教程"><a href="#功能使用教程" class="headerlink" title="功能使用教程"></a>功能使用教程</h3><ol>
+<li>第一次使用选择<code>1</code>填写<code>xxx.dat</code>和<code>xxx_mstd.txt</code>文件（也可直接修改示例文件来使用）</li>
+</ol>
+<p><strong>建议先查看示例文件</strong></p>
+<p><strong>若填写过程中出现填写错误，可继续填写，等待填写完成再从生成文件内修改错误</strong></p>
+<p><strong>功能4，可协助填写<code>xxx.dat</code>文件，后文介绍</strong></p>
+<ol>
+<li>再选择<code>2</code>根据提示进行选择（以内摩擦角和粘聚力为随机参数为例）</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">请输入模拟次数:10000</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 10</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布) 1</span><br><span class="line">已生成xxx_c.txt文件!</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 20</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布): 1</span><br><span class="line">已生成xxx_phi.txt文件!</span><br></pre></td></tr></table></figure>
+<ol>
+<li><p>文件上传计算</p>
+</li>
+<li><p>计算完成后，将结果文件<code>xxx_fs.res</code>放置与本程序在同一文件夹内，运行程序选择<code>3</code>，结果保存在<code>xxx_fail.res</code>文件</p>
+</li>
+</ol>
+<p><strong>功能4介绍（单层土不需要使用）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">！根据自己划分的每层土的单元格数（不是高度）填写即可，注意与ny1和ny2区分</span><br><span class="line">请输入第1层土的厚度(竖向单元格数): 16</span><br><span class="line">请输入第2层土的厚度(竖向单元格数): 5</span><br><span class="line">已生成xxx_grid.txt文件!</span><br></pre></td></tr></table></figure>
+<p><code>xxx_grid.txt</code>的内容复制到<code>xxx.dat</code>文件的以下位置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;Choose whether to set it as a random variable (the order is: phi c gamma,1 is random)&quot;</span><br><span class="line">1 1 0</span><br><span class="line"></span><br><span class="line">&quot;Property group assigned to each element (etype, data not needed if np_types=1)&quot;</span><br><span class="line">（--------此位置--------）</span><br><span class="line"></span><br><span class="line">&quot;Pseudo-static analysis: Horizontal acceleration factor (k_h)&quot;</span><br><span class="line">0.0</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>边坡</category>
@@ -63,7 +154,9 @@
         <tag>边坡稳定性</tag>
         <tag>Fortran</tag>
         <tag>有限元</tag>
-        <tag>孔压</tag>
+        <tag>失效概率</tag>
+        <tag>Monte-Carlo</tag>
+        <tag>Python</tag>
       </tags>
   </entry>
   <entry>
@@ -184,99 +277,6 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
         <tag>学习笔记</tag>
         <tag>流体力学</tag>
         <tag>质量守恒方程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>可靠度分析程序说明文件</title>
-    <url>/2024/04/74b4d97f/</url>
-    <content><![CDATA[<h2 id="非饱和黄土边坡失效概率计算程序"><a href="#非饱和黄土边坡失效概率计算程序" class="headerlink" title="非饱和黄土边坡失效概率计算程序"></a>非饱和黄土边坡失效概率计算程序</h2><p>本程序是基于有限元的边坡可靠度分析程序，改进自<a href="https://inside.mines.edu/~vgriffit">Griffith教授</a> 的非饱和黄土边坡稳定性计算程序</p>
-<p>本程序使用强度折减法计算稳定系数，使用Monte-Carlo法计算失效概率；</p>
-<p>将计算作业量，分成<strong>线程数量</strong>的段数，将作业量平均分配给每一个线程；</p>
-<p><strong>本程序使用MPI实现并行运算</strong></p>
-<p><strong>程序文件</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">slope_new/Subroutine.py</span><br><span class="line">slope_new/slope2.f90</span><br></pre></td></tr></table></figure>
-<p><strong>示例数据文件</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exmaple/1.dat</span><br><span class="line">exmaple/1_c.txt</span><br><span class="line">exmaple/1_phi.txt</span><br><span class="line">example/1_gamma.txt !未给出</span><br><span class="line">exmaple/1_mstd.txt</span><br><span class="line">exmaple/1_grid.txt</span><br></pre></td></tr></table></figure>
-<p><strong>结果文件</strong> 未给出</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1_fs.res</span><br><span class="line">1_fail.res</span><br></pre></td></tr></table></figure>
-<h3 id="前置安装教程"><a href="#前置安装教程" class="headerlink" title="前置安装教程"></a>前置安装教程</h3><ol>
-<li>Fortran程序前置安装：<a href="https://github.com/sourceryinstitute/OpenCoarrays">OpenCoarrays</a></li>
-</ol>
-<p>以Ubuntu22.04安装Open-coarrays 2.9.2为例：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install cmake gfortran</span><br><span class="line">wget https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz</span><br><span class="line">tar xf 2.9.2.tar.gz</span><br><span class="line">cd OpenCoarrays-2.9.2</span><br><span class="line">makedir build</span><br><span class="line">cd build</span><br><span class="line">cmake ..</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-<p>！若<a href="https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz">OpenCoarrays2.9.2</a> 下载失败可手动下载并上传到<code>/home/username/</code>再解压编译安装</p>
-<ol>
-<li>可选安装—后台运行<a href="https://www.gnu.org/software/screen/">Screen</a></li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">安装：</span><br><span class="line">sudo apt-get install screen</span><br><span class="line">列出全部会话：</span><br><span class="line">screen -ls</span><br><span class="line">新建：</span><br><span class="line">screen</span><br><span class="line">screen -S name</span><br><span class="line">删除：</span><br><span class="line">screen -S name -X quit ! 或在窗口内使用快捷键ctrl + D</span><br><span class="line">放置后台：</span><br><span class="line">使用快捷键ctrl+A再ctrl+D </span><br><span class="line">返回窗口：</span><br><span class="line">screen -R</span><br><span class="line">screen -r name </span><br></pre></td></tr></table></figure>
-<ol>
-<li>Python程序须安装<a href="https://www.python.org/downloads/">Python3.x</a> ！无须安装在服务器中，仅做数据处理工作，在本地使用即可</li>
-</ol>
-<p>程序运行依赖<code>numpy</code>库，可使用pip安装：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pip install numpy</span><br></pre></td></tr></table></figure>
-<h3 id="程序使用教程"><a href="#程序使用教程" class="headerlink" title="程序使用教程"></a>程序使用教程</h3><ol>
-<li>运行<a href="https://github.com/liudh56/Slope/blob/main/Slope_new/Subroutine.py">Subroutine.py</a></li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd 代码所在目录</span><br><span class="line">python ./Subroutine.py</span><br></pre></td></tr></table></figure>
-<p> 根据提示操作即可<a href="https://github.com/liudh56/Slope/tree/main/example">使用教程</a></p>
-<ol>
-<li>将生成文件与<code>slope2.f90</code>放在同一文件夹内（本文件夹即要上传的文件夹）</li>
-</ol>
-<p>文件包括：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx.dat</span><br><span class="line">xxx_c.txt xxx_phi.txt xxx_gamma.txt #具体文件数量与设为随机的参数有关</span><br></pre></td></tr></table></figure>
-<p><a href="https://github.com/liudh56/Slope/blob/main/example/1.dat">dat文件详细</a> </p>
-<p>其他python程序使用文件（无需上传）：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx_mstd.txt</span><br><span class="line">xxx_grid.txt</span><br></pre></td></tr></table></figure>
-<h4 id="Fortran程序—在服务器中运行"><a href="#Fortran程序—在服务器中运行" class="headerlink" title="Fortran程序—在服务器中运行"></a>Fortran程序—在服务器中运行</h4><ol>
-<li><p>将上文中的文件夹上传至服务器并打开目录</p>
-</li>
-<li><p>编译命令：</p>
-</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">caf slope2.f90 -o slope</span><br></pre></td></tr></table></figure>
-<ol>
-<li>运行：</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cafrun -n 4 slope</span><br><span class="line">！ 4代表线程数，可更改，若线程数报错改用下面的命令</span><br></pre></td></tr></table></figure>
-<p> 或者：使用下面命令适用于多主机的情况，根据主机实际情况分配线程数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mpirun --host host1:40 host2:40 -n 80 filename</span><br><span class="line">mpirun --host hostfile -n 80 filename !使用该命令须先创建hostfile文件</span><br></pre></td></tr></table></figure>
-<ol>
-<li>保存结果文件到本地与Subroutine.py文件放置在同一文件内</li>
-</ol>
-<p>运行Subroutine.py程序并选择功能3计算失效概率，结果保存在<code>xxx_fail.res</code>文件内。</p>
-<h2 id="Subroutine-py程序使用方式"><a href="#Subroutine-py程序使用方式" class="headerlink" title="Subroutine.py程序使用方式"></a>Subroutine.py程序使用方式</h2><h3 id="1-输入项目名称xxx。"><a href="#1-输入项目名称xxx。" class="headerlink" title="1. 输入项目名称xxx。"></a>1. 输入项目名称xxx。</h3><h3 id="2-选择功能（输入序号）。"><a href="#2-选择功能（输入序号）。" class="headerlink" title="2. 选择功能（输入序号）。"></a>2. 选择功能（输入序号）。</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. （首次使用）引导填写并重新生成xxx.dat和xxx_mstd.txt文件</span><br><span class="line">   </span><br><span class="line">2. 根据xxx_mstd.txt生成phi、c和gamma的值</span><br><span class="line">   </span><br><span class="line">3. 计算失效概率,并生成xxx_fail.res文件,储存失效概率</span><br><span class="line">   </span><br><span class="line">4. 生成xxx_grid.txt文件,储存网格点的序号(多层土的情况使用)</span><br><span class="line">   </span><br><span class="line">5. 根据xxx_mstd.txt重新生成某参数值</span><br><span class="line"></span><br><span class="line">0. 退出程序(默认)</span><br></pre></td></tr></table></figure>
-<h3 id="功能使用教程"><a href="#功能使用教程" class="headerlink" title="功能使用教程"></a>功能使用教程</h3><ol>
-<li>第一次使用选择<code>1</code>填写<code>xxx.dat</code>和<code>xxx_mstd.txt</code>文件（也可直接修改示例文件来使用）</li>
-</ol>
-<p><strong>建议先查看示例文件</strong></p>
-<p><strong>若填写过程中出现填写错误，可继续填写，等待填写完成再从生成文件内修改错误</strong></p>
-<p><strong>功能4，可协助填写<code>xxx.dat</code>文件，后文介绍</strong></p>
-<ol>
-<li>再选择<code>2</code>根据提示进行选择（以内摩擦角和粘聚力为随机参数为例）</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">请输入模拟次数:10000</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 10</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布) 1</span><br><span class="line">已生成xxx_c.txt文件!</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 20</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布): 1</span><br><span class="line">已生成xxx_phi.txt文件!</span><br></pre></td></tr></table></figure>
-<ol>
-<li><p>文件上传计算</p>
-</li>
-<li><p>计算完成后，将结果文件<code>xxx_fs.res</code>放置与本程序在同一文件夹内，运行程序选择<code>3</code>，结果保存在<code>xxx_fail.res</code>文件</p>
-</li>
-</ol>
-<p><strong>功能4介绍（单层土不需要使用）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">！根据自己划分的每层土的单元格数（不是高度）填写即可，注意与ny1和ny2区分</span><br><span class="line">请输入第1层土的厚度(竖向单元格数): 16</span><br><span class="line">请输入第2层土的厚度(竖向单元格数): 5</span><br><span class="line">已生成xxx_grid.txt文件!</span><br></pre></td></tr></table></figure>
-<p><code>xxx_grid.txt</code>的内容复制到<code>xxx.dat</code>文件的以下位置：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;Choose whether to set it as a random variable (the order is: phi c gamma,1 is random)&quot;</span><br><span class="line">1 1 0</span><br><span class="line"></span><br><span class="line">&quot;Property group assigned to each element (etype, data not needed if np_types=1)&quot;</span><br><span class="line">（--------此位置--------）</span><br><span class="line"></span><br><span class="line">&quot;Pseudo-static analysis: Horizontal acceleration factor (k_h)&quot;</span><br><span class="line">0.0</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>边坡</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>边坡稳定性</tag>
-        <tag>Fortran</tag>
-        <tag>有限元</tag>
-        <tag>失效概率</tag>
-        <tag>Monte-Carlo</tag>
-        <tag>Python</tag>
       </tags>
   </entry>
   <entry>
@@ -1290,56 +1290,6 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
       </tags>
   </entry>
   <entry>
-    <title>Mavic 3 classic屏控航线(航点)飞行教程</title>
-    <url>/2024/08/78788d45/</url>
-    <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>遥控手柄(带屏)</p>
-<p>航线规划软件(网页) - Rainbow Cloud</p>
-<p>SD卡, 读卡器, 电脑</p>
-<h2 id="1-创建航线"><a href="#1-创建航线" class="headerlink" title="1. 创建航线"></a>1. 创建航线</h2><p>首先, 打开<a href="https://app.flydji.cn/">Rainbow Cloud网站</a>. </p>
-<p>网页界面如下: </p>
-<p><img src="/2024/08/78788d45/20240907103046.png" alt="image-20240907103033256" style="zoom: 33%;"></p>
-<p>点击左侧新建任务. </p>
-<p><img src="/2024/08/78788d45/20240907103203.png" alt="image-20240907103201411" style="zoom:33%;"></p>
-<p>选择正射</p>
-<p><img src="/2024/08/78788d45/20240907103355.png" alt="image-20240907103352484" style="zoom: 33%;"></p>
-<p>输入任务名称</p>
-<p><img src="/2024/08/78788d45/20240907103444.png" alt="image-20240907103443297" style="zoom:50%;"></p>
-<p>确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围. </p>
-<p><img src="/2024/08/78788d45/20240907103635.png" alt="image-20240907103623963" style="zoom:33%;"></p>
-<p>然后, 调整这个范围至合适位置. 可以移动和添加顶点</p>
-<p><img src="/2024/08/78788d45/20240907104233.png" alt="image-20240907104221465" style="zoom:33%;"></p>
-<p>然后, 调整右侧参数栏的参数. </p>
-<p><img src="/2024/08/78788d45/20240907104901.png" alt="image-20240907104849438" style="zoom:33%;"></p>
-<p><img src="/2024/08/78788d45/20240907105200.png" alt="image-20240907105046748" style="zoom:33%;"></p>
-<p>其余设置与上图保持一致, 保存任务</p>
-<p><img src="/2024/08/78788d45/20240907105605.png" alt="image-20240907105604011" style="zoom:50%;"></p>
-<p>点击右上角任务导出</p>
-<p><img src="/2024/08/78788d45/20240907105752.png" alt="image-20240907105740750" style="zoom:33%;"></p>
-<p>选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.</p>
-<p><img src="/2024/08/78788d45/20240907110020.png" alt="image-20240907110018439" style="zoom:50%;"></p>
-<p>点击下载, 将文件下载并导入到SD卡中.</p>
-<h2 id="2-导入航线"><a href="#2-导入航线" class="headerlink" title="2. 导入航线"></a>2. 导入航线</h2><p>根据导入教程导入文件<a href="https://docs.qq.com/doc/DSEpQRFZXUU5ET3JZ">Mavic3系列屏控手动导入Kmz 航点任务 (qq.com)</a></p>
-<h3 id="2-1-创建并备份航线"><a href="#2-1-创建并备份航线" class="headerlink" title="2.1 创建并备份航线"></a>2.1 创建并备份航线</h3><p>创建任意数量的航点, 保存. </p>
-<p>航点文件保存位置如下</p>
-<p><img src="/2024/08/78788d45/20240913182709.png" alt="image-20240913182656864" style="zoom:33%;"></p>
-<p>一串英文字符的文件夹内存放的就是航线文件(kmz格式)</p>
-<p>将整个waypoint文件夹复制至SD卡中</p>
-<h3 id="2-2-替换kmz文件"><a href="#2-2-替换kmz文件" class="headerlink" title="2.2 替换kmz文件"></a>2.2 替换kmz文件</h3><p>将已经下载好的Kmz文件同样导入到SD卡的该文件夹内</p>
-<p>注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).</p>
-<p>将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)</p>
-<p>最后将替换好的waypoint文件夹替换回去 </p>
-]]></content>
-      <categories>
-        <category>无人机</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>DJI</tag>
-        <tag>Mavic 3 classic</tag>
-        <tag>正射航线</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>物质点法--学习笔记(一)</title>
     <url>/2024/07/af38f644/</url>
     <content><![CDATA[<h2 id="1-物质点法"><a href="#1-物质点法" class="headerlink" title="1. 物质点法"></a>1. 物质点法</h2><p>​    物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到计算网格得到, 求解后将计算网格结点的运动量映射回各质点, 从而得到这些质点在下一时刻的运动量(对流计算步). </p>
@@ -1572,6 +1522,56 @@ c_{ij} = \delta_{ij} + \Omega_{ij}dt
       <tags>
         <tag>学习笔记</tag>
         <tag>物质点法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Mavic 3 classic屏控航线(航点)飞行教程</title>
+    <url>/2024/08/78788d45/</url>
+    <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>遥控手柄(带屏)</p>
+<p>航线规划软件(网页) - Rainbow Cloud</p>
+<p>SD卡, 读卡器, 电脑</p>
+<h2 id="1-创建航线"><a href="#1-创建航线" class="headerlink" title="1. 创建航线"></a>1. 创建航线</h2><p>首先, 打开<a href="https://app.flydji.cn/">Rainbow Cloud网站</a>. </p>
+<p>网页界面如下: </p>
+<p><img src="/2024/08/78788d45/20240907103046.png" alt="image-20240907103033256" style="zoom: 33%;"></p>
+<p>点击左侧新建任务. </p>
+<p><img src="/2024/08/78788d45/20240907103203.png" alt="image-20240907103201411" style="zoom:33%;"></p>
+<p>选择正射</p>
+<p><img src="/2024/08/78788d45/20240907103355.png" alt="image-20240907103352484" style="zoom: 33%;"></p>
+<p>输入任务名称</p>
+<p><img src="/2024/08/78788d45/20240907103444.png" alt="image-20240907103443297" style="zoom:50%;"></p>
+<p>确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围. </p>
+<p><img src="/2024/08/78788d45/20240907103635.png" alt="image-20240907103623963" style="zoom:33%;"></p>
+<p>然后, 调整这个范围至合适位置. 可以移动和添加顶点</p>
+<p><img src="/2024/08/78788d45/20240907104233.png" alt="image-20240907104221465" style="zoom:33%;"></p>
+<p>然后, 调整右侧参数栏的参数. </p>
+<p><img src="/2024/08/78788d45/20240907104901.png" alt="image-20240907104849438" style="zoom:33%;"></p>
+<p><img src="/2024/08/78788d45/20240907105200.png" alt="image-20240907105046748" style="zoom:33%;"></p>
+<p>其余设置与上图保持一致, 保存任务</p>
+<p><img src="/2024/08/78788d45/20240907105605.png" alt="image-20240907105604011" style="zoom:50%;"></p>
+<p>点击右上角任务导出</p>
+<p><img src="/2024/08/78788d45/20240907105752.png" alt="image-20240907105740750" style="zoom:33%;"></p>
+<p>选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.</p>
+<p><img src="/2024/08/78788d45/20240907110020.png" alt="image-20240907110018439" style="zoom:50%;"></p>
+<p>点击下载, 将文件下载并导入到SD卡中.</p>
+<h2 id="2-导入航线"><a href="#2-导入航线" class="headerlink" title="2. 导入航线"></a>2. 导入航线</h2><p>根据导入教程导入文件<a href="https://docs.qq.com/doc/DSEpQRFZXUU5ET3JZ">Mavic3系列屏控手动导入Kmz 航点任务 (qq.com)</a></p>
+<h3 id="2-1-创建并备份航线"><a href="#2-1-创建并备份航线" class="headerlink" title="2.1 创建并备份航线"></a>2.1 创建并备份航线</h3><p>创建任意数量的航点, 保存. </p>
+<p>航点文件保存位置如下</p>
+<p><img src="/2024/08/78788d45/20240913182709.png" alt="image-20240913182656864" style="zoom:33%;"></p>
+<p>一串英文字符的文件夹内存放的就是航线文件(kmz格式)</p>
+<p>将整个waypoint文件夹复制至SD卡中</p>
+<h3 id="2-2-替换kmz文件"><a href="#2-2-替换kmz文件" class="headerlink" title="2.2 替换kmz文件"></a>2.2 替换kmz文件</h3><p>将已经下载好的Kmz文件同样导入到SD卡的该文件夹内</p>
+<p>注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).</p>
+<p>将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)</p>
+<p>最后将替换好的waypoint文件夹替换回去 </p>
+]]></content>
+      <categories>
+        <category>无人机</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>DJI</tag>
+        <tag>Mavic 3 classic</tag>
+        <tag>正射航线</tag>
       </tags>
   </entry>
   <entry>
