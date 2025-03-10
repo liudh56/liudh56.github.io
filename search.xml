@@ -838,6 +838,54 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
       </tags>
   </entry>
   <entry>
+    <title>Ubuntu搭建Webdav</title>
+    <url>/2024/05/e8755f24/</url>
+    <content><![CDATA[<p>参考文章: <a href="https://colzry.github.io/posts/linux服务/linux搭建webdav服务/">Linux搭建WebDav服务 - Colzry’s Blog</a></p>
+<blockquote>
+<p>以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决</p>
+</blockquote>
+<h2 id="步骤一-安装WebDAV服务"><a href="#步骤一-安装WebDAV服务" class="headerlink" title="步骤一: 安装WebDAV服务"></a>步骤一: 安装WebDAV服务</h2><p>首先, 我们需要安装<a href="https://github.com/hacdias/webdav">WebDAV Server</a>, 打开页面下载合适的版本, 本文以<a href="https://github.com/hacdias/webdav/releases/download/v4.2.0/linux-amd64-webdav.tar.gz"><code>linux-amd64-webdav.tar.gz</code></a>为例, 其中<code>amd64</code>表示<code>x64</code>架构</p>
+<p>然后, 解压并移动文件到<code>/usr/bin/</code>, 其余的README和LICENSE文件可删除</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -zxvf linux-amd64-webdav.tar.gz</span><br><span class="line">mv webdav /usr/bin/</span><br></pre></td></tr></table></figure>
+<h2 id="步骤二-配置WebDAV服务"><a href="#步骤二-配置WebDAV服务" class="headerlink" title="步骤二: 配置WebDAV服务"></a>步骤二: 配置WebDAV服务</h2><p>安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 <code>/home/liudh/webdav</code>的目录, 注意修改用户名<code>liudh</code>为自己的用户名</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir /home/liudh/webdav</span><br></pre></td></tr></table></figure>
+<p>然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
+<p>在配置文件中, 我们需要添加以下内容. </p>
+<blockquote>
+<p>注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容</p>
+<p>注意缩进, <code>cors</code>和<code>users</code>后的参数均需要两个空格的缩进, 带<code>-</code>的参数需再缩进两个空格(四个)</p>
+<p>每一个参数<code>:</code>后均有一个空格</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Server related settings</span><br><span class="line">address: 0.0.0.0</span><br><span class="line">port: 10101</span><br><span class="line"># 如果无需验证填 false</span><br><span class="line">auth: true</span><br><span class="line"># 如果不需要 https 则填 false</span><br><span class="line">tls: false</span><br><span class="line"># https证书和密钥，如果 tls 为 false，cert 和 key 不需要</span><br><span class="line"># cert: cert_path</span><br><span class="line"># key: key_path</span><br><span class="line"># 访问前缀，建议默认</span><br><span class="line">prefix: /</span><br><span class="line">debug: false</span><br><span class="line"># 如果 auth 为 false 生效，文件共享的路径</span><br><span class="line">scope: .</span><br><span class="line">modify: true</span><br><span class="line">rules: []</span><br><span class="line"># 跨域设置</span><br><span class="line">cors:</span><br><span class="line">  enabled: true</span><br><span class="line">  credentials: true</span><br><span class="line">  allowed_headers:</span><br><span class="line">    - Depth</span><br><span class="line">  allowed_hosts:</span><br><span class="line">    - http://localhost:10101</span><br><span class="line">  allowed_methods:</span><br><span class="line">    - GET</span><br><span class="line">  exposed_headers:</span><br><span class="line">    - Content-Length</span><br><span class="line">    - Content-Range</span><br><span class="line"># 用户信息，如果 auth 为 true 生效</span><br><span class="line">users:</span><br><span class="line">  - username: liudh</span><br><span class="line">    password: passwd</span><br><span class="line">    scope: /home/liudh/webdav/</span><br><span class="line">    # 是否允许修改</span><br><span class="line">    modify: true</span><br><span class="line"># 可以根据此模板继续添加其他用户</span><br></pre></td></tr></table></figure>
+<p>保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/bin/webdav -c /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="步骤三-添加守护进程"><a href="#步骤三-添加守护进程" class="headerlink" title="步骤三: 添加守护进程"></a>步骤三: 添加守护进程</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /usr/lib/systemd/system/webdav.service</span><br></pre></td></tr></table></figure>
+<p>将以下内容添加到文件中</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=WebDAV server</span><br><span class="line">After=network.target</span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">ExecStart=/usr/bin/webdav -c /opt/webdav_config.yaml</span><br><span class="line">Restart=on-failure</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start webdav.service</span><br><span class="line">systemctl status webdav.service</span><br><span class="line">systemctl enable webdav.service</span><br></pre></td></tr></table></figure>
+<p>之后修改配置文件后, 可以使用以下命令重启服务</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl restart webdav.service</span><br></pre></td></tr></table></figure>
+<h2 id="步骤四-挂载webdav测试服务"><a href="#步骤四-挂载webdav测试服务" class="headerlink" title="步骤四: 挂载webdav测试服务"></a>步骤四: 挂载webdav测试服务</h2><p>使用任意webdav挂载软件, 挂载测试, 注意填写参数如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">协议: http # 如果配置了ssl证书就用https</span><br><span class="line">主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号</span><br><span class="line">	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/</span><br><span class="line">端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要</span><br><span class="line">用户名: liudh # 都改成自己的</span><br><span class="line">密码: passwd</span><br></pre></td></tr></table></figure>
+<p>之后就可以上传下载文件测试一下了, 如果有错误就用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl status webdav.service</span><br></pre></td></tr></table></figure>
+<p>查看错误日志. </p>
+<blockquote>
+<p>如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Webdav</tag>
+        <tag>云服务</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Git 安装及配置教程</title>
     <url>/2024/05/cbf708ce/</url>
     <content><![CDATA[<h2 id="1-下载安装包"><a href="#1-下载安装包" class="headerlink" title="1. 下载安装包"></a>1. 下载安装包</h2><p>打开<a href="https://git-scm.com/downloads">Git官网</a>下载安装包, 嫌速度慢可以使用下面的链接下载</p>
@@ -890,54 +938,6 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
         <tag>Git</tag>
         <tag>安装教程</tag>
         <tag>Windows</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ubuntu搭建Webdav</title>
-    <url>/2024/05/e8755f24/</url>
-    <content><![CDATA[<p>参考文章: <a href="https://colzry.github.io/posts/linux服务/linux搭建webdav服务/">Linux搭建WebDav服务 - Colzry’s Blog</a></p>
-<blockquote>
-<p>以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决</p>
-</blockquote>
-<h2 id="步骤一-安装WebDAV服务"><a href="#步骤一-安装WebDAV服务" class="headerlink" title="步骤一: 安装WebDAV服务"></a>步骤一: 安装WebDAV服务</h2><p>首先, 我们需要安装<a href="https://github.com/hacdias/webdav">WebDAV Server</a>, 打开页面下载合适的版本, 本文以<a href="https://github.com/hacdias/webdav/releases/download/v4.2.0/linux-amd64-webdav.tar.gz"><code>linux-amd64-webdav.tar.gz</code></a>为例, 其中<code>amd64</code>表示<code>x64</code>架构</p>
-<p>然后, 解压并移动文件到<code>/usr/bin/</code>, 其余的README和LICENSE文件可删除</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -zxvf linux-amd64-webdav.tar.gz</span><br><span class="line">mv webdav /usr/bin/</span><br></pre></td></tr></table></figure>
-<h2 id="步骤二-配置WebDAV服务"><a href="#步骤二-配置WebDAV服务" class="headerlink" title="步骤二: 配置WebDAV服务"></a>步骤二: 配置WebDAV服务</h2><p>安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 <code>/home/liudh/webdav</code>的目录, 注意修改用户名<code>liudh</code>为自己的用户名</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir /home/liudh/webdav</span><br></pre></td></tr></table></figure>
-<p>然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
-<p>在配置文件中, 我们需要添加以下内容. </p>
-<blockquote>
-<p>注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容</p>
-<p>注意缩进, <code>cors</code>和<code>users</code>后的参数均需要两个空格的缩进, 带<code>-</code>的参数需再缩进两个空格(四个)</p>
-<p>每一个参数<code>:</code>后均有一个空格</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Server related settings</span><br><span class="line">address: 0.0.0.0</span><br><span class="line">port: 10101</span><br><span class="line"># 如果无需验证填 false</span><br><span class="line">auth: true</span><br><span class="line"># 如果不需要 https 则填 false</span><br><span class="line">tls: false</span><br><span class="line"># https证书和密钥，如果 tls 为 false，cert 和 key 不需要</span><br><span class="line"># cert: cert_path</span><br><span class="line"># key: key_path</span><br><span class="line"># 访问前缀，建议默认</span><br><span class="line">prefix: /</span><br><span class="line">debug: false</span><br><span class="line"># 如果 auth 为 false 生效，文件共享的路径</span><br><span class="line">scope: .</span><br><span class="line">modify: true</span><br><span class="line">rules: []</span><br><span class="line"># 跨域设置</span><br><span class="line">cors:</span><br><span class="line">  enabled: true</span><br><span class="line">  credentials: true</span><br><span class="line">  allowed_headers:</span><br><span class="line">    - Depth</span><br><span class="line">  allowed_hosts:</span><br><span class="line">    - http://localhost:10101</span><br><span class="line">  allowed_methods:</span><br><span class="line">    - GET</span><br><span class="line">  exposed_headers:</span><br><span class="line">    - Content-Length</span><br><span class="line">    - Content-Range</span><br><span class="line"># 用户信息，如果 auth 为 true 生效</span><br><span class="line">users:</span><br><span class="line">  - username: liudh</span><br><span class="line">    password: passwd</span><br><span class="line">    scope: /home/liudh/webdav/</span><br><span class="line">    # 是否允许修改</span><br><span class="line">    modify: true</span><br><span class="line"># 可以根据此模板继续添加其他用户</span><br></pre></td></tr></table></figure>
-<p>保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/bin/webdav -c /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
-<h2 id="步骤三-添加守护进程"><a href="#步骤三-添加守护进程" class="headerlink" title="步骤三: 添加守护进程"></a>步骤三: 添加守护进程</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /usr/lib/systemd/system/webdav.service</span><br></pre></td></tr></table></figure>
-<p>将以下内容添加到文件中</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=WebDAV server</span><br><span class="line">After=network.target</span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">ExecStart=/usr/bin/webdav -c /opt/webdav_config.yaml</span><br><span class="line">Restart=on-failure</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-<p>保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start webdav.service</span><br><span class="line">systemctl status webdav.service</span><br><span class="line">systemctl enable webdav.service</span><br></pre></td></tr></table></figure>
-<p>之后修改配置文件后, 可以使用以下命令重启服务</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl restart webdav.service</span><br></pre></td></tr></table></figure>
-<h2 id="步骤四-挂载webdav测试服务"><a href="#步骤四-挂载webdav测试服务" class="headerlink" title="步骤四: 挂载webdav测试服务"></a>步骤四: 挂载webdav测试服务</h2><p>使用任意webdav挂载软件, 挂载测试, 注意填写参数如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">协议: http # 如果配置了ssl证书就用https</span><br><span class="line">主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号</span><br><span class="line">	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/</span><br><span class="line">端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要</span><br><span class="line">用户名: liudh # 都改成自己的</span><br><span class="line">密码: passwd</span><br></pre></td></tr></table></figure>
-<p>之后就可以上传下载文件测试一下了, 如果有错误就用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl status webdav.service</span><br></pre></td></tr></table></figure>
-<p>查看错误日志. </p>
-<blockquote>
-<p>如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>Ubuntu</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-        <tag>Webdav</tag>
-        <tag>云服务</tag>
       </tags>
   </entry>
   <entry>
