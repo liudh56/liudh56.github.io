@@ -291,27 +291,6 @@
   </url>
   
   <url>
-    <loc>https://fireflye.top/tags/Git/</loc>
-    <lastmod>2025-05-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://fireflye.top/tags/Github/</loc>
-    <lastmod>2025-05-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://fireflye.top/tags/%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B/</loc>
-    <lastmod>2025-05-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://fireflye.top/tags/Ubuntu/</loc>
     <lastmod>2025-05-06</lastmod>
     <changefreq>weekly</changefreq>
@@ -341,6 +320,27 @@
   
   <url>
     <loc>https://fireflye.top/tags/%E4%BA%91%E6%9C%8D%E5%8A%A1/</loc>
+    <lastmod>2025-05-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://fireflye.top/tags/Git/</loc>
+    <lastmod>2025-05-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://fireflye.top/tags/Github/</loc>
+    <lastmod>2025-05-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://fireflye.top/tags/%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B/</loc>
     <lastmod>2025-05-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -489,14 +489,14 @@
   </url>
   
   <url>
-    <loc>https://fireflye.top/categories/Git/</loc>
+    <loc>https://fireflye.top/categories/Ubuntu/</loc>
     <lastmod>2025-05-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://fireflye.top/categories/Ubuntu/</loc>
+    <loc>https://fireflye.top/categories/Git/</loc>
     <lastmod>2025-05-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
