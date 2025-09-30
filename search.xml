@@ -1,6 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>非饱和土边坡稳定性计算程序说明文件</title>
+    <url>/2024/04/71e392b0/</url>
+    <content><![CDATA[<h2 id="一、数据文件"><a href="#一、数据文件" class="headerlink" title="一、数据文件"></a>一、数据文件</h2><h3 id="注意：以下文件内不要输入注释文字"><a href="#注意：以下文件内不要输入注释文字" class="headerlink" title="注意：以下文件内不要输入注释文字"></a>注意：以下文件内不要输入注释文字</h3><h4 id="1-dat文件"><a href="#1-dat文件" class="headerlink" title="1. dat文件"></a>1. dat文件</h4><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="comment">!dx  h2v</span></span><br><span class="line"><span class="number">1.0</span>  <span class="number">2.0</span></span><br><span class="line"><span class="comment">!nx1 nx2 ny1 ny2</span></span><br><span class="line"><span class="number">20</span>  <span class="number">20</span>  <span class="number">10</span>  <span class="number">5</span></span><br><span class="line"><span class="comment">!树荷载的左列和右列数，树荷载kN(各单元格相同)</span></span><br><span class="line"><span class="number">27</span> <span class="number">32</span> <span class="number">10.0</span></span><br><span class="line"><span class="comment">!内摩擦角，粘聚力，剪胀角，重度，弹性模量，泊松比, a, m, n, theta_s 其中,重度=ρ_d*gam_w,theta_s=1-ρ_d/G_s</span></span><br><span class="line"><span class="number">20.0</span>  <span class="number">15.0</span>  <span class="number">0.0</span>  <span class="number">20.0</span>  <span class="number">1.0e5</span>  <span class="number">0.3</span> <span class="number">15</span> <span class="number">0.2</span> <span class="number">4</span> <span class="number">0.907749</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">20</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span> <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">6</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.55</span> <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2024/04/71e392b0/202405051034316.png" alt="模型"></p>
+<p>其中,第三行表示荷载的加荷位置和大小</p>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="number">27</span> <span class="comment">! 表示起点在第27列（从左至右）</span></span><br><span class="line"><span class="number">32</span> <span class="comment">! 表示终点在第32列（从左至右）</span></span><br><span class="line"><span class="number">30</span> <span class="comment">! 表示荷载为30kN</span></span><br></pre></td></tr></table></figure>
+<p>对应下图中的红色位置</p>
+<p><img src="/2024/04/71e392b0/202405051036737.png" alt="加载位置"></p>
+<h4 id="2-孔压文件x-f-txt"><a href="#2-孔压文件x-f-txt" class="headerlink" title="2. 孔压文件x_f.txt"></a>2. 孔压文件x_f.txt</h4><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">按节点列依次输入节点处的孔压</span><br><span class="line">每个单元格有<span class="number">3</span>列共<span class="number">8</span>个节点，呈<span class="number">323</span>分布，如下图所示，阴影部分为一个单元格，黄色为单元格号</span><br><span class="line">按照节点的<span class="number">1234.</span>..顺序竖向填写x_f.txt文件，每节点占一行 </span><br></pre></td></tr></table></figure>
+<p><img src="/2024/04/71e392b0/202405051036959.png" alt="17143576814081714357680903png"></p>
+<h2 id="二、源代码"><a href="#二、源代码" class="headerlink" title="二、源代码"></a>二、源代码</h2><p>本程序单元格序号是从上至下，从左至右依次排序,如下例</p>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="number">1</span> <span class="number">6</span> </span><br><span class="line"><span class="number">2</span> <span class="number">7</span>  <span class="number">11</span></span><br><span class="line"><span class="number">3</span> <span class="number">8</span>  <span class="number">12</span> <span class="number">15</span></span><br><span class="line"><span class="number">4</span> <span class="number">9</span>  <span class="number">13</span> <span class="number">16</span> <span class="number">18</span> <span class="number">20</span></span><br><span class="line"><span class="number">5</span> <span class="number">10</span> <span class="number">14</span> <span class="number">17</span> <span class="number">19</span> <span class="number">21</span></span><br></pre></td></tr></table></figure>
+<p>在叠加荷载时，因为所有单元格的g都是按照3 2 1 4 6 7 8 5 的顺序保存，因此我们仅需找到对应的单元格号以及146号节点的相对位置</p>
+<p>146号节点的相对位置为g(6), g(8), g(10),下文有介绍</p>
+<p>接下来只需找到单元格号即可。</p>
+<h3 id="计算单元号"><a href="#计算单元号" class="headerlink" title="计算单元号"></a>计算单元号</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (tree_load/=<span class="number">0</span>) <span class="keyword">then</span> <span class="comment">!荷载不为零再进行运算</span></span><br><span class="line">  <span class="built_in">allocate</span>(tree_nodes(nx1+nx2+ny1*ngrad))</span><br><span class="line"></span><br><span class="line">  tree_nodes=<span class="number">0</span></span><br><span class="line">   <span class="comment">! tree_nodes(nx1+nx2+ny1*ngrad)是储存表面单元格的单元号</span></span><br><span class="line"></span><br><span class="line">  itree = <span class="number">2</span> <span class="comment">!用于计数，记录需加荷的单元格数量</span></span><br><span class="line">  tree_nodes(<span class="number">1</span>)=<span class="number">1</span> </span><br><span class="line"></span><br><span class="line">  <span class="comment">! 顶面和斜面前ngrad行</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">2</span>,nx1+ngrad </span><br><span class="line">     tree_nodes(itree) = (i-<span class="number">1</span>)*nye+<span class="number">1</span></span><br><span class="line">     itree = itree + <span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 斜面ngrad行以后</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">1</span>,ny1-<span class="number">1</span></span><br><span class="line">    <span class="keyword">do</span> j=<span class="number">1</span>,ngrad</span><br><span class="line">       <span class="keyword">if</span> (j==<span class="number">1</span>) <span class="keyword">then</span></span><br><span class="line">          tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+nye-i+<span class="number">1</span></span><br><span class="line">       <span class="keyword">else</span></span><br><span class="line">          tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+nye-i</span><br><span class="line">       <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">       itree = itree + <span class="number">1</span></span><br><span class="line">    <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 底面第一列</span></span><br><span class="line">  tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+ny2+<span class="number">1</span></span><br><span class="line">  itree = itree + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 底面以后</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">2</span>,nx2</span><br><span class="line">     tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+ny2</span><br><span class="line">     itree = itree + <span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  tree_nodes_= tree_nodes(nel_left:nel_right) <span class="comment">! 储存实际需要加荷的单元格的序号</span></span><br></pre></td></tr></table></figure>
+<h3 id="分配荷载到节点"><a href="#分配荷载到节点" class="headerlink" title="分配荷载到节点"></a>分配荷载到节点</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">  <span class="built_in">ALLOCATE</span>(weight_load(<span class="number">8</span>),tree(ndof))</span><br><span class="line">  <span class="comment">!荷载在节点上的分布权重</span></span><br><span class="line">  weight_load = (/<span class="number">0.166667</span>,<span class="number">0.0</span>,<span class="number">0.0</span>,<span class="number">0.666667</span>,<span class="number">0.0</span>,<span class="number">0.166667</span>,<span class="number">0.0</span>,<span class="number">0.0</span>/)</span><br><span class="line"></span><br><span class="line">  <span class="comment">!计算各节点荷载大小</span></span><br><span class="line">  tree=zero</span><br><span class="line">  tree(<span class="number">6</span>)=tree_load*weight_load(<span class="number">1</span>)</span><br><span class="line">  tree(<span class="number">8</span>)=tree_load*weight_load(<span class="number">4</span>)</span><br><span class="line">  tree(<span class="number">10</span>)=tree_load*weight_load(<span class="number">6</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">! 此处注意区分(见下图)</span></span><br><span class="line">  <span class="comment">! g数组按3x 3y 2x 2y 1x 1y 4x 4y 6x 6y 7x 7y 8x 8y 5x 5y的顺序保存</span></span><br><span class="line">  <span class="comment">! weight_load按1 2 3 4 5 6 7 8来保存</span></span><br><span class="line">  <span class="comment">! 则1 4 6号节点的y方向对应g(6),g(8),g(10)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">if</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2024/04/71e392b0/202405051036468.png" title alt="单元节点" data-align="center"></p>
+<h3 id="叠加荷载"><a href="#叠加荷载" class="headerlink" title="叠加荷载"></a>叠加荷载</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">itree=<span class="number">1</span> <span class="comment">! 作tree_nodes_数组的索引，将序号依次读出</span></span><br><span class="line"></span><br><span class="line">elements_2: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line"></span><br><span class="line">   ...</span><br><span class="line"></span><br><span class="line">   gravlo(g)=gravlo(g)-eld*prop(<span class="number">4</span>,etype(iel))</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (tree_load.ne<span class="number">.0</span><span class="number">.0</span>) <span class="keyword">then</span> <span class="comment">!荷载不为零时计算</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> ((iel==tree_nodes_(itree))<span class="keyword">.and.</span>(itree<span class="keyword">.le.</span><span class="built_in">size</span>(tree_nodes_))) <span class="keyword">then</span> <span class="comment">!判断是否为需加荷的单元</span></span><br><span class="line"></span><br><span class="line">         gravlo(g) = gravlo(g) - tree <span class="comment">!根据自由度编号加到指定位置</span></span><br><span class="line"></span><br><span class="line">         itree=itree+<span class="number">1</span></span><br><span class="line">      <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">   <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">END</span> <span class="keyword">DO</span> elements_2</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="叠加外部水荷载"><a href="#叠加外部水荷载" class="headerlink" title="叠加外部水荷载"></a>叠加外部水荷载</h3><p>叠加外部水荷载的方式与上方叠加外部荷载的方法类似，将水的压力 $\gamma_w*h$ 叠加到相应的表面节点上</p>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">IF</span>(wl&gt;g_coord(<span class="number">2</span>,<span class="number">1</span>))<span class="keyword">THEN</span>  <span class="comment">! 水位淹没整个边坡</span></span><br><span class="line">      p3=(wl-g_coord(<span class="number">2</span>,<span class="number">1</span>))*gam_w</span><br><span class="line">      <span class="keyword">DO</span> i=<span class="number">1</span>,nx1</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">DO</span> i=nx1+<span class="number">1</span>,nx1+ny1*ngrad</span><br><span class="line">         <span class="keyword">if</span> (<span class="built_in">mod</span>(i-nx1,ngrad)/=<span class="number">0</span>)<span class="keyword">then</span></span><br><span class="line">            y5=g_coord(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">            p5=(wl-y5)*gam_w</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">         <span class="keyword">else</span></span><br><span class="line">            y5=g_coord(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">            p5=(wl-y5)*gam_w</span><br><span class="line">            y7=g_coord(<span class="number">2</span>,g_num(<span class="number">7</span>,tree_nodes(i)))</span><br><span class="line">            p7=(wl-y7)*gam_w</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))-dx*(p5+p7)/d3</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))-dx*p7/d6</span><br><span class="line">         <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">IF</span>(ny2&gt;<span class="number">0</span>)<span class="keyword">THEN</span> <span class="comment">! 如果有破角台阶</span></span><br><span class="line">         p3=(wl-g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))*gam_w <span class="comment">!p3==p5</span></span><br><span class="line">         <span class="keyword">DO</span> i=nx1+ny1*ngrad+<span class="number">1</span>,nx1+ny1*ngrad+nx2</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">   <span class="keyword">ELSE</span> <span class="keyword">IF</span>(wl&gt;g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))<span class="keyword">THEN</span> <span class="comment">! 水面在斜面位置(低于坡顶,高于坡脚)</span></span><br><span class="line">      nw=<span class="built_in">int</span>((-wl)/dx)</span><br><span class="line">      <span class="keyword">do</span> i=nx1+nw*ngrad+ngrad,nx1+ny1*ngrad</span><br><span class="line">         y5=g_coord(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">         y7=g_coord(<span class="number">2</span>,g_num(<span class="number">7</span>,tree_nodes(i)))</span><br><span class="line">         p5=(wl-y5)*gam_w</span><br><span class="line">         p7=(wl-y7)*gam_w</span><br><span class="line">         <span class="keyword">if</span>(i==nx1+nw*ngrad+ngrad)<span class="keyword">then</span> <span class="comment">! 如果水面恰好穿过某行单元格</span></span><br><span class="line">            cx=y5-wl</span><br><span class="line">            cy=cx</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               +p7*cy*(cy**<span class="number">2</span>-two*cy*dx+dx**<span class="number">2</span>)/(d6*dx**<span class="number">2</span>)</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               -p7*(cy**<span class="number">3</span>-cy**<span class="number">2</span>*dx-cy*dx**<span class="number">2</span>+dx**<span class="number">3</span>)/(d3*dx**<span class="number">2</span>)</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               -p7*(dx**<span class="number">3</span>-cy**<span class="number">3</span>)/(d6*dx*dx)</span><br><span class="line">         <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">mod</span>(i-nx1,ngrad)/=<span class="number">0</span>)<span class="keyword">then</span> <span class="comment">! 方格斜面台阶内部(仅有上表面接触水)</span></span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">         <span class="keyword">else</span> <span class="comment">! 方格斜面台阶最外部的单元格(上表面和右表面接触水)</span></span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))-dx*(p5+p7)/d3</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))-dx*p7/d6</span><br><span class="line">         <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">IF</span>(ny2&gt;<span class="number">0</span>)<span class="keyword">THEN</span> </span><br><span class="line">         p3=(wl-g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))*gam_w</span><br><span class="line">         <span class="keyword">DO</span> i=nx1+ny1*ngrad+<span class="number">1</span>,nx1+ny1*ngrad+nx2</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">   <span class="keyword">END</span> <span class="keyword">IF</span></span><br></pre></td></tr></table></figure>
+<h3 id="叠加孔压"><a href="#叠加孔压" class="headerlink" title="叠加孔压"></a>叠加孔压</h3><p>根据Vanapalli公式, 使用体积含水率、孔压等参数计算出基质吸力项, 叠加到正应力上</p>
+<p><img src="/2024/04/71e392b0/202405051036317.png" alt="17143599364091714359936244png"></p>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">elements_3: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line">            bload=zero</span><br><span class="line">            phi=prop(<span class="number">1</span>,iel)</span><br><span class="line">            tnph=<span class="built_in">TAN</span>(phi*pi/d180)</span><br><span class="line">            phif=<span class="built_in">ATAN</span>(tnph/srf(iy))*d180/pi</span><br><span class="line">            psi=prop(<span class="number">3</span>,iel)</span><br><span class="line">            tnps=<span class="built_in">TAN</span>(psi*pi/d180)</span><br><span class="line">            psif=<span class="built_in">ATAN</span>(tnps/srf(iy))*d180/pi</span><br><span class="line">            cf=prop(<span class="number">2</span>,iel)/srf(iy)</span><br><span class="line">            e=prop(<span class="number">5</span>,iel)</span><br><span class="line">            v=prop(<span class="number">6</span>,iel)</span><br><span class="line">            <span class="keyword">CALL</span> deemat(dee,e,v)</span><br><span class="line">            num=g_num(:,iel)</span><br><span class="line">            coord=<span class="built_in">TRANSPOSE</span>(g_coord(:,num))</span><br><span class="line">            <span class="keyword">do</span> i=<span class="number">1</span>,nod</span><br><span class="line">               <span class="keyword">call</span> Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) <span class="comment">! 计算基质吸力项</span></span><br><span class="line">            <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line">            g=g_g(:,iel)</span><br><span class="line">            eld=loads(g)</span><br><span class="line">            gauss_pts_2: <span class="keyword">DO</span> i=<span class="number">1</span>,nip</span><br><span class="line">               <span class="keyword">call</span> shape_fun(fun,points,i)</span><br><span class="line">               pore(iel,i)=<span class="built_in">dot_product</span>(fun,suc_sig)</span><br><span class="line">               <span class="keyword">CALL</span> bee8(bee,coord,points(i,<span class="number">1</span>),points(i,<span class="number">2</span>),det)</span><br><span class="line">               eps=<span class="built_in">MATMUL</span>(bee,eld)</span><br><span class="line">               eps=eps-evpt(:,i,iel)</span><br><span class="line">               sigma=<span class="built_in">MATMUL</span>(dee,eps)</span><br><span class="line">               sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)-pore(iel,i) <span class="comment">! 此处124为正应力项, 3为剪应力项</span></span><br><span class="line">               sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)-pore(iel,i)</span><br><span class="line">               sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)-pore(iel,i)</span><br><span class="line">               <span class="keyword">CALL</span> invar(sigma,sigm,dsbar,lode_theta)</span><br><span class="line">               <span class="comment">!-----------------------check whether yield is violated-------------------</span></span><br><span class="line">               <span class="keyword">CALL</span> mocouf(phif,cf,sigm,dsbar,lode_theta,f)</span><br><span class="line">               <span class="keyword">IF</span>(f&gt;fmax)fmax=f</span><br><span class="line">               <span class="keyword">IF</span>(converged<span class="keyword">.OR.</span>iters==limit)<span class="keyword">THEN</span></span><br><span class="line">                  sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)+pore(iel,i)</span><br><span class="line">                  devp=sigma</span><br><span class="line">               <span class="keyword">ELSE</span></span><br><span class="line">                  <span class="keyword">IF</span>(f&gt;=zero<span class="keyword">.OR.</span>(converged<span class="keyword">.OR.</span>iters==limit))<span class="keyword">THEN</span></span><br><span class="line">                     <span class="keyword">CALL</span> mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)</span><br><span class="line">                     <span class="keyword">CALL</span> formm(sigma,m1,m2,m3)</span><br><span class="line">                     flow=f*(m1*dq1+m2*dq2+m3*dq3)</span><br><span class="line">                     erate=<span class="built_in">MATMUL</span>(flow,sigma)</span><br><span class="line">                     evp=erate*dt</span><br><span class="line">                     evpt(:,i,iel)=evpt(:,i,iel)+evp</span><br><span class="line">                     devp=<span class="built_in">MATMUL</span>(dee,evp)</span><br><span class="line">                  <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">IF</span>(f&gt;=zero)<span class="keyword">THEN</span></span><br><span class="line">                  eload=<span class="built_in">MATMUL</span>(devp,bee)</span><br><span class="line">                  bload=bload+eload*det*weights(i)</span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">            <span class="keyword">END</span> <span class="keyword">DO</span> gauss_pts_2</span><br><span class="line">            <span class="comment">!-----------------------compute the total bodyloads vector----------------</span></span><br><span class="line">            bdylds(g)=bdylds(g)+bload</span><br><span class="line">            bdylds(<span class="number">0</span>)=zero</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span> elements_3</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>边坡</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>非饱和土</tag>
+        <tag>边坡稳定性</tag>
+        <tag>方形网格</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>非饱和土手动迭代计算程序修改说明</title>
     <url>/2024/04/863a85e0/</url>
     <content><![CDATA[<h2 id="修改内容"><a href="#修改内容" class="headerlink" title="修改内容"></a>修改内容</h2><h3 id="1、输入参数改变"><a href="#1、输入参数改变" class="headerlink" title="1、输入参数改变"></a>1、输入参数改变</h3><p>t(nl) 每层层底沉积年代(37 行)<br>土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)<br>内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)<br>水位位置（坡顶为 0，y 方向为负值）(58 行)<br>非饱和抗剪强度公式中 κ(59 行)</p>
@@ -23,8 +62,8 @@
         <tag>教程及说明</tag>
         <tag>边坡稳定性</tag>
         <tag>Fortran</tag>
-        <tag>孔压</tag>
         <tag>有限元</tag>
+        <tag>孔压</tag>
       </tags>
   </entry>
   <entry>
@@ -118,45 +157,6 @@
         <tag>失效概率</tag>
         <tag>Monte-Carlo</tag>
         <tag>Python</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>非饱和土边坡稳定性计算程序说明文件</title>
-    <url>/2024/04/71e392b0/</url>
-    <content><![CDATA[<h2 id="一、数据文件"><a href="#一、数据文件" class="headerlink" title="一、数据文件"></a>一、数据文件</h2><h3 id="注意：以下文件内不要输入注释文字"><a href="#注意：以下文件内不要输入注释文字" class="headerlink" title="注意：以下文件内不要输入注释文字"></a>注意：以下文件内不要输入注释文字</h3><h4 id="1-dat文件"><a href="#1-dat文件" class="headerlink" title="1. dat文件"></a>1. dat文件</h4><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="comment">!dx  h2v</span></span><br><span class="line"><span class="number">1.0</span>  <span class="number">2.0</span></span><br><span class="line"><span class="comment">!nx1 nx2 ny1 ny2</span></span><br><span class="line"><span class="number">20</span>  <span class="number">20</span>  <span class="number">10</span>  <span class="number">5</span></span><br><span class="line"><span class="comment">!树荷载的左列和右列数，树荷载kN(各单元格相同)</span></span><br><span class="line"><span class="number">27</span> <span class="number">32</span> <span class="number">10.0</span></span><br><span class="line"><span class="comment">!内摩擦角，粘聚力，剪胀角，重度，弹性模量，泊松比, a, m, n, theta_s 其中,重度=ρ_d*gam_w,theta_s=1-ρ_d/G_s</span></span><br><span class="line"><span class="number">20.0</span>  <span class="number">15.0</span>  <span class="number">0.0</span>  <span class="number">20.0</span>  <span class="number">1.0e5</span>  <span class="number">0.3</span> <span class="number">15</span> <span class="number">0.2</span> <span class="number">4</span> <span class="number">0.907749</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">20</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span> <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">6</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.55</span> <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
-<p><img src="/2024/04/71e392b0/202405051034316.png" alt="模型"></p>
-<p>其中,第三行表示荷载的加荷位置和大小</p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="number">27</span> <span class="comment">! 表示起点在第27列（从左至右）</span></span><br><span class="line"><span class="number">32</span> <span class="comment">! 表示终点在第32列（从左至右）</span></span><br><span class="line"><span class="number">30</span> <span class="comment">! 表示荷载为30kN</span></span><br></pre></td></tr></table></figure>
-<p>对应下图中的红色位置</p>
-<p><img src="/2024/04/71e392b0/202405051036737.png" alt="加载位置"></p>
-<h4 id="2-孔压文件x-f-txt"><a href="#2-孔压文件x-f-txt" class="headerlink" title="2. 孔压文件x_f.txt"></a>2. 孔压文件x_f.txt</h4><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">按节点列依次输入节点处的孔压</span><br><span class="line">每个单元格有<span class="number">3</span>列共<span class="number">8</span>个节点，呈<span class="number">323</span>分布，如下图所示，阴影部分为一个单元格，黄色为单元格号</span><br><span class="line">按照节点的<span class="number">1234.</span>..顺序竖向填写x_f.txt文件，每节点占一行 </span><br></pre></td></tr></table></figure>
-<p><img src="/2024/04/71e392b0/202405051036959.png" alt="17143576814081714357680903png"></p>
-<h2 id="二、源代码"><a href="#二、源代码" class="headerlink" title="二、源代码"></a>二、源代码</h2><p>本程序单元格序号是从上至下，从左至右依次排序,如下例</p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="number">1</span> <span class="number">6</span> </span><br><span class="line"><span class="number">2</span> <span class="number">7</span>  <span class="number">11</span></span><br><span class="line"><span class="number">3</span> <span class="number">8</span>  <span class="number">12</span> <span class="number">15</span></span><br><span class="line"><span class="number">4</span> <span class="number">9</span>  <span class="number">13</span> <span class="number">16</span> <span class="number">18</span> <span class="number">20</span></span><br><span class="line"><span class="number">5</span> <span class="number">10</span> <span class="number">14</span> <span class="number">17</span> <span class="number">19</span> <span class="number">21</span></span><br></pre></td></tr></table></figure>
-<p>在叠加荷载时，因为所有单元格的g都是按照3 2 1 4 6 7 8 5 的顺序保存，因此我们仅需找到对应的单元格号以及146号节点的相对位置</p>
-<p>146号节点的相对位置为g(6), g(8), g(10),下文有介绍</p>
-<p>接下来只需找到单元格号即可。</p>
-<h3 id="计算单元号"><a href="#计算单元号" class="headerlink" title="计算单元号"></a>计算单元号</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (tree_load/=<span class="number">0</span>) <span class="keyword">then</span> <span class="comment">!荷载不为零再进行运算</span></span><br><span class="line">  <span class="built_in">allocate</span>(tree_nodes(nx1+nx2+ny1*ngrad))</span><br><span class="line"></span><br><span class="line">  tree_nodes=<span class="number">0</span></span><br><span class="line">   <span class="comment">! tree_nodes(nx1+nx2+ny1*ngrad)是储存表面单元格的单元号</span></span><br><span class="line"></span><br><span class="line">  itree = <span class="number">2</span> <span class="comment">!用于计数，记录需加荷的单元格数量</span></span><br><span class="line">  tree_nodes(<span class="number">1</span>)=<span class="number">1</span> </span><br><span class="line"></span><br><span class="line">  <span class="comment">! 顶面和斜面前ngrad行</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">2</span>,nx1+ngrad </span><br><span class="line">     tree_nodes(itree) = (i-<span class="number">1</span>)*nye+<span class="number">1</span></span><br><span class="line">     itree = itree + <span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 斜面ngrad行以后</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">1</span>,ny1-<span class="number">1</span></span><br><span class="line">    <span class="keyword">do</span> j=<span class="number">1</span>,ngrad</span><br><span class="line">       <span class="keyword">if</span> (j==<span class="number">1</span>) <span class="keyword">then</span></span><br><span class="line">          tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+nye-i+<span class="number">1</span></span><br><span class="line">       <span class="keyword">else</span></span><br><span class="line">          tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+nye-i</span><br><span class="line">       <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">       itree = itree + <span class="number">1</span></span><br><span class="line">    <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 底面第一列</span></span><br><span class="line">  tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+ny2+<span class="number">1</span></span><br><span class="line">  itree = itree + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">! 底面以后</span></span><br><span class="line">  <span class="keyword">do</span> i=<span class="number">2</span>,nx2</span><br><span class="line">     tree_nodes(itree) = tree_nodes(itree-<span class="number">1</span>)+ny2</span><br><span class="line">     itree = itree + <span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  tree_nodes_= tree_nodes(nel_left:nel_right) <span class="comment">! 储存实际需要加荷的单元格的序号</span></span><br></pre></td></tr></table></figure>
-<h3 id="分配荷载到节点"><a href="#分配荷载到节点" class="headerlink" title="分配荷载到节点"></a>分配荷载到节点</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">  <span class="built_in">ALLOCATE</span>(weight_load(<span class="number">8</span>),tree(ndof))</span><br><span class="line">  <span class="comment">!荷载在节点上的分布权重</span></span><br><span class="line">  weight_load = (/<span class="number">0.166667</span>,<span class="number">0.0</span>,<span class="number">0.0</span>,<span class="number">0.666667</span>,<span class="number">0.0</span>,<span class="number">0.166667</span>,<span class="number">0.0</span>,<span class="number">0.0</span>/)</span><br><span class="line"></span><br><span class="line">  <span class="comment">!计算各节点荷载大小</span></span><br><span class="line">  tree=zero</span><br><span class="line">  tree(<span class="number">6</span>)=tree_load*weight_load(<span class="number">1</span>)</span><br><span class="line">  tree(<span class="number">8</span>)=tree_load*weight_load(<span class="number">4</span>)</span><br><span class="line">  tree(<span class="number">10</span>)=tree_load*weight_load(<span class="number">6</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">! 此处注意区分(见下图)</span></span><br><span class="line">  <span class="comment">! g数组按3x 3y 2x 2y 1x 1y 4x 4y 6x 6y 7x 7y 8x 8y 5x 5y的顺序保存</span></span><br><span class="line">  <span class="comment">! weight_load按1 2 3 4 5 6 7 8来保存</span></span><br><span class="line">  <span class="comment">! 则1 4 6号节点的y方向对应g(6),g(8),g(10)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">if</span></span><br></pre></td></tr></table></figure>
-<p><img src="/2024/04/71e392b0/202405051036468.png" title alt="单元节点" data-align="center"></p>
-<h3 id="叠加荷载"><a href="#叠加荷载" class="headerlink" title="叠加荷载"></a>叠加荷载</h3><figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">itree=<span class="number">1</span> <span class="comment">! 作tree_nodes_数组的索引，将序号依次读出</span></span><br><span class="line"></span><br><span class="line">elements_2: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line"></span><br><span class="line">   ...</span><br><span class="line"></span><br><span class="line">   gravlo(g)=gravlo(g)-eld*prop(<span class="number">4</span>,etype(iel))</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (tree_load.ne<span class="number">.0</span><span class="number">.0</span>) <span class="keyword">then</span> <span class="comment">!荷载不为零时计算</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> ((iel==tree_nodes_(itree))<span class="keyword">.and.</span>(itree<span class="keyword">.le.</span><span class="built_in">size</span>(tree_nodes_))) <span class="keyword">then</span> <span class="comment">!判断是否为需加荷的单元</span></span><br><span class="line"></span><br><span class="line">         gravlo(g) = gravlo(g) - tree <span class="comment">!根据自由度编号加到指定位置</span></span><br><span class="line"></span><br><span class="line">         itree=itree+<span class="number">1</span></span><br><span class="line">      <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">   <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">END</span> <span class="keyword">DO</span> elements_2</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="叠加外部水荷载"><a href="#叠加外部水荷载" class="headerlink" title="叠加外部水荷载"></a>叠加外部水荷载</h3><p>叠加外部水荷载的方式与上方叠加外部荷载的方法类似，将水的压力 $\gamma_w*h$ 叠加到相应的表面节点上</p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">IF</span>(wl&gt;g_coord(<span class="number">2</span>,<span class="number">1</span>))<span class="keyword">THEN</span>  <span class="comment">! 水位淹没整个边坡</span></span><br><span class="line">      p3=(wl-g_coord(<span class="number">2</span>,<span class="number">1</span>))*gam_w</span><br><span class="line">      <span class="keyword">DO</span> i=<span class="number">1</span>,nx1</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">         gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">DO</span> i=nx1+<span class="number">1</span>,nx1+ny1*ngrad</span><br><span class="line">         <span class="keyword">if</span> (<span class="built_in">mod</span>(i-nx1,ngrad)/=<span class="number">0</span>)<span class="keyword">then</span></span><br><span class="line">            y5=g_coord(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">            p5=(wl-y5)*gam_w</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">         <span class="keyword">else</span></span><br><span class="line">            y5=g_coord(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">            p5=(wl-y5)*gam_w</span><br><span class="line">            y7=g_coord(<span class="number">2</span>,g_num(<span class="number">7</span>,tree_nodes(i)))</span><br><span class="line">            p7=(wl-y7)*gam_w</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))-dx*(p5+p7)/d3</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))-dx*p7/d6</span><br><span class="line">         <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">IF</span>(ny2&gt;<span class="number">0</span>)<span class="keyword">THEN</span> <span class="comment">! 如果有破角台阶</span></span><br><span class="line">         p3=(wl-g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))*gam_w <span class="comment">!p3==p5</span></span><br><span class="line">         <span class="keyword">DO</span> i=nx1+ny1*ngrad+<span class="number">1</span>,nx1+ny1*ngrad+nx2</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">   <span class="keyword">ELSE</span> <span class="keyword">IF</span>(wl&gt;g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))<span class="keyword">THEN</span> <span class="comment">! 水面在斜面位置(低于坡顶,高于坡脚)</span></span><br><span class="line">      nw=<span class="built_in">int</span>((-wl)/dx)</span><br><span class="line">      <span class="keyword">do</span> i=nx1+nw*ngrad+ngrad,nx1+ny1*ngrad</span><br><span class="line">         y5=g_coord(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i)))</span><br><span class="line">         y7=g_coord(<span class="number">2</span>,g_num(<span class="number">7</span>,tree_nodes(i)))</span><br><span class="line">         p5=(wl-y5)*gam_w</span><br><span class="line">         p7=(wl-y7)*gam_w</span><br><span class="line">         <span class="keyword">if</span>(i==nx1+nw*ngrad+ngrad)<span class="keyword">then</span> <span class="comment">! 如果水面恰好穿过某行单元格</span></span><br><span class="line">            cx=y5-wl</span><br><span class="line">            cy=cx</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               +p7*cy*(cy**<span class="number">2</span>-two*cy*dx+dx**<span class="number">2</span>)/(d6*dx**<span class="number">2</span>)</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               -p7*(cy**<span class="number">3</span>-cy**<span class="number">2</span>*dx-cy*dx**<span class="number">2</span>+dx**<span class="number">3</span>)/(d3*dx**<span class="number">2</span>)</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))           &amp;</span><br><span class="line">               -p7*(dx**<span class="number">3</span>-cy**<span class="number">3</span>)/(d6*dx*dx)</span><br><span class="line">         <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">mod</span>(i-nx1,ngrad)/=<span class="number">0</span>)<span class="keyword">then</span> <span class="comment">! 方格斜面台阶内部(仅有上表面接触水)</span></span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">         <span class="keyword">else</span> <span class="comment">! 方格斜面台阶最外部的单元格(上表面和右表面接触水)</span></span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p5/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p5/d6</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">6</span>,tree_nodes(i))))-dx*(p5+p7)/d3</span><br><span class="line">            gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))=gravlo(nf(<span class="number">1</span>,g_num(<span class="number">7</span>,tree_nodes(i))))-dx*p7/d6</span><br><span class="line">         <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">IF</span>(ny2&gt;<span class="number">0</span>)<span class="keyword">THEN</span> </span><br><span class="line">         p3=(wl-g_coord(<span class="number">2</span>,nn-<span class="number">2</span>*ny2))*gam_w</span><br><span class="line">         <span class="keyword">DO</span> i=nx1+ny1*ngrad+<span class="number">1</span>,nx1+ny1*ngrad+nx2</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">3</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">4</span>,tree_nodes(i))))-dx*two*p3/d3</span><br><span class="line">            gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))=gravlo(nf(<span class="number">2</span>,g_num(<span class="number">5</span>,tree_nodes(i))))-dx*p3/d6</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span></span><br><span class="line">      <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">   <span class="keyword">END</span> <span class="keyword">IF</span></span><br></pre></td></tr></table></figure>
-<h3 id="叠加孔压"><a href="#叠加孔压" class="headerlink" title="叠加孔压"></a>叠加孔压</h3><p>根据Vanapalli公式, 使用体积含水率、孔压等参数计算出基质吸力项, 叠加到正应力上</p>
-<p><img src="/2024/04/71e392b0/202405051036317.png" alt="17143599364091714359936244png"></p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">elements_3: <span class="keyword">DO</span> iel=<span class="number">1</span>,nels</span><br><span class="line">            bload=zero</span><br><span class="line">            phi=prop(<span class="number">1</span>,iel)</span><br><span class="line">            tnph=<span class="built_in">TAN</span>(phi*pi/d180)</span><br><span class="line">            phif=<span class="built_in">ATAN</span>(tnph/srf(iy))*d180/pi</span><br><span class="line">            psi=prop(<span class="number">3</span>,iel)</span><br><span class="line">            tnps=<span class="built_in">TAN</span>(psi*pi/d180)</span><br><span class="line">            psif=<span class="built_in">ATAN</span>(tnps/srf(iy))*d180/pi</span><br><span class="line">            cf=prop(<span class="number">2</span>,iel)/srf(iy)</span><br><span class="line">            e=prop(<span class="number">5</span>,iel)</span><br><span class="line">            v=prop(<span class="number">6</span>,iel)</span><br><span class="line">            <span class="keyword">CALL</span> deemat(dee,e,v)</span><br><span class="line">            num=g_num(:,iel)</span><br><span class="line">            coord=<span class="built_in">TRANSPOSE</span>(g_coord(:,num))</span><br><span class="line">            <span class="keyword">do</span> i=<span class="number">1</span>,nod</span><br><span class="line">               <span class="keyword">call</span> Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) <span class="comment">! 计算基质吸力项</span></span><br><span class="line">            <span class="keyword">end</span> <span class="keyword">do</span></span><br><span class="line">            g=g_g(:,iel)</span><br><span class="line">            eld=loads(g)</span><br><span class="line">            gauss_pts_2: <span class="keyword">DO</span> i=<span class="number">1</span>,nip</span><br><span class="line">               <span class="keyword">call</span> shape_fun(fun,points,i)</span><br><span class="line">               pore(iel,i)=<span class="built_in">dot_product</span>(fun,suc_sig)</span><br><span class="line">               <span class="keyword">CALL</span> bee8(bee,coord,points(i,<span class="number">1</span>),points(i,<span class="number">2</span>),det)</span><br><span class="line">               eps=<span class="built_in">MATMUL</span>(bee,eld)</span><br><span class="line">               eps=eps-evpt(:,i,iel)</span><br><span class="line">               sigma=<span class="built_in">MATMUL</span>(dee,eps)</span><br><span class="line">               sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)-pore(iel,i) <span class="comment">! 此处124为正应力项, 3为剪应力项</span></span><br><span class="line">               sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)-pore(iel,i)</span><br><span class="line">               sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)-pore(iel,i)</span><br><span class="line">               <span class="keyword">CALL</span> invar(sigma,sigm,dsbar,lode_theta)</span><br><span class="line">               <span class="comment">!-----------------------check whether yield is violated-------------------</span></span><br><span class="line">               <span class="keyword">CALL</span> mocouf(phif,cf,sigm,dsbar,lode_theta,f)</span><br><span class="line">               <span class="keyword">IF</span>(f&gt;fmax)fmax=f</span><br><span class="line">               <span class="keyword">IF</span>(converged<span class="keyword">.OR.</span>iters==limit)<span class="keyword">THEN</span></span><br><span class="line">                  sigma(<span class="number">1</span>)=sigma(<span class="number">1</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">2</span>)=sigma(<span class="number">2</span>)+pore(iel,i)</span><br><span class="line">                  sigma(<span class="number">4</span>)=sigma(<span class="number">4</span>)+pore(iel,i)</span><br><span class="line">                  devp=sigma</span><br><span class="line">               <span class="keyword">ELSE</span></span><br><span class="line">                  <span class="keyword">IF</span>(f&gt;=zero<span class="keyword">.OR.</span>(converged<span class="keyword">.OR.</span>iters==limit))<span class="keyword">THEN</span></span><br><span class="line">                     <span class="keyword">CALL</span> mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)</span><br><span class="line">                     <span class="keyword">CALL</span> formm(sigma,m1,m2,m3)</span><br><span class="line">                     flow=f*(m1*dq1+m2*dq2+m3*dq3)</span><br><span class="line">                     erate=<span class="built_in">MATMUL</span>(flow,sigma)</span><br><span class="line">                     evp=erate*dt</span><br><span class="line">                     evpt(:,i,iel)=evpt(:,i,iel)+evp</span><br><span class="line">                     devp=<span class="built_in">MATMUL</span>(dee,evp)</span><br><span class="line">                  <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">               <span class="keyword">IF</span>(f&gt;=zero)<span class="keyword">THEN</span></span><br><span class="line">                  eload=<span class="built_in">MATMUL</span>(devp,bee)</span><br><span class="line">                  bload=bload+eload*det*weights(i)</span><br><span class="line">               <span class="keyword">END</span> <span class="keyword">IF</span></span><br><span class="line">            <span class="keyword">END</span> <span class="keyword">DO</span> gauss_pts_2</span><br><span class="line">            <span class="comment">!-----------------------compute the total bodyloads vector----------------</span></span><br><span class="line">            bdylds(g)=bdylds(g)+bload</span><br><span class="line">            bdylds(<span class="number">0</span>)=zero</span><br><span class="line">         <span class="keyword">END</span> <span class="keyword">DO</span> elements_3</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>边坡</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>边坡稳定性</tag>
-        <tag>Fortran</tag>
-        <tag>有限元</tag>
-        <tag>非饱和土</tag>
-        <tag>方形网格</tag>
       </tags>
   </entry>
   <entry>
@@ -1290,6 +1290,56 @@ m|_{单位时间}=\rho Sv\cos\theta</script><p>对控制体边界面积分</p>
       </tags>
   </entry>
   <entry>
+    <title>Mavic 3 classic屏控航线(航点)飞行教程</title>
+    <url>/2024/08/78788d45/</url>
+    <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>遥控手柄(带屏)</p>
+<p>航线规划软件(网页) - Rainbow Cloud</p>
+<p>SD卡, 读卡器, 电脑</p>
+<h2 id="1-创建航线"><a href="#1-创建航线" class="headerlink" title="1. 创建航线"></a>1. 创建航线</h2><p>首先, 打开<a href="https://app.flydji.cn/">Rainbow Cloud网站</a>. </p>
+<p>网页界面如下: </p>
+<p><img src="/2024/08/78788d45/20240907103046.png" alt="image-20240907103033256" style="zoom: 33%;"></p>
+<p>点击左侧新建任务. </p>
+<p><img src="/2024/08/78788d45/20240907103203.png" alt="image-20240907103201411" style="zoom:33%;"></p>
+<p>选择正射</p>
+<p><img src="/2024/08/78788d45/20240907103355.png" alt="image-20240907103352484" style="zoom: 33%;"></p>
+<p>输入任务名称</p>
+<p><img src="/2024/08/78788d45/20240907103444.png" alt="image-20240907103443297" style="zoom:50%;"></p>
+<p>确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围. </p>
+<p><img src="/2024/08/78788d45/20240907103635.png" alt="image-20240907103623963" style="zoom:33%;"></p>
+<p>然后, 调整这个范围至合适位置. 可以移动和添加顶点</p>
+<p><img src="/2024/08/78788d45/20240907104233.png" alt="image-20240907104221465" style="zoom:33%;"></p>
+<p>然后, 调整右侧参数栏的参数. </p>
+<p><img src="/2024/08/78788d45/20240907104901.png" alt="image-20240907104849438" style="zoom:33%;"></p>
+<p><img src="/2024/08/78788d45/20240907105200.png" alt="image-20240907105046748" style="zoom:33%;"></p>
+<p>其余设置与上图保持一致, 保存任务</p>
+<p><img src="/2024/08/78788d45/20240907105605.png" alt="image-20240907105604011" style="zoom:50%;"></p>
+<p>点击右上角任务导出</p>
+<p><img src="/2024/08/78788d45/20240907105752.png" alt="image-20240907105740750" style="zoom:33%;"></p>
+<p>选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.</p>
+<p><img src="/2024/08/78788d45/20240907110020.png" alt="image-20240907110018439" style="zoom:50%;"></p>
+<p>点击下载, 将文件下载并导入到SD卡中.</p>
+<h2 id="2-导入航线"><a href="#2-导入航线" class="headerlink" title="2. 导入航线"></a>2. 导入航线</h2><p>根据导入教程导入文件<a href="https://docs.qq.com/doc/DSEpQRFZXUU5ET3JZ">Mavic3系列屏控手动导入Kmz 航点任务 (qq.com)</a></p>
+<h3 id="2-1-创建并备份航线"><a href="#2-1-创建并备份航线" class="headerlink" title="2.1 创建并备份航线"></a>2.1 创建并备份航线</h3><p>创建任意数量的航点, 保存. </p>
+<p>航点文件保存位置如下</p>
+<p><img src="/2024/08/78788d45/20240913182709.png" alt="image-20240913182656864" style="zoom:33%;"></p>
+<p>一串英文字符的文件夹内存放的就是航线文件(kmz格式)</p>
+<p>将整个waypoint文件夹复制至SD卡中</p>
+<h3 id="2-2-替换kmz文件"><a href="#2-2-替换kmz文件" class="headerlink" title="2.2 替换kmz文件"></a>2.2 替换kmz文件</h3><p>将已经下载好的Kmz文件同样导入到SD卡的该文件夹内</p>
+<p>注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).</p>
+<p>将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)</p>
+<p>最后将替换好的waypoint文件夹替换回去 </p>
+]]></content>
+      <categories>
+        <category>无人机</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>DJI</tag>
+        <tag>Mavic 3 classic</tag>
+        <tag>正射航线</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>物质点法--学习笔记(一)</title>
     <url>/2024/07/af38f644/</url>
     <content><![CDATA[<h2 id="1-物质点法"><a href="#1-物质点法" class="headerlink" title="1. 物质点法"></a>1. 物质点法</h2><p>​    物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到计算网格得到, 求解后将计算网格结点的运动量映射回各质点, 从而得到这些质点在下一时刻的运动量(对流计算步). </p>
@@ -1522,294 +1572,6 @@ c_{ij} = \delta_{ij} + \Omega_{ij}dt
       <tags>
         <tag>学习笔记</tag>
         <tag>物质点法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Mavic 3 classic屏控航线(航点)飞行教程</title>
-    <url>/2024/08/78788d45/</url>
-    <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>遥控手柄(带屏)</p>
-<p>航线规划软件(网页) - Rainbow Cloud</p>
-<p>SD卡, 读卡器, 电脑</p>
-<h2 id="1-创建航线"><a href="#1-创建航线" class="headerlink" title="1. 创建航线"></a>1. 创建航线</h2><p>首先, 打开<a href="https://app.flydji.cn/">Rainbow Cloud网站</a>. </p>
-<p>网页界面如下: </p>
-<p><img src="/2024/08/78788d45/20240907103046.png" alt="image-20240907103033256" style="zoom: 33%;"></p>
-<p>点击左侧新建任务. </p>
-<p><img src="/2024/08/78788d45/20240907103203.png" alt="image-20240907103201411" style="zoom:33%;"></p>
-<p>选择正射</p>
-<p><img src="/2024/08/78788d45/20240907103355.png" alt="image-20240907103352484" style="zoom: 33%;"></p>
-<p>输入任务名称</p>
-<p><img src="/2024/08/78788d45/20240907103444.png" alt="image-20240907103443297" style="zoom:50%;"></p>
-<p>确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围. </p>
-<p><img src="/2024/08/78788d45/20240907103635.png" alt="image-20240907103623963" style="zoom:33%;"></p>
-<p>然后, 调整这个范围至合适位置. 可以移动和添加顶点</p>
-<p><img src="/2024/08/78788d45/20240907104233.png" alt="image-20240907104221465" style="zoom:33%;"></p>
-<p>然后, 调整右侧参数栏的参数. </p>
-<p><img src="/2024/08/78788d45/20240907104901.png" alt="image-20240907104849438" style="zoom:33%;"></p>
-<p><img src="/2024/08/78788d45/20240907105200.png" alt="image-20240907105046748" style="zoom:33%;"></p>
-<p>其余设置与上图保持一致, 保存任务</p>
-<p><img src="/2024/08/78788d45/20240907105605.png" alt="image-20240907105604011" style="zoom:50%;"></p>
-<p>点击右上角任务导出</p>
-<p><img src="/2024/08/78788d45/20240907105752.png" alt="image-20240907105740750" style="zoom:33%;"></p>
-<p>选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.</p>
-<p><img src="/2024/08/78788d45/20240907110020.png" alt="image-20240907110018439" style="zoom:50%;"></p>
-<p>点击下载, 将文件下载并导入到SD卡中.</p>
-<h2 id="2-导入航线"><a href="#2-导入航线" class="headerlink" title="2. 导入航线"></a>2. 导入航线</h2><p>根据导入教程导入文件<a href="https://docs.qq.com/doc/DSEpQRFZXUU5ET3JZ">Mavic3系列屏控手动导入Kmz 航点任务 (qq.com)</a></p>
-<h3 id="2-1-创建并备份航线"><a href="#2-1-创建并备份航线" class="headerlink" title="2.1 创建并备份航线"></a>2.1 创建并备份航线</h3><p>创建任意数量的航点, 保存. </p>
-<p>航点文件保存位置如下</p>
-<p><img src="/2024/08/78788d45/20240913182709.png" alt="image-20240913182656864" style="zoom:33%;"></p>
-<p>一串英文字符的文件夹内存放的就是航线文件(kmz格式)</p>
-<p>将整个waypoint文件夹复制至SD卡中</p>
-<h3 id="2-2-替换kmz文件"><a href="#2-2-替换kmz文件" class="headerlink" title="2.2 替换kmz文件"></a>2.2 替换kmz文件</h3><p>将已经下载好的Kmz文件同样导入到SD卡的该文件夹内</p>
-<p>注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).</p>
-<p>将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)</p>
-<p>最后将替换好的waypoint文件夹替换回去 </p>
-]]></content>
-      <categories>
-        <category>无人机</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>DJI</tag>
-        <tag>Mavic 3 classic</tag>
-        <tag>正射航线</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Nginx反向代理教程</title>
-    <url>/2025/03/4bc19655/</url>
-    <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><ul>
-<li>Ubuntu系统</li>
-<li>Nginx</li>
-</ul>
-<h2 id="配置教程"><a href="#配置教程" class="headerlink" title="配置教程"></a>配置教程</h2><h3 id="1-备份配置文件"><a href="#1-备份配置文件" class="headerlink" title="1.备份配置文件"></a>1.备份配置文件</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default</span><br></pre></td></tr></table></figure>
-<h3 id="2-编辑配置文件"><a href="#2-编辑配置文件" class="headerlink" title="2.编辑配置文件"></a>2.编辑配置文件</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/nginx/nginx.conf</span><br></pre></td></tr></table></figure>
-<p>找到<code>http&#123;&#125;</code>块中的<code>server&#123;&#125;</code>块，注释掉原有的<code>server&#123;&#125;</code></p>
-<p><img src="/2025/03/4bc19655/PixPin_2025-03-08_22-13-27.png" alt="PixPin_2025-03-08_22-13-27" style="zoom:50%;"></p>
-<h3 id="3-按原有配置添加新的server块"><a href="#3-按原有配置添加新的server块" class="headerlink" title="3.按原有配置添加新的server块"></a>3.按原有配置添加新的server块</h3><h4 id="1-默认的错误界面"><a href="#1-默认的错误界面" class="headerlink" title="(1) 默认的错误界面"></a>(1) 默认的错误界面</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 443 ssl default_server;</span><br><span class="line">    server_name _;</span><br><span class="line"></span><br><span class="line">    ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">    ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line"></span><br><span class="line">    return 404;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="2-主域名"><a href="#2-主域名" class="headerlink" title="(2) 主域名"></a>(2) 主域名</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">     listen 443 ssl;</span><br><span class="line">     server_name fireflye.top;</span><br><span class="line">     ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">     ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line">     ssl_session_timeout 5m;</span><br><span class="line">     ssl_protocols TLSv1.2 TLSv1.3;</span><br><span class="line">     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;</span><br><span class="line">     ssl_prefer_server_ciphers on;</span><br><span class="line"></span><br><span class="line">     location / &#123;</span><br><span class="line">         root /home/www/website;</span><br><span class="line">         index  index.html index.htm;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>其中<code>root</code>改为自己本地的网站目录</p>
-<h4 id="3-主域名转发"><a href="#3-主域名转发" class="headerlink" title="(3) 主域名转发"></a>(3) 主域名转发</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name fireflye.top;</span><br><span class="line">        return 301 https://$host$request_uri;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
-<h4 id="4-二级域名端口转发示例"><a href="#4-二级域名端口转发示例" class="headerlink" title="(4) 二级域名端口转发示例"></a>(4) 二级域名端口转发示例</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">     listen 443 ssl;</span><br><span class="line">     server_name xxx.fireflye.top;</span><br><span class="line">     ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">     ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line">     ssl_session_timeout 5m;</span><br><span class="line">     ssl_protocols TLSv1.2 TLSv1.3;</span><br><span class="line">     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;</span><br><span class="line">     ssl_prefer_server_ciphers on;</span><br><span class="line"></span><br><span class="line">     location / &#123;</span><br><span class="line">       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">       proxy_set_header X-Forwarded-Proto $scheme;</span><br><span class="line">       proxy_set_header Host $host;</span><br><span class="line">       proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">       proxy_set_header Range $http_range;</span><br><span class="line">       proxy_set_header If-Range $http_if_range;</span><br><span class="line">       proxy_redirect off;</span><br><span class="line">       proxy_pass https://127.0.0.1:xxx;</span><br><span class="line">       client_max_body_size 20000m;</span><br><span class="line">       &#125;</span><br><span class="line">&#125;</span><br><span class="line"> server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name xxx.fireflye.top;</span><br><span class="line">        return 301 https://$host$request_uri;</span><br><span class="line">				&#125;</span><br></pre></td></tr></table></figure>
-<p>其他均可套此模版</p>
-<blockquote>
-<p>注意http{}需要闭合，最后的大括号容易被误删</p>
-</blockquote>
-<h4 id="5-检验配置并重启nginx"><a href="#5-检验配置并重启nginx" class="headerlink" title="(5) 检验配置并重启nginx"></a>(5) 检验配置并重启nginx</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -t</span><br></pre></td></tr></table></figure>
-<p><img src="/2025/03/4bc19655/PixPin_2025-03-08_22-34-47.png" alt="PixPin_2025-03-08_22-34-47" style="zoom:67%;"></p>
-<p>证明无错误，重启nginx</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -s reload</span><br></pre></td></tr></table></figure>
-<h3 id="4-SSL证书"><a href="#4-SSL证书" class="headerlink" title="4.SSL证书"></a>4.SSL证书</h3><p>可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器</p>
-<blockquote>
-<p>每个证书有效期三个月</p>
-<p>除www外的二级域名需要单独申请</p>
-<p>总有效证书最多50个(到期会释放个数)</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>Nginx</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>反向代理</tag>
-        <tag>端口转发</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hexo博客部署到云服务器教程</title>
-    <url>/2025/03/ee12770f/</url>
-    <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><ul>
-<li>Ubuntu（Linux）系统</li>
-<li>Git</li>
-<li>Nginx</li>
-<li>Hexo（本地）</li>
-</ul>
-<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><h3 id="1-使用root用户或者具有管理员权限的用户连接至云服务器"><a href="#1-使用root用户或者具有管理员权限的用户连接至云服务器" class="headerlink" title="1.使用root用户或者具有管理员权限的用户连接至云服务器"></a>1.使用<code>root</code>用户或者具有管理员权限的用户连接至云服务器</h3><h3 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2.安装Git"></a>2.安装Git</h3><h4 id="1-查看是否安装好git"><a href="#1-查看是否安装好git" class="headerlink" title="(1)查看是否安装好git"></a>(1)查看是否安装好git</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git --version</span><br></pre></td></tr></table></figure>
-<p>如果提示git版本，说明已经安装git，跳到下一步。如果提示找不到<code>git</code>命令，说明未安装。</p>
-<p>运行以下命令安装git：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">apt install git</span><br></pre></td></tr></table></figure>
-<p>再次查看是否完成git安装：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git --version</span><br></pre></td></tr></table></figure>
-<h4 id="2-创建git用户，并配置仓库"><a href="#2-创建git用户，并配置仓库" class="headerlink" title="(2)创建git用户，并配置仓库"></a>(2)创建git用户，并配置仓库</h4><p>创建用户</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">adduser git</span><br></pre></td></tr></table></figure>
-<p>根据提示设置密码，其他信息可以位空</p>
-<p>切换至git用户</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">su git</span><br></pre></td></tr></table></figure>
-<p>打开用户目录</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span></span><br></pre></td></tr></table></figure>
-<p><code>cd</code>默认打开当前用户的目录，即<code>/home/git/</code></p>
-<p>创建一个保存网页文件的文件夹</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p projects/hexo-blog</span><br></pre></td></tr></table></figure>
-<p>新建并打开仓库文件夹</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> repos &amp;&amp; <span class="built_in">cd</span> repos</span><br></pre></td></tr></table></figure>
-<p>第一次使用git会提示设置默认分支名称，我们这里提前设置为main（或者master）</p>
-<blockquote>
-<p>如果之前一直在使用github的pages，大概率你的主分支是main，为了方便统一，这里也设置为main</p>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global init.defaultBranch main</span><br></pre></td></tr></table></figure>
-<p>初始化仓库</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git init --bare hexo-blog.git</span><br></pre></td></tr></table></figure>
-<h4 id="3-创建钩子函数"><a href="#3-创建钩子函数" class="headerlink" title="(3)创建钩子函数"></a>(3)创建钩子函数</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> hexo-blog.git/hooks</span><br></pre></td></tr></table></figure>
-<p>新建文件</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vim post-receive</span><br></pre></td></tr></table></figure>
-<p>按<code>i</code>进入编辑模式</p>
-<p>粘贴以下内容：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line">git --work-tree=/home/git/projects/hexo-blog --git-dir=/home/git/repos/hexo-blog checkout -f</span><br></pre></td></tr></table></figure>
-<p>按<code>ESC</code>再输入<code>:wq</code>按Enter即可</p>
-<h4 id="4-修改权限"><a href="#4-修改权限" class="headerlink" title="(4)修改权限"></a>(4)修改权限</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">chmod</span> +x post-receive</span><br></pre></td></tr></table></figure>
-<p>退回root用户（也可以切换到可以使用sudo的用户，使用sudo完成）</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">exit</span></span><br></pre></td></tr></table></figure>
-<p>修改权限</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">chown</span> -R git:git /home/git/repos/hexo-blog.git</span><br></pre></td></tr></table></figure>
-<h4 id="5-测试可用性"><a href="#5-测试可用性" class="headerlink" title="(5)测试可用性"></a>(5)测试可用性</h4><p>在本地终端中使用：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> git@&lt;ip&gt;:/home/git/repos/hexo-blog.git</span><br></pre></td></tr></table></figure>
-<p><code>ip</code>为远程服务器的ip</p>
-<h3 id="3-设置免密SSH连接"><a href="#3-设置免密SSH连接" class="headerlink" title="3.设置免密SSH连接"></a>3.设置免密SSH连接</h3><h4 id="1-创建authorized-keys并修改权限"><a href="#1-创建authorized-keys并修改权限" class="headerlink" title="(1)创建authorized_keys并修改权限"></a>(1)创建<code>authorized_keys</code>并修改权限</h4><p>使用<code>git</code>用户建立远程连接</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/git/.ssh</span><br></pre></td></tr></table></figure>
-<p>如果没有就创建该目录</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">touch</span> authorized_keys</span><br></pre></td></tr></table></figure>
-<p>该文件内保存公钥(.pub)内容</p>
-<p>修改权限</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">chmod</span> 600 authorized_keys</span><br></pre></td></tr></table></figure>
-<h4 id="2-创建密钥对（如果已有可跳过）"><a href="#2-创建密钥对（如果已有可跳过）" class="headerlink" title="(2)创建密钥对（如果已有可跳过）"></a>(2)创建密钥对（如果已有可跳过）</h4><p>查看本地是否存在密钥</p>
-<p>Windows：<code>C:/Users/&lt;username&gt;/.ssh</code></p>
-<p>Linux:<code>/home/&lt;username&gt;/.ssh</code></p>
-<p>Mac:<code>/Users/&lt;username&gt;/.ssh</code></p>
-<p>如果目录下存在<code>id_rsa</code>和<code>id_rsa.pub</code>则说明存在密钥对</p>
-<p>如果没有</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br></pre></td></tr></table></figure>
-<p>全Enter即可</p>
-<h4 id="3-建立链接"><a href="#3-建立链接" class="headerlink" title="(3)建立链接"></a>(3)建立链接</h4><p>本地终端输入</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh-copy-id -i C:/Users/&lt;username&gt;/.ssh/id_rsa.pub git@&lt;ip&gt;</span><br></pre></td></tr></table></figure>
-<p>也可以手动复制文件<code>id_rsa.pub</code>的内容到远程<code>authorized_keys</code></p>
-<p>测试连接</p>
-<p>本地终端输入</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh git@&lt;ip&gt;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>此时使用git登陆远程主机，不需要输入密码</p>
-<p>如果仍然需要密码，排查前面步骤是否出错，可以查看<code>/home/git/.ssh/authorized_keys</code>文件的内容是否与本地一致</p>
-<p>确认前面没有问题，需要修改ssh的配置文件</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
-<p>修改其中的一些配置</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 是否让 sshd 去检查用户家目录或相关档案的权限数据，</span><br><span class="line"># 这是为了担心使用者将某些重要档案的权限设错，可能会导致一些问题所致。</span><br><span class="line"># 例如使用者的 ~.ssh/ 权限设错时，某些特殊情况下会不许用户登入</span><br><span class="line"># 修改此项仅为临时方案，建议将目录权限修改为正确权限（chmod）</span><br><span class="line">StrictModes no</span><br><span class="line"></span><br><span class="line"># 是否允许用户自行使用成对的密钥系统进行登入行为，仅针对 version 2。</span><br><span class="line"># 至于自制的公钥数据就放置于用户家目录下的 .ssh/authorized_keys 内</span><br><span class="line">RSAAuthentication yes</span><br><span class="line">PubkeyAuthentication yes</span><br><span class="line">AuthorizedKeysFile      .ssh/authorized_keys</span><br><span class="line"></span><br><span class="line"># 有了证书登录了，就禁用密码登录。</span><br><span class="line">PasswordAuthentication no</span><br></pre></td></tr></table></figure>
-<p>保存配置，重启ssh</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl restart ssh</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl restart sshd</span><br></pre></td></tr></table></figure>
-</blockquote>
-<h3 id="4-安装Nginx"><a href="#4-安装Nginx" class="headerlink" title="4.安装Nginx"></a>4.安装Nginx</h3><h4 id="1-使用root或者带有管理权限的用户登陆"><a href="#1-使用root或者带有管理权限的用户登陆" class="headerlink" title="(1)使用root或者带有管理权限的用户登陆"></a>(1)使用<code>root</code>或者带有管理权限的用户登陆</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">apt install nginx</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt install nginx</span><br></pre></td></tr></table></figure>
-<p>查看是否安装完成</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nginx -v</span><br></pre></td></tr></table></figure>
-<p>显示版本信息就说明安装完成</p>
-<p>运行nginx</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nginx</span><br></pre></td></tr></table></figure>
-<p>在本地浏览器输入<ip>可以看到</ip></p>
-<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-15-24.png" alt="PixPin_2025-03-08_21-15-24" style="zoom: 67%;"></p>
-<p>如果拒绝访问，确认自己的服务器开放了80端口</p>
-<h4 id="2-配置nginx"><a href="#2-配置nginx" class="headerlink" title="(2)配置nginx"></a>(2)配置nginx</h4><p>远程连接服务器</p>
-<p>备份配置文件</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default</span><br></pre></td></tr></table></figure>
-<p>编辑配置文件</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/nginx/nginx.conf</span><br></pre></td></tr></table></figure>
-<p>找到<code>http &#123;</code>开头的块</p>
-<p>里面会有<code>server</code>开头的块，如下图，默认不是注释掉的</p>
-<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-24-34.png" alt="PixPin_2025-03-08_21-24-34" style="zoom:50%;"></p>
-<p>只需要修改80端口server里面的就可以，后面解释ssl的配置</p>
-<p>把其中的</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">root         /usr/share/nginx/html;</span><br></pre></td></tr></table></figure>
-<p>修改为</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">root         /home/git/projects/hexo-blog;</span><br></pre></td></tr></table></figure>
-<p>保存，检验配置</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -t</span><br></pre></td></tr></table></figure>
-<p>如果不使用sudo可能会有警告提示user命令失效</p>
-<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-29-38.png" alt="PixPin_2025-03-08_21-29-38" style="zoom:50%;"></p>
-<p>说明配置正确，如果提示其他内容，检查是否存在拼错或者其他错误</p>
-<p>重启nginx</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl reload nginx</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl restart nginx</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -s reload</span><br></pre></td></tr></table></figure>
-<h3 id="5-配置Hexo"><a href="#5-配置Hexo" class="headerlink" title="5.配置Hexo"></a>5.配置Hexo</h3><p>编辑本地网站主目录下的<code>_config.yml</code></p>
-<p>找到</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo:</span><br><span class="line">    github: git@github.com:xxxxxxxxxx.github.io.git</span><br><span class="line">    git1: git@&lt;ip1&gt;:/home/git/repos/hexo-blog.git</span><br><span class="line">    git2: git@&lt;ip2&gt;:/home/git/repos/hexo-blog.git</span><br><span class="line">  branch: main</span><br></pre></td></tr></table></figure>
-<p>可以同时上传到多个服务器上</p>
-<p>上传网站</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo g -d</span><br></pre></td></tr></table></figure>
-<h3 id="6-限制git用户权限（可选）"><a href="#6-限制git用户权限（可选）" class="headerlink" title="6.限制git用户权限（可选）"></a>6.限制git用户权限（可选）</h3><p>查看git-shells是否在登录方式里</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cat</span> /etc/shells</span><br></pre></td></tr></table></figure>
-<p>如果没有</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">which</span> git-shell</span><br><span class="line"><span class="built_in">sudo</span> vim /etc/shells</span><br></pre></td></tr></table></figure>
-<p>添加到后面</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/usr/bin/git-shell</span><br></pre></td></tr></table></figure>
-<p>如下图</p>
-<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-43-36.png" alt="PixPin_2025-03-08_21-43-36" style="zoom:67%;"></p>
-<p>然后修改</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/passwd</span><br></pre></td></tr></table></figure>
-<p>找到git用户</p>
-<p>只修改划线部分</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/usr/bin/git-shell</span><br></pre></td></tr></table></figure>
-<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-45-35.png" alt="PixPin_2025-03-08_21-45-35" style="zoom:67%;"></p>
-]]></content>
-      <categories>
-        <category>Ubuntu</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>Hexo</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>分水岭提取教程</title>
-    <url>/2025/05/2ef32537/</url>
-    <content><![CDATA[<h2 id="准备工具"><a href="#准备工具" class="headerlink" title="准备工具"></a>准备工具</h2><ul>
-<li><p>Arcgis Pro</p>
-</li>
-<li><p>ArcMap</p>
-</li>
-<li><p>完整的DEM数据（如果有缺失，需要提前补缺（填补空缺值））</p>
-</li>
-</ul>
-<h2 id="开始教程"><a href="#开始教程" class="headerlink" title="开始教程"></a>开始教程</h2><h3 id="1-填洼（Fill）"><a href="#1-填洼（Fill）" class="headerlink" title="1. 填洼（Fill）"></a>1. 填洼（Fill）</h3><p>通过填充表面栅格中的汇来移除数据中的小缺陷。</p>
-<p>地理处理工具 -&gt; 搜索填洼 -&gt; 输入栅格 -&gt; 输出栅格</p>
-<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Fill</strong></p>
-<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_10-47-10.png" alt="PixPin_2025-05-06_10-47-10" style="zoom: 67%;"></p>
-<h3 id="2-流向-（FLow-Direction）"><a href="#2-流向-（FLow-Direction）" class="headerlink" title="2. 流向 （FLow Direction）"></a>2. 流向 （FLow Direction）</h3><p>使用 D8、多流向 (MFD) 或 D-Infinity (DINF) 方法创建从每个像元到其下坡相邻点的流向的栅格。</p>
-<p>地理处理工具 -&gt; 搜索流向 -&gt; 输入处理后的栅格数据 -&gt; 输出流向栅格</p>
-<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Flow Direction</strong></p>
-<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_10-58-18.png" alt="PixPin_2025-05-06_10-58-18" style="zoom:67%;"></p>
-<p>这里类型一般使用默认的D8即可，具体类型区别请查看<a href="https://pro.arcgis.com/zh-cn/pro-app/3.1/tool-reference/spatial-analyst/flow-direction.htm">帮助文档</a>。</p>
-<h3 id="3-计算河流网络（计算流量（Flow-Accumulation））（可选）"><a href="#3-计算河流网络（计算流量（Flow-Accumulation））（可选）" class="headerlink" title="3. 计算河流网络（计算流量（Flow Accumulation））（可选）"></a>3. 计算河流网络（计算流量（Flow Accumulation））（可选）</h3><p>此部计算是为了下一步更好的选点做准备。如果地形不复杂，也可直接使用D8流向栅格做参考。</p>
-<p>地理处理工具 -&gt; 搜索流量 -&gt; 输入流向栅格数据 -&gt; 输出流量栅格</p>
-<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Flow Accumulation</strong></p>
-<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-06-24.png" alt="PixPin_2025-05-06_11-06-24" style="zoom:67%;"></p>
-<h3 id="4-创建点要素文件"><a href="#4-创建点要素文件" class="headerlink" title="4. 创建点要素文件"></a>4. 创建点要素文件</h3><p>找到目录窗口，打开到需要保存到的文件夹，右键文件夹，选择新建，选择Shapefile</p>
-<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-10-22.png" alt="PixPin_2025-05-06_11-10-22" style="zoom:50%;"></p>
-<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-15-40.png" alt="PixPin_2025-05-06_11-15-40" style="zoom:50%;"></p>
-<p>创建完成之后，找到<strong>编辑</strong>工具栏；选择<strong>创建</strong>选项。打开的窗口中选择刚刚创建的文件。</p>
-<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-18-55.png" alt="PixPin_2025-05-06_11-18-55" style="zoom:50%;"></p>
-<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-19-50.png" alt="PixPin_2025-05-06_11-19-50" style="zoom:50%;"></p>
-<p>然后，在河流的上游和下游选点（至少各一个）。不要求完全选到源头，但汇出口尽量选到。</p>
-<blockquote>
-<p>根据创建的河网和流向栅格创建，之后生成的效果不好就回来修改这个文件</p>
-</blockquote>
-<h3 id="5-提取分水岭（Watershed）"><a href="#5-提取分水岭（Watershed）" class="headerlink" title="5. 提取分水岭（Watershed）"></a>5. 提取分水岭（Watershed）</h3><p>地理处理工具 -&gt; 搜索集水区 -&gt; 输入流向栅格数据 -&gt; 输入点要素文件 -&gt; 输出集水区栅格</p>
-<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Watershed</strong></p>
-<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-29-44.png" alt="PixPin_2025-05-06_11-29-44" style="zoom:50%;"></p>
-<p>字段默认id即可</p>
-<blockquote>
-<p>集水区生成与点的位置有关，它会把每一个点的上游集水区域选择上，但由于地形数据原因会导致有些连续的流域选择不上，使用多个点可尽量保证选择全部区域；</p>
-<p>字段的作用是区分该点对应的集水区，这些点的id都相同，因此只会创建一个集水区；如果需要创建多个集水区，需要使用不同的id区分。</p>
-</blockquote>
-<p>反复调整点要素文件，即可得到该区域的一个集水区栅格文件。将栅格转为面（地理处理工具 -&gt; 栅格转面）即可得到集水区的要素文件。</p>
-]]></content>
-      <categories>
-        <category>ArcGis</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>栅格</tag>
-        <tag>分水岭</tag>
       </tags>
   </entry>
   <entry>
@@ -2238,6 +2000,244 @@ u_z|_{z=z_b} = \frac{dz_b}{dt} = \frac{\partial z_b}{\partial t} + \frac{\partia
         <tag>Git</tag>
         <tag>Github</tag>
         <tag>工作流程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo博客部署到云服务器教程</title>
+    <url>/2025/03/ee12770f/</url>
+    <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><ul>
+<li>Ubuntu（Linux）系统</li>
+<li>Git</li>
+<li>Nginx</li>
+<li>Hexo（本地）</li>
+</ul>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><h3 id="1-使用root用户或者具有管理员权限的用户连接至云服务器"><a href="#1-使用root用户或者具有管理员权限的用户连接至云服务器" class="headerlink" title="1.使用root用户或者具有管理员权限的用户连接至云服务器"></a>1.使用<code>root</code>用户或者具有管理员权限的用户连接至云服务器</h3><h3 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2.安装Git"></a>2.安装Git</h3><h4 id="1-查看是否安装好git"><a href="#1-查看是否安装好git" class="headerlink" title="(1)查看是否安装好git"></a>(1)查看是否安装好git</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git --version</span><br></pre></td></tr></table></figure>
+<p>如果提示git版本，说明已经安装git，跳到下一步。如果提示找不到<code>git</code>命令，说明未安装。</p>
+<p>运行以下命令安装git：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">apt install git</span><br></pre></td></tr></table></figure>
+<p>再次查看是否完成git安装：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git --version</span><br></pre></td></tr></table></figure>
+<h4 id="2-创建git用户，并配置仓库"><a href="#2-创建git用户，并配置仓库" class="headerlink" title="(2)创建git用户，并配置仓库"></a>(2)创建git用户，并配置仓库</h4><p>创建用户</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">adduser git</span><br></pre></td></tr></table></figure>
+<p>根据提示设置密码，其他信息可以位空</p>
+<p>切换至git用户</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">su git</span><br></pre></td></tr></table></figure>
+<p>打开用户目录</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span></span><br></pre></td></tr></table></figure>
+<p><code>cd</code>默认打开当前用户的目录，即<code>/home/git/</code></p>
+<p>创建一个保存网页文件的文件夹</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p projects/hexo-blog</span><br></pre></td></tr></table></figure>
+<p>新建并打开仓库文件夹</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> repos &amp;&amp; <span class="built_in">cd</span> repos</span><br></pre></td></tr></table></figure>
+<p>第一次使用git会提示设置默认分支名称，我们这里提前设置为main（或者master）</p>
+<blockquote>
+<p>如果之前一直在使用github的pages，大概率你的主分支是main，为了方便统一，这里也设置为main</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global init.defaultBranch main</span><br></pre></td></tr></table></figure>
+<p>初始化仓库</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git init --bare hexo-blog.git</span><br></pre></td></tr></table></figure>
+<h4 id="3-创建钩子函数"><a href="#3-创建钩子函数" class="headerlink" title="(3)创建钩子函数"></a>(3)创建钩子函数</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> hexo-blog.git/hooks</span><br></pre></td></tr></table></figure>
+<p>新建文件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vim post-receive</span><br></pre></td></tr></table></figure>
+<p>按<code>i</code>进入编辑模式</p>
+<p>粘贴以下内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line">git --work-tree=/home/git/projects/hexo-blog --git-dir=/home/git/repos/hexo-blog checkout -f</span><br></pre></td></tr></table></figure>
+<p>按<code>ESC</code>再输入<code>:wq</code>按Enter即可</p>
+<h4 id="4-修改权限"><a href="#4-修改权限" class="headerlink" title="(4)修改权限"></a>(4)修改权限</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">chmod</span> +x post-receive</span><br></pre></td></tr></table></figure>
+<p>退回root用户（也可以切换到可以使用sudo的用户，使用sudo完成）</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">exit</span></span><br></pre></td></tr></table></figure>
+<p>修改权限</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">chown</span> -R git:git /home/git/repos/hexo-blog.git</span><br></pre></td></tr></table></figure>
+<h4 id="5-测试可用性"><a href="#5-测试可用性" class="headerlink" title="(5)测试可用性"></a>(5)测试可用性</h4><p>在本地终端中使用：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> git@&lt;ip&gt;:/home/git/repos/hexo-blog.git</span><br></pre></td></tr></table></figure>
+<p><code>ip</code>为远程服务器的ip</p>
+<h3 id="3-设置免密SSH连接"><a href="#3-设置免密SSH连接" class="headerlink" title="3.设置免密SSH连接"></a>3.设置免密SSH连接</h3><h4 id="1-创建authorized-keys并修改权限"><a href="#1-创建authorized-keys并修改权限" class="headerlink" title="(1)创建authorized_keys并修改权限"></a>(1)创建<code>authorized_keys</code>并修改权限</h4><p>使用<code>git</code>用户建立远程连接</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/git/.ssh</span><br></pre></td></tr></table></figure>
+<p>如果没有就创建该目录</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">touch</span> authorized_keys</span><br></pre></td></tr></table></figure>
+<p>该文件内保存公钥(.pub)内容</p>
+<p>修改权限</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">chmod</span> 600 authorized_keys</span><br></pre></td></tr></table></figure>
+<h4 id="2-创建密钥对（如果已有可跳过）"><a href="#2-创建密钥对（如果已有可跳过）" class="headerlink" title="(2)创建密钥对（如果已有可跳过）"></a>(2)创建密钥对（如果已有可跳过）</h4><p>查看本地是否存在密钥</p>
+<p>Windows：<code>C:/Users/&lt;username&gt;/.ssh</code></p>
+<p>Linux:<code>/home/&lt;username&gt;/.ssh</code></p>
+<p>Mac:<code>/Users/&lt;username&gt;/.ssh</code></p>
+<p>如果目录下存在<code>id_rsa</code>和<code>id_rsa.pub</code>则说明存在密钥对</p>
+<p>如果没有</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br></pre></td></tr></table></figure>
+<p>全Enter即可</p>
+<h4 id="3-建立链接"><a href="#3-建立链接" class="headerlink" title="(3)建立链接"></a>(3)建立链接</h4><p>本地终端输入</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh-copy-id -i C:/Users/&lt;username&gt;/.ssh/id_rsa.pub git@&lt;ip&gt;</span><br></pre></td></tr></table></figure>
+<p>也可以手动复制文件<code>id_rsa.pub</code>的内容到远程<code>authorized_keys</code></p>
+<p>测试连接</p>
+<p>本地终端输入</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh git@&lt;ip&gt;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>此时使用git登陆远程主机，不需要输入密码</p>
+<p>如果仍然需要密码，排查前面步骤是否出错，可以查看<code>/home/git/.ssh/authorized_keys</code>文件的内容是否与本地一致</p>
+<p>确认前面没有问题，需要修改ssh的配置文件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
+<p>修改其中的一些配置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 是否让 sshd 去检查用户家目录或相关档案的权限数据，</span><br><span class="line"># 这是为了担心使用者将某些重要档案的权限设错，可能会导致一些问题所致。</span><br><span class="line"># 例如使用者的 ~.ssh/ 权限设错时，某些特殊情况下会不许用户登入</span><br><span class="line"># 修改此项仅为临时方案，建议将目录权限修改为正确权限（chmod）</span><br><span class="line">StrictModes no</span><br><span class="line"></span><br><span class="line"># 是否允许用户自行使用成对的密钥系统进行登入行为，仅针对 version 2。</span><br><span class="line"># 至于自制的公钥数据就放置于用户家目录下的 .ssh/authorized_keys 内</span><br><span class="line">RSAAuthentication yes</span><br><span class="line">PubkeyAuthentication yes</span><br><span class="line">AuthorizedKeysFile      .ssh/authorized_keys</span><br><span class="line"></span><br><span class="line"># 有了证书登录了，就禁用密码登录。</span><br><span class="line">PasswordAuthentication no</span><br></pre></td></tr></table></figure>
+<p>保存配置，重启ssh</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl restart ssh</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl restart sshd</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="4-安装Nginx"><a href="#4-安装Nginx" class="headerlink" title="4.安装Nginx"></a>4.安装Nginx</h3><h4 id="1-使用root或者带有管理权限的用户登陆"><a href="#1-使用root或者带有管理权限的用户登陆" class="headerlink" title="(1)使用root或者带有管理权限的用户登陆"></a>(1)使用<code>root</code>或者带有管理权限的用户登陆</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">apt install nginx</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt install nginx</span><br></pre></td></tr></table></figure>
+<p>查看是否安装完成</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nginx -v</span><br></pre></td></tr></table></figure>
+<p>显示版本信息就说明安装完成</p>
+<p>运行nginx</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nginx</span><br></pre></td></tr></table></figure>
+<p>在本地浏览器输入<ip>可以看到</ip></p>
+<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-15-24.png" alt="PixPin_2025-03-08_21-15-24" style="zoom: 67%;"></p>
+<p>如果拒绝访问，确认自己的服务器开放了80端口</p>
+<h4 id="2-配置nginx"><a href="#2-配置nginx" class="headerlink" title="(2)配置nginx"></a>(2)配置nginx</h4><p>远程连接服务器</p>
+<p>备份配置文件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default</span><br></pre></td></tr></table></figure>
+<p>编辑配置文件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/nginx/nginx.conf</span><br></pre></td></tr></table></figure>
+<p>找到<code>http &#123;</code>开头的块</p>
+<p>里面会有<code>server</code>开头的块，如下图，默认不是注释掉的</p>
+<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-24-34.png" alt="PixPin_2025-03-08_21-24-34" style="zoom:50%;"></p>
+<p>只需要修改80端口server里面的就可以，后面解释ssl的配置</p>
+<p>把其中的</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">root         /usr/share/nginx/html;</span><br></pre></td></tr></table></figure>
+<p>修改为</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">root         /home/git/projects/hexo-blog;</span><br></pre></td></tr></table></figure>
+<p>保存，检验配置</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -t</span><br></pre></td></tr></table></figure>
+<p>如果不使用sudo可能会有警告提示user命令失效</p>
+<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-29-38.png" alt="PixPin_2025-03-08_21-29-38" style="zoom:50%;"></p>
+<p>说明配置正确，如果提示其他内容，检查是否存在拼错或者其他错误</p>
+<p>重启nginx</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl reload nginx</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl restart nginx</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -s reload</span><br></pre></td></tr></table></figure>
+<h3 id="5-配置Hexo"><a href="#5-配置Hexo" class="headerlink" title="5.配置Hexo"></a>5.配置Hexo</h3><p>编辑本地网站主目录下的<code>_config.yml</code></p>
+<p>找到</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo:</span><br><span class="line">    github: git@github.com:xxxxxxxxxx.github.io.git</span><br><span class="line">    git1: git@&lt;ip1&gt;:/home/git/repos/hexo-blog.git</span><br><span class="line">    git2: git@&lt;ip2&gt;:/home/git/repos/hexo-blog.git</span><br><span class="line">  branch: main</span><br></pre></td></tr></table></figure>
+<p>可以同时上传到多个服务器上</p>
+<p>上传网站</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo g -d</span><br></pre></td></tr></table></figure>
+<h3 id="6-限制git用户权限（可选）"><a href="#6-限制git用户权限（可选）" class="headerlink" title="6.限制git用户权限（可选）"></a>6.限制git用户权限（可选）</h3><p>查看git-shells是否在登录方式里</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cat</span> /etc/shells</span><br></pre></td></tr></table></figure>
+<p>如果没有</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">which</span> git-shell</span><br><span class="line"><span class="built_in">sudo</span> vim /etc/shells</span><br></pre></td></tr></table></figure>
+<p>添加到后面</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/usr/bin/git-shell</span><br></pre></td></tr></table></figure>
+<p>如下图</p>
+<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-43-36.png" alt="PixPin_2025-03-08_21-43-36" style="zoom:67%;"></p>
+<p>然后修改</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/passwd</span><br></pre></td></tr></table></figure>
+<p>找到git用户</p>
+<p>只修改划线部分</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/usr/bin/git-shell</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/03/ee12770f/PixPin_2025-03-08_21-45-35.png" alt="PixPin_2025-03-08_21-45-35" style="zoom:67%;"></p>
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Nginx反向代理教程</title>
+    <url>/2025/03/4bc19655/</url>
+    <content><![CDATA[<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><ul>
+<li>Ubuntu系统</li>
+<li>Nginx</li>
+</ul>
+<h2 id="配置教程"><a href="#配置教程" class="headerlink" title="配置教程"></a>配置教程</h2><h3 id="1-备份配置文件"><a href="#1-备份配置文件" class="headerlink" title="1.备份配置文件"></a>1.备份配置文件</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default</span><br></pre></td></tr></table></figure>
+<h3 id="2-编辑配置文件"><a href="#2-编辑配置文件" class="headerlink" title="2.编辑配置文件"></a>2.编辑配置文件</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/nginx/nginx.conf</span><br></pre></td></tr></table></figure>
+<p>找到<code>http&#123;&#125;</code>块中的<code>server&#123;&#125;</code>块，注释掉原有的<code>server&#123;&#125;</code></p>
+<p><img src="/2025/03/4bc19655/PixPin_2025-03-08_22-13-27.png" alt="PixPin_2025-03-08_22-13-27" style="zoom:50%;"></p>
+<h3 id="3-按原有配置添加新的server块"><a href="#3-按原有配置添加新的server块" class="headerlink" title="3.按原有配置添加新的server块"></a>3.按原有配置添加新的server块</h3><h4 id="1-默认的错误界面"><a href="#1-默认的错误界面" class="headerlink" title="(1) 默认的错误界面"></a>(1) 默认的错误界面</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 443 ssl default_server;</span><br><span class="line">    server_name _;</span><br><span class="line"></span><br><span class="line">    ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">    ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line"></span><br><span class="line">    return 404;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-主域名"><a href="#2-主域名" class="headerlink" title="(2) 主域名"></a>(2) 主域名</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">     listen 443 ssl;</span><br><span class="line">     server_name fireflye.top;</span><br><span class="line">     ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">     ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line">     ssl_session_timeout 5m;</span><br><span class="line">     ssl_protocols TLSv1.2 TLSv1.3;</span><br><span class="line">     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;</span><br><span class="line">     ssl_prefer_server_ciphers on;</span><br><span class="line"></span><br><span class="line">     location / &#123;</span><br><span class="line">         root /home/www/website;</span><br><span class="line">         index  index.html index.htm;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>root</code>改为自己本地的网站目录</p>
+<h4 id="3-主域名转发"><a href="#3-主域名转发" class="headerlink" title="(3) 主域名转发"></a>(3) 主域名转发</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name fireflye.top;</span><br><span class="line">        return 301 https://$host$request_uri;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-二级域名端口转发示例"><a href="#4-二级域名端口转发示例" class="headerlink" title="(4) 二级域名端口转发示例"></a>(4) 二级域名端口转发示例</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">     listen 443 ssl;</span><br><span class="line">     server_name xxx.fireflye.top;</span><br><span class="line">     ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">     ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line">     ssl_session_timeout 5m;</span><br><span class="line">     ssl_protocols TLSv1.2 TLSv1.3;</span><br><span class="line">     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;</span><br><span class="line">     ssl_prefer_server_ciphers on;</span><br><span class="line"></span><br><span class="line">     location / &#123;</span><br><span class="line">       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">       proxy_set_header X-Forwarded-Proto $scheme;</span><br><span class="line">       proxy_set_header Host $host;</span><br><span class="line">       proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">       proxy_set_header Range $http_range;</span><br><span class="line">       proxy_set_header If-Range $http_if_range;</span><br><span class="line">       proxy_redirect off;</span><br><span class="line">       proxy_pass https://127.0.0.1:xxx;</span><br><span class="line">       client_max_body_size 20000m;</span><br><span class="line">       &#125;</span><br><span class="line">&#125;</span><br><span class="line"> server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name xxx.fireflye.top;</span><br><span class="line">        return 301 https://$host$request_uri;</span><br><span class="line">				&#125;</span><br></pre></td></tr></table></figure>
+<p>其他均可套此模版</p>
+<blockquote>
+<p>注意http{}需要闭合，最后的大括号容易被误删</p>
+</blockquote>
+<h4 id="5-检验配置并重启nginx"><a href="#5-检验配置并重启nginx" class="headerlink" title="(5) 检验配置并重启nginx"></a>(5) 检验配置并重启nginx</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -t</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/03/4bc19655/PixPin_2025-03-08_22-34-47.png" alt="PixPin_2025-03-08_22-34-47" style="zoom:67%;"></p>
+<p>证明无错误，重启nginx</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -s reload</span><br></pre></td></tr></table></figure>
+<h3 id="4-SSL证书"><a href="#4-SSL证书" class="headerlink" title="4.SSL证书"></a>4.SSL证书</h3><p>可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器</p>
+<blockquote>
+<p>每个证书有效期三个月</p>
+<p>除www外的二级域名需要单独申请</p>
+<p>总有效证书最多50个(到期会释放个数)</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Nginx</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>反向代理</tag>
+        <tag>端口转发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>分水岭提取教程</title>
+    <url>/2025/05/2ef32537/</url>
+    <content><![CDATA[<h2 id="准备工具"><a href="#准备工具" class="headerlink" title="准备工具"></a>准备工具</h2><ul>
+<li><p>Arcgis Pro</p>
+</li>
+<li><p>ArcMap</p>
+</li>
+<li><p>完整的DEM数据（如果有缺失，需要提前补缺（填补空缺值））</p>
+</li>
+</ul>
+<h2 id="开始教程"><a href="#开始教程" class="headerlink" title="开始教程"></a>开始教程</h2><h3 id="1-填洼（Fill）"><a href="#1-填洼（Fill）" class="headerlink" title="1. 填洼（Fill）"></a>1. 填洼（Fill）</h3><p>通过填充表面栅格中的汇来移除数据中的小缺陷。</p>
+<p>地理处理工具 -&gt; 搜索填洼 -&gt; 输入栅格 -&gt; 输出栅格</p>
+<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Fill</strong></p>
+<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_10-47-10.png" alt="PixPin_2025-05-06_10-47-10" style="zoom: 67%;"></p>
+<h3 id="2-流向-（FLow-Direction）"><a href="#2-流向-（FLow-Direction）" class="headerlink" title="2. 流向 （FLow Direction）"></a>2. 流向 （FLow Direction）</h3><p>使用 D8、多流向 (MFD) 或 D-Infinity (DINF) 方法创建从每个像元到其下坡相邻点的流向的栅格。</p>
+<p>地理处理工具 -&gt; 搜索流向 -&gt; 输入处理后的栅格数据 -&gt; 输出流向栅格</p>
+<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Flow Direction</strong></p>
+<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_10-58-18.png" alt="PixPin_2025-05-06_10-58-18" style="zoom:67%;"></p>
+<p>这里类型一般使用默认的D8即可，具体类型区别请查看<a href="https://pro.arcgis.com/zh-cn/pro-app/3.1/tool-reference/spatial-analyst/flow-direction.htm">帮助文档</a>。</p>
+<h3 id="3-计算河流网络（计算流量（Flow-Accumulation））（可选）"><a href="#3-计算河流网络（计算流量（Flow-Accumulation））（可选）" class="headerlink" title="3. 计算河流网络（计算流量（Flow Accumulation））（可选）"></a>3. 计算河流网络（计算流量（Flow Accumulation））（可选）</h3><p>此部计算是为了下一步更好的选点做准备。如果地形不复杂，也可直接使用D8流向栅格做参考。</p>
+<p>地理处理工具 -&gt; 搜索流量 -&gt; 输入流向栅格数据 -&gt; 输出流量栅格</p>
+<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Flow Accumulation</strong></p>
+<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-06-24.png" alt="PixPin_2025-05-06_11-06-24" style="zoom:67%;"></p>
+<h3 id="4-创建点要素文件"><a href="#4-创建点要素文件" class="headerlink" title="4. 创建点要素文件"></a>4. 创建点要素文件</h3><p>找到目录窗口，打开到需要保存到的文件夹，右键文件夹，选择新建，选择Shapefile</p>
+<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-10-22.png" alt="PixPin_2025-05-06_11-10-22" style="zoom:50%;"></p>
+<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-15-40.png" alt="PixPin_2025-05-06_11-15-40" style="zoom:50%;"></p>
+<p>创建完成之后，找到<strong>编辑</strong>工具栏；选择<strong>创建</strong>选项。打开的窗口中选择刚刚创建的文件。</p>
+<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-18-55.png" alt="PixPin_2025-05-06_11-18-55" style="zoom:50%;"></p>
+<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-19-50.png" alt="PixPin_2025-05-06_11-19-50" style="zoom:50%;"></p>
+<p>然后，在河流的上游和下游选点（至少各一个）。不要求完全选到源头，但汇出口尽量选到。</p>
+<blockquote>
+<p>根据创建的河网和流向栅格创建，之后生成的效果不好就回来修改这个文件</p>
+</blockquote>
+<h3 id="5-提取分水岭（Watershed）"><a href="#5-提取分水岭（Watershed）" class="headerlink" title="5. 提取分水岭（Watershed）"></a>5. 提取分水岭（Watershed）</h3><p>地理处理工具 -&gt; 搜索集水区 -&gt; 输入流向栅格数据 -&gt; 输入点要素文件 -&gt; 输出集水区栅格</p>
+<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Watershed</strong></p>
+<p><img src="/2025/05/2ef32537/PixPin_2025-05-06_11-29-44.png" alt="PixPin_2025-05-06_11-29-44" style="zoom:50%;"></p>
+<p>字段默认id即可</p>
+<blockquote>
+<p>集水区生成与点的位置有关，它会把每一个点的上游集水区域选择上，但由于地形数据原因会导致有些连续的流域选择不上，使用多个点可尽量保证选择全部区域；</p>
+<p>字段的作用是区分该点对应的集水区，这些点的id都相同，因此只会创建一个集水区；如果需要创建多个集水区，需要使用不同的id区分。</p>
+</blockquote>
+<p>反复调整点要素文件，即可得到该区域的一个集水区栅格文件。将栅格转为面（地理处理工具 -&gt; 栅格转面）即可得到集水区的要素文件。</p>
+]]></content>
+      <categories>
+        <category>ArcGis</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>栅格</tag>
+        <tag>分水岭</tag>
       </tags>
   </entry>
 </search>
