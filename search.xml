@@ -1,6 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>非饱和土边坡稳定性计算程序说明文件</title>
+    <url>/2024/04/71e392b0/</url>
+    <content><![CDATA[一、数据文件注意：以下文件内不要输入注释文字1. dat文件!dx  h2v1.0  2.0!nx1 nx2 ny1 ny220  20  10  5!树荷载的左列和右列数，树荷载kN(各单元格相同)27 32 10.0!内摩擦角，粘聚力，剪胀角，重度，弹性模量，泊松比, a, m, n, theta_s 其中,重度=ρ_d*gam_w,theta_s=1-ρ_d/G_s20.0  15.0  0.0  20.0  1.0e5  0.3 15 0.2 4 0.907749!水位位置（坡顶为0，y方向为负值）-20!非饱和抗剪强度公式中κ2!收敛准则  计算次数0.0001 500!折减次数6!折减系数1.2  1.3  1.4  1.5  1.55 1.6
+
+其中,第三行表示荷载的加荷位置和大小
+27 ! 表示起点在第27列（从左至右）32 ! 表示终点在第32列（从左至右）30 ! 表示荷载为30kN
+对应下图中的红色位置
+
+2. 孔压文件x_f.txt按节点列依次输入节点处的孔压每个单元格有3列共8个节点，呈323分布，如下图所示，阴影部分为一个单元格，黄色为单元格号按照节点的1234...顺序竖向填写x_f.txt文件，每节点占一行 
+
+二、源代码本程序单元格序号是从上至下，从左至右依次排序,如下例
+1 6 2 7  113 8  12 154 9  13 16 18 205 10 14 17 19 21
+在叠加荷载时，因为所有单元格的g都是按照3 2 1 4 6 7 8 5 的顺序保存，因此我们仅需找到对应的单元格号以及146号节点的相对位置
+146号节点的相对位置为g(6), g(8), g(10),下文有介绍
+接下来只需找到单元格号即可。
+计算单元号if (tree_load/=0) then !荷载不为零再进行运算  allocate(tree_nodes(nx1+nx2+ny1*ngrad))  tree_nodes=0   ! tree_nodes(nx1+nx2+ny1*ngrad)是储存表面单元格的单元号  itree = 2 !用于计数，记录需加荷的单元格数量  tree_nodes(1)=1   ! 顶面和斜面前ngrad行  do i=2,nx1+ngrad      tree_nodes(itree) = (i-1)*nye+1     itree = itree + 1  end do  ! 斜面ngrad行以后  do i=1,ny1-1    do j=1,ngrad       if (j==1) then          tree_nodes(itree) = tree_nodes(itree-1)+nye-i+1       else          tree_nodes(itree) = tree_nodes(itree-1)+nye-i       end if       itree = itree + 1    end do  end do  ! 底面第一列  tree_nodes(itree) = tree_nodes(itree-1)+ny2+1  itree = itree + 1  ! 底面以后  do i=2,nx2     tree_nodes(itree) = tree_nodes(itree-1)+ny2     itree = itree + 1  end do  tree_nodes_= tree_nodes(nel_left:nel_right) ! 储存实际需要加荷的单元格的序号
+分配荷载到节点  ALLOCATE(weight_load(8),tree(ndof))  !荷载在节点上的分布权重  weight_load = (/0.166667,0.0,0.0,0.666667,0.0,0.166667,0.0,0.0/)  !计算各节点荷载大小  tree=zero  tree(6)=tree_load*weight_load(1)  tree(8)=tree_load*weight_load(4)  tree(10)=tree_load*weight_load(6)  ! 此处注意区分(见下图)  ! g数组按3x 3y 2x 2y 1x 1y 4x 4y 6x 6y 7x 7y 8x 8y 5x 5y的顺序保存  ! weight_load按1 2 3 4 5 6 7 8来保存  ! 则1 4 6号节点的y方向对应g(6),g(8),g(10)end if
+
+叠加荷载itree=1 ! 作tree_nodes_数组的索引，将序号依次读出elements_2: DO iel=1,nels   ...   gravlo(g)=gravlo(g)-eld*prop(4,etype(iel))   if (tree_load.ne.0.0) then !荷载不为零时计算      if ((iel==tree_nodes_(itree)).and.(itree.le.size(tree_nodes_))) then !判断是否为需加荷的单元         gravlo(g) = gravlo(g) - tree !根据自由度编号加到指定位置         itree=itree+1      end if   end ifEND DO elements_2
+
+叠加外部水荷载叠加外部水荷载的方式与上方叠加外部荷载的方法类似，将水的压力 $\gamma_w*h$ 叠加到相应的表面节点上
+IF(wl&gt;g_coord(2,1))THEN  ! 水位淹没整个边坡      p3=(wl-g_coord(2,1))*gam_w      DO i=1,nx1         gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6         gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3         gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6      END DO      DO i=nx1+1,nx1+ny1*ngrad         if (mod(i-nx1,ngrad)/=0)then            y5=g_coord(1,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else            y5=g_coord(2,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            y7=g_coord(2,g_num(7,tree_nodes(i)))            p7=(wl-y7)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN ! 如果有破角台阶         p3=(wl-g_coord(2,nn-2*ny2))*gam_w !p3==p5         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   ELSE IF(wl&gt;g_coord(2,nn-2*ny2))THEN ! 水面在斜面位置(低于坡顶,高于坡脚)      nw=int((-wl)/dx)      do i=nx1+nw*ngrad+ngrad,nx1+ny1*ngrad         y5=g_coord(2,g_num(5,tree_nodes(i)))         y7=g_coord(2,g_num(7,tree_nodes(i)))         p5=(wl-y5)*gam_w         p7=(wl-y7)*gam_w         if(i==nx1+nw*ngrad+ngrad)then ! 如果水面恰好穿过某行单元格            cx=y5-wl            cy=cx            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))           &amp;               +p7*cy*(cy**2-two*cy*dx+dx**2)/(d6*dx**2)            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))           &amp;               -p7*(cy**3-cy**2*dx-cy*dx**2+dx**3)/(d3*dx**2)            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))           &amp;               -p7*(dx**3-cy**3)/(d6*dx*dx)         else if(mod(i-nx1,ngrad)/=0)then ! 方格斜面台阶内部(仅有上表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else ! 方格斜面台阶最外部的单元格(上表面和右表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN          p3=(wl-g_coord(2,nn-2*ny2))*gam_w         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   END IF
+叠加孔压根据Vanapalli公式, 使用体积含水率、孔压等参数计算出基质吸力项, 叠加到正应力上
+
+elements_3: DO iel=1,nels            bload=zero            phi=prop(1,iel)            tnph=TAN(phi*pi/d180)            phif=ATAN(tnph/srf(iy))*d180/pi            psi=prop(3,iel)            tnps=TAN(psi*pi/d180)            psif=ATAN(tnps/srf(iy))*d180/pi            cf=prop(2,iel)/srf(iy)            e=prop(5,iel)            v=prop(6,iel)            CALL deemat(dee,e,v)            num=g_num(:,iel)            coord=TRANSPOSE(g_coord(:,num))            do i=1,nod               call Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) ! 计算基质吸力项            end do            g=g_g(:,iel)            eld=loads(g)            gauss_pts_2: DO i=1,nip               call shape_fun(fun,points,i)               pore(iel,i)=dot_product(fun,suc_sig)               CALL bee8(bee,coord,points(i,1),points(i,2),det)               eps=MATMUL(bee,eld)               eps=eps-evpt(:,i,iel)               sigma=MATMUL(dee,eps)               sigma(1)=sigma(1)-pore(iel,i) ! 此处124为正应力项, 3为剪应力项               sigma(2)=sigma(2)-pore(iel,i)               sigma(4)=sigma(4)-pore(iel,i)               CALL invar(sigma,sigm,dsbar,lode_theta)               !-----------------------check whether yield is violated-------------------               CALL mocouf(phif,cf,sigm,dsbar,lode_theta,f)               IF(f&gt;fmax)fmax=f               IF(converged.OR.iters==limit)THEN                  sigma(1)=sigma(1)+pore(iel,i)                  sigma(2)=sigma(2)+pore(iel,i)                  sigma(4)=sigma(4)+pore(iel,i)                  devp=sigma               ELSE                  IF(f&gt;=zero.OR.(converged.OR.iters==limit))THEN                     CALL mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)                     CALL formm(sigma,m1,m2,m3)                     flow=f*(m1*dq1+m2*dq2+m3*dq3)                     erate=MATMUL(flow,sigma)                     evp=erate*dt                     evpt(:,i,iel)=evpt(:,i,iel)+evp                     devp=MATMUL(dee,evp)                  END IF               END IF               IF(f&gt;=zero)THEN                  eload=MATMUL(devp,bee)                  bload=bload+eload*det*weights(i)               END IF            END DO gauss_pts_2            !-----------------------compute the total bodyloads vector----------------            bdylds(g)=bdylds(g)+bload            bdylds(0)=zero         END DO elements_3
+]]></content>
+      <categories>
+        <category>边坡</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>非饱和土</tag>
+        <tag>边坡稳定性</tag>
+        <tag>方形网格</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>可靠度分析程序说明文件</title>
     <url>/2024/04/74b4d97f/</url>
     <content><![CDATA[非饱和黄土边坡失效概率计算程序本程序是基于有限元的边坡可靠度分析程序，改进自Griffith教授 的非饱和黄土边坡稳定性计算程序
@@ -85,51 +124,12 @@ xxx_grid.txt的内容复制到xxx.dat文件的以下位置：
       </categories>
       <tags>
         <tag>教程及说明</tag>
+        <tag>边坡稳定性</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
         <tag>失效概率</tag>
         <tag>Monte-Carlo</tag>
-        <tag>边坡稳定性</tag>
-        <tag>Fortran</tag>
-        <tag>有限元</tag>
         <tag>Python</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>非饱和土边坡稳定性计算程序说明文件</title>
-    <url>/2024/04/71e392b0/</url>
-    <content><![CDATA[一、数据文件注意：以下文件内不要输入注释文字1. dat文件!dx  h2v1.0  2.0!nx1 nx2 ny1 ny220  20  10  5!树荷载的左列和右列数，树荷载kN(各单元格相同)27 32 10.0!内摩擦角，粘聚力，剪胀角，重度，弹性模量，泊松比, a, m, n, theta_s 其中,重度=ρ_d*gam_w,theta_s=1-ρ_d/G_s20.0  15.0  0.0  20.0  1.0e5  0.3 15 0.2 4 0.907749!水位位置（坡顶为0，y方向为负值）-20!非饱和抗剪强度公式中κ2!收敛准则  计算次数0.0001 500!折减次数6!折减系数1.2  1.3  1.4  1.5  1.55 1.6
-
-其中,第三行表示荷载的加荷位置和大小
-27 ! 表示起点在第27列（从左至右）32 ! 表示终点在第32列（从左至右）30 ! 表示荷载为30kN
-对应下图中的红色位置
-
-2. 孔压文件x_f.txt按节点列依次输入节点处的孔压每个单元格有3列共8个节点，呈323分布，如下图所示，阴影部分为一个单元格，黄色为单元格号按照节点的1234...顺序竖向填写x_f.txt文件，每节点占一行 
-
-二、源代码本程序单元格序号是从上至下，从左至右依次排序,如下例
-1 6 2 7  113 8  12 154 9  13 16 18 205 10 14 17 19 21
-在叠加荷载时，因为所有单元格的g都是按照3 2 1 4 6 7 8 5 的顺序保存，因此我们仅需找到对应的单元格号以及146号节点的相对位置
-146号节点的相对位置为g(6), g(8), g(10),下文有介绍
-接下来只需找到单元格号即可。
-计算单元号if (tree_load/=0) then !荷载不为零再进行运算  allocate(tree_nodes(nx1+nx2+ny1*ngrad))  tree_nodes=0   ! tree_nodes(nx1+nx2+ny1*ngrad)是储存表面单元格的单元号  itree = 2 !用于计数，记录需加荷的单元格数量  tree_nodes(1)=1   ! 顶面和斜面前ngrad行  do i=2,nx1+ngrad      tree_nodes(itree) = (i-1)*nye+1     itree = itree + 1  end do  ! 斜面ngrad行以后  do i=1,ny1-1    do j=1,ngrad       if (j==1) then          tree_nodes(itree) = tree_nodes(itree-1)+nye-i+1       else          tree_nodes(itree) = tree_nodes(itree-1)+nye-i       end if       itree = itree + 1    end do  end do  ! 底面第一列  tree_nodes(itree) = tree_nodes(itree-1)+ny2+1  itree = itree + 1  ! 底面以后  do i=2,nx2     tree_nodes(itree) = tree_nodes(itree-1)+ny2     itree = itree + 1  end do  tree_nodes_= tree_nodes(nel_left:nel_right) ! 储存实际需要加荷的单元格的序号
-分配荷载到节点  ALLOCATE(weight_load(8),tree(ndof))  !荷载在节点上的分布权重  weight_load = (/0.166667,0.0,0.0,0.666667,0.0,0.166667,0.0,0.0/)  !计算各节点荷载大小  tree=zero  tree(6)=tree_load*weight_load(1)  tree(8)=tree_load*weight_load(4)  tree(10)=tree_load*weight_load(6)  ! 此处注意区分(见下图)  ! g数组按3x 3y 2x 2y 1x 1y 4x 4y 6x 6y 7x 7y 8x 8y 5x 5y的顺序保存  ! weight_load按1 2 3 4 5 6 7 8来保存  ! 则1 4 6号节点的y方向对应g(6),g(8),g(10)end if
-
-叠加荷载itree=1 ! 作tree_nodes_数组的索引，将序号依次读出elements_2: DO iel=1,nels   ...   gravlo(g)=gravlo(g)-eld*prop(4,etype(iel))   if (tree_load.ne.0.0) then !荷载不为零时计算      if ((iel==tree_nodes_(itree)).and.(itree.le.size(tree_nodes_))) then !判断是否为需加荷的单元         gravlo(g) = gravlo(g) - tree !根据自由度编号加到指定位置         itree=itree+1      end if   end ifEND DO elements_2
-
-叠加外部水荷载叠加外部水荷载的方式与上方叠加外部荷载的方法类似，将水的压力 $\gamma_w*h$ 叠加到相应的表面节点上
-IF(wl&gt;g_coord(2,1))THEN  ! 水位淹没整个边坡      p3=(wl-g_coord(2,1))*gam_w      DO i=1,nx1         gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6         gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3         gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6      END DO      DO i=nx1+1,nx1+ny1*ngrad         if (mod(i-nx1,ngrad)/=0)then            y5=g_coord(1,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else            y5=g_coord(2,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            y7=g_coord(2,g_num(7,tree_nodes(i)))            p7=(wl-y7)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN ! 如果有破角台阶         p3=(wl-g_coord(2,nn-2*ny2))*gam_w !p3==p5         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   ELSE IF(wl&gt;g_coord(2,nn-2*ny2))THEN ! 水面在斜面位置(低于坡顶,高于坡脚)      nw=int((-wl)/dx)      do i=nx1+nw*ngrad+ngrad,nx1+ny1*ngrad         y5=g_coord(2,g_num(5,tree_nodes(i)))         y7=g_coord(2,g_num(7,tree_nodes(i)))         p5=(wl-y5)*gam_w         p7=(wl-y7)*gam_w         if(i==nx1+nw*ngrad+ngrad)then ! 如果水面恰好穿过某行单元格            cx=y5-wl            cy=cx            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))           &amp;               +p7*cy*(cy**2-two*cy*dx+dx**2)/(d6*dx**2)            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))           &amp;               -p7*(cy**3-cy**2*dx-cy*dx**2+dx**3)/(d3*dx**2)            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))           &amp;               -p7*(dx**3-cy**3)/(d6*dx*dx)         else if(mod(i-nx1,ngrad)/=0)then ! 方格斜面台阶内部(仅有上表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else ! 方格斜面台阶最外部的单元格(上表面和右表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN          p3=(wl-g_coord(2,nn-2*ny2))*gam_w         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   END IF
-叠加孔压根据Vanapalli公式, 使用体积含水率、孔压等参数计算出基质吸力项, 叠加到正应力上
-
-elements_3: DO iel=1,nels            bload=zero            phi=prop(1,iel)            tnph=TAN(phi*pi/d180)            phif=ATAN(tnph/srf(iy))*d180/pi            psi=prop(3,iel)            tnps=TAN(psi*pi/d180)            psif=ATAN(tnps/srf(iy))*d180/pi            cf=prop(2,iel)/srf(iy)            e=prop(5,iel)            v=prop(6,iel)            CALL deemat(dee,e,v)            num=g_num(:,iel)            coord=TRANSPOSE(g_coord(:,num))            do i=1,nod               call Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) ! 计算基质吸力项            end do            g=g_g(:,iel)            eld=loads(g)            gauss_pts_2: DO i=1,nip               call shape_fun(fun,points,i)               pore(iel,i)=dot_product(fun,suc_sig)               CALL bee8(bee,coord,points(i,1),points(i,2),det)               eps=MATMUL(bee,eld)               eps=eps-evpt(:,i,iel)               sigma=MATMUL(dee,eps)               sigma(1)=sigma(1)-pore(iel,i) ! 此处124为正应力项, 3为剪应力项               sigma(2)=sigma(2)-pore(iel,i)               sigma(4)=sigma(4)-pore(iel,i)               CALL invar(sigma,sigm,dsbar,lode_theta)               !-----------------------check whether yield is violated-------------------               CALL mocouf(phif,cf,sigm,dsbar,lode_theta,f)               IF(f&gt;fmax)fmax=f               IF(converged.OR.iters==limit)THEN                  sigma(1)=sigma(1)+pore(iel,i)                  sigma(2)=sigma(2)+pore(iel,i)                  sigma(4)=sigma(4)+pore(iel,i)                  devp=sigma               ELSE                  IF(f&gt;=zero.OR.(converged.OR.iters==limit))THEN                     CALL mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)                     CALL formm(sigma,m1,m2,m3)                     flow=f*(m1*dq1+m2*dq2+m3*dq3)                     erate=MATMUL(flow,sigma)                     evp=erate*dt                     evpt(:,i,iel)=evpt(:,i,iel)+evp                     devp=MATMUL(dee,evp)                  END IF               END IF               IF(f&gt;=zero)THEN                  eload=MATMUL(devp,bee)                  bload=bload+eload*det*weights(i)               END IF            END DO gauss_pts_2            !-----------------------compute the total bodyloads vector----------------            bdylds(g)=bdylds(g)+bload            bdylds(0)=zero         END DO elements_3
-]]></content>
-      <categories>
-        <category>边坡</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>边坡稳定性</tag>
-        <tag>Fortran</tag>
-        <tag>有限元</tag>
-        <tag>非饱和土</tag>
-        <tag>方形网格</tag>
       </tags>
   </entry>
   <entry>
@@ -250,6 +250,54 @@ m|_{单位时间}=\rho Sv\cos\theta对控制体边界面积分
         <tag>学习笔记</tag>
         <tag>流体力学</tag>
         <tag>质量守恒方程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu搭建Webdav</title>
+    <url>/2024/05/e8755f24/</url>
+    <content><![CDATA[参考文章: Linux搭建WebDav服务 - Colzry’s Blog
+
+以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决
+
+步骤一: 安装WebDAV服务首先, 我们需要安装WebDAV Server, 打开页面下载合适的版本, 本文以linux-amd64-webdav.tar.gz为例, 其中amd64表示x64架构
+然后, 解压并移动文件到/usr/bin/, 其余的README和LICENSE文件可删除
+tar -zxvf linux-amd64-webdav.tar.gzmv webdav /usr/bin/
+步骤二: 配置WebDAV服务安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 /home/liudh/webdav的目录, 注意修改用户名liudh为自己的用户名
+mkdir /home/liudh/webdav
+然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑
+vim /opt/webdav_config.yaml
+在配置文件中, 我们需要添加以下内容. 
+
+注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容
+注意缩进, cors和users后的参数均需要两个空格的缩进, 带-的参数需再缩进两个空格(四个)
+每一个参数:后均有一个空格
+
+# Server related settingsaddress: 0.0.0.0port: 10101# 如果无需验证填 falseauth: true# 如果不需要 https 则填 falsetls: false# https证书和密钥，如果 tls 为 false，cert 和 key 不需要# cert: cert_path# key: key_path# 访问前缀，建议默认prefix: /debug: false# 如果 auth 为 false 生效，文件共享的路径scope: .modify: truerules: []# 跨域设置cors:  enabled: true  credentials: true  allowed_headers:    - Depth  allowed_hosts:    - http://localhost:10101  allowed_methods:    - GET  exposed_headers:    - Content-Length    - Content-Range# 用户信息，如果 auth 为 true 生效users:  - username: liudh    password: passwd    scope: /home/liudh/webdav/    # 是否允许修改    modify: true# 可以根据此模板继续添加其他用户
+保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功
+/usr/bin/webdav -c /opt/webdav_config.yaml
+步骤三: 添加守护进程vim /usr/lib/systemd/system/webdav.service
+将以下内容添加到文件中
+[Unit]Description=WebDAV serverAfter=network.target[Service]Type=simpleUser=rootExecStart=/usr/bin/webdav -c /opt/webdav_config.yamlRestart=on-failure[Install]WantedBy=multi-user.target
+保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证
+systemctl daemon-reloadsystemctl start webdav.servicesystemctl status webdav.servicesystemctl enable webdav.service
+之后修改配置文件后, 可以使用以下命令重启服务
+systemctl restart webdav.service
+步骤四: 挂载webdav测试服务使用任意webdav挂载软件, 挂载测试, 注意填写参数如下
+协议: http # 如果配置了ssl证书就用https主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要用户名: liudh # 都改成自己的密码: passwd
+之后就可以上传下载文件测试一下了, 如果有错误就用
+systemctl status webdav.service
+查看错误日志. 
+
+如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下
+
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Webdav</tag>
+        <tag>云服务</tag>
       </tags>
   </entry>
   <entry>
@@ -693,6 +741,61 @@ git push -f
       </tags>
   </entry>
   <entry>
+    <title>Git 安装及配置教程</title>
+    <url>/2024/05/cbf708ce/</url>
+    <content><![CDATA[1. 下载安装包打开Git官网下载安装包, 嫌速度慢可以使用下面的链接下载
+蓝奏云(不限速)：https://wwt.lanzoul.com/b00rn0x92b 密码:gdo1
+百度云(会员)：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
+
+
+下载完成后，双击打开安装包
+2. 开始安装
+
+
+
+
+
+
+
+
+
+
+
+
+
+点击安装, 等待安装完成
+
+3. 配置Git(1). 配置用户信息输入以下命令配置用户信息, 修改成自己的信息
+git config --global user.name &quot;liudh&quot;git config --global user.email &quot;xxxxxxx@xx.com&quot;
+
+可以使用以下命令查看配置信息
+git config user.namegit config user.email
+(2). 设置代理(需自备代理)在向Github推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理
+使用以下命令查看代理配置
+git config --global --get http.proxygit config --global --get https.proxy
+如果没有内容说明没有代理
+下面使用以下命令配置代理
+git config --global http.proxy 127.0.0.1:7890git config --global https.proxy 127.0.0.1:7890
+
+具体地址和端口在系统代理的位置查看
+
+
+如果不想使用代理, 使用以下命令取消
+git config --global --unset http.proxygit config --global --unset https.proxy
+
+至此, 就可以愉快地开始使用Git了
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Git</tag>
+        <tag>安装教程</tag>
+        <tag>Windows</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Ubuntu22.04双系统安装教程</title>
     <url>/2024/05/deb026e9/</url>
     <content><![CDATA[准备工作
@@ -835,109 +938,6 @@ EFI
         <tag>Ubuntu</tag>
         <tag>系统安装</tag>
         <tag>硬盘分区</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ubuntu搭建Webdav</title>
-    <url>/2024/05/e8755f24/</url>
-    <content><![CDATA[参考文章: Linux搭建WebDav服务 - Colzry’s Blog
-
-以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决
-
-步骤一: 安装WebDAV服务首先, 我们需要安装WebDAV Server, 打开页面下载合适的版本, 本文以linux-amd64-webdav.tar.gz为例, 其中amd64表示x64架构
-然后, 解压并移动文件到/usr/bin/, 其余的README和LICENSE文件可删除
-tar -zxvf linux-amd64-webdav.tar.gzmv webdav /usr/bin/
-步骤二: 配置WebDAV服务安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 /home/liudh/webdav的目录, 注意修改用户名liudh为自己的用户名
-mkdir /home/liudh/webdav
-然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑
-vim /opt/webdav_config.yaml
-在配置文件中, 我们需要添加以下内容. 
-
-注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容
-注意缩进, cors和users后的参数均需要两个空格的缩进, 带-的参数需再缩进两个空格(四个)
-每一个参数:后均有一个空格
-
-# Server related settingsaddress: 0.0.0.0port: 10101# 如果无需验证填 falseauth: true# 如果不需要 https 则填 falsetls: false# https证书和密钥，如果 tls 为 false，cert 和 key 不需要# cert: cert_path# key: key_path# 访问前缀，建议默认prefix: /debug: false# 如果 auth 为 false 生效，文件共享的路径scope: .modify: truerules: []# 跨域设置cors:  enabled: true  credentials: true  allowed_headers:    - Depth  allowed_hosts:    - http://localhost:10101  allowed_methods:    - GET  exposed_headers:    - Content-Length    - Content-Range# 用户信息，如果 auth 为 true 生效users:  - username: liudh    password: passwd    scope: /home/liudh/webdav/    # 是否允许修改    modify: true# 可以根据此模板继续添加其他用户
-保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功
-/usr/bin/webdav -c /opt/webdav_config.yaml
-步骤三: 添加守护进程vim /usr/lib/systemd/system/webdav.service
-将以下内容添加到文件中
-[Unit]Description=WebDAV serverAfter=network.target[Service]Type=simpleUser=rootExecStart=/usr/bin/webdav -c /opt/webdav_config.yamlRestart=on-failure[Install]WantedBy=multi-user.target
-保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证
-systemctl daemon-reloadsystemctl start webdav.servicesystemctl status webdav.servicesystemctl enable webdav.service
-之后修改配置文件后, 可以使用以下命令重启服务
-systemctl restart webdav.service
-步骤四: 挂载webdav测试服务使用任意webdav挂载软件, 挂载测试, 注意填写参数如下
-协议: http # 如果配置了ssl证书就用https主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要用户名: liudh # 都改成自己的密码: passwd
-之后就可以上传下载文件测试一下了, 如果有错误就用
-systemctl status webdav.service
-查看错误日志. 
-
-如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下
-
-]]></content>
-      <categories>
-        <category>Ubuntu</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-        <tag>Webdav</tag>
-        <tag>云服务</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Git 安装及配置教程</title>
-    <url>/2024/05/cbf708ce/</url>
-    <content><![CDATA[1. 下载安装包打开Git官网下载安装包, 嫌速度慢可以使用下面的链接下载
-蓝奏云(不限速)：https://wwt.lanzoul.com/b00rn0x92b 密码:gdo1
-百度云(会员)：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
-
-
-下载完成后，双击打开安装包
-2. 开始安装
-
-
-
-
-
-
-
-
-
-
-
-
-
-点击安装, 等待安装完成
-
-3. 配置Git(1). 配置用户信息输入以下命令配置用户信息, 修改成自己的信息
-git config --global user.name &quot;liudh&quot;git config --global user.email &quot;xxxxxxx@xx.com&quot;
-
-可以使用以下命令查看配置信息
-git config user.namegit config user.email
-(2). 设置代理(需自备代理)在向Github推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理
-使用以下命令查看代理配置
-git config --global --get http.proxygit config --global --get https.proxy
-如果没有内容说明没有代理
-下面使用以下命令配置代理
-git config --global http.proxy 127.0.0.1:7890git config --global https.proxy 127.0.0.1:7890
-
-具体地址和端口在系统代理的位置查看
-
-
-如果不想使用代理, 使用以下命令取消
-git config --global --unset http.proxygit config --global --unset https.proxy
-
-至此, 就可以愉快地开始使用Git了
-]]></content>
-      <categories>
-        <category>Git</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>Git</tag>
-        <tag>安装教程</tag>
-        <tag>Windows</tag>
       </tags>
   </entry>
   <entry>
@@ -1662,6 +1662,151 @@ u_z|_{z=z_b} = \frac{dz_b}{dt} = \frac{\partial z_b}{\partial t} + \frac{\partia
       </tags>
   </entry>
   <entry>
+    <title>Hexo博客部署到云服务器教程</title>
+    <url>/2025/03/ee12770f/</url>
+    <content><![CDATA[准备工作
+Ubuntu（Linux）系统
+Git
+Nginx
+Hexo（本地）
+
+环境配置1.使用root用户或者具有管理员权限的用户连接至云服务器2.安装Git(1)查看是否安装好gitgit --version
+如果提示git版本，说明已经安装git，跳到下一步。如果提示找不到git命令，说明未安装。
+运行以下命令安装git：
+apt install git
+再次查看是否完成git安装：
+git --version
+(2)创建git用户，并配置仓库创建用户
+adduser git
+根据提示设置密码，其他信息可以位空
+切换至git用户
+su git
+打开用户目录
+cd
+cd默认打开当前用户的目录，即/home/git/
+创建一个保存网页文件的文件夹
+mkdir -p projects/hexo-blog
+新建并打开仓库文件夹
+mkdir repos &amp;&amp; cd repos
+第一次使用git会提示设置默认分支名称，我们这里提前设置为main（或者master）
+
+如果之前一直在使用github的pages，大概率你的主分支是main，为了方便统一，这里也设置为main
+
+git config --global init.defaultBranch main
+初始化仓库
+git init --bare hexo-blog.git
+(3)创建钩子函数cd hexo-blog.git/hooks
+新建文件
+vim post-receive
+按i进入编辑模式
+粘贴以下内容：
+#!/bin/shgit --work-tree=/home/git/projects/hexo-blog --git-dir=/home/git/repos/hexo-blog checkout -f
+按ESC再输入:wq按Enter即可
+(4)修改权限chmod +x post-receive
+退回root用户（也可以切换到可以使用sudo的用户，使用sudo完成）
+exit
+修改权限
+chown -R git:git /home/git/repos/hexo-blog.git
+(5)测试可用性在本地终端中使用：
+git clone git@&lt;ip&gt;:/home/git/repos/hexo-blog.git
+ip为远程服务器的ip
+3.设置免密SSH连接(1)创建authorized_keys并修改权限使用git用户建立远程连接
+cd /home/git/.ssh
+如果没有就创建该目录
+touch authorized_keys
+该文件内保存公钥(.pub)内容
+修改权限
+chmod 600 authorized_keys
+(2)创建密钥对（如果已有可跳过）查看本地是否存在密钥
+Windows：C:/Users/&lt;username&gt;/.ssh
+Linux:/home/&lt;username&gt;/.ssh
+Mac:/Users/&lt;username&gt;/.ssh
+如果目录下存在id_rsa和id_rsa.pub则说明存在密钥对
+如果没有
+ssh-keygen -t rsa
+全Enter即可
+(3)建立链接本地终端输入
+ssh-copy-id -i C:/Users/&lt;username&gt;/.ssh/id_rsa.pub git@&lt;ip&gt;
+也可以手动复制文件id_rsa.pub的内容到远程authorized_keys
+测试连接
+本地终端输入
+ssh git@&lt;ip&gt;
+
+此时使用git登陆远程主机，不需要输入密码
+如果仍然需要密码，排查前面步骤是否出错，可以查看/home/git/.ssh/authorized_keys文件的内容是否与本地一致
+确认前面没有问题，需要修改ssh的配置文件
+sudo vim /etc/ssh/sshd_config
+修改其中的一些配置
+# 是否让 sshd 去检查用户家目录或相关档案的权限数据，# 这是为了担心使用者将某些重要档案的权限设错，可能会导致一些问题所致。# 例如使用者的 ~.ssh/ 权限设错时，某些特殊情况下会不许用户登入# 修改此项仅为临时方案，建议将目录权限修改为正确权限（chmod）StrictModes no# 是否允许用户自行使用成对的密钥系统进行登入行为，仅针对 version 2。# 至于自制的公钥数据就放置于用户家目录下的 .ssh/authorized_keys 内RSAAuthentication yesPubkeyAuthentication yesAuthorizedKeysFile      .ssh/authorized_keys# 有了证书登录了，就禁用密码登录。PasswordAuthentication no
+保存配置，重启ssh
+systemctl restart ssh
+或者
+systemctl restart sshd
+
+4.安装Nginx(1)使用root或者带有管理权限的用户登陆apt install nginx
+或者
+sudo apt install nginx
+查看是否安装完成
+nginx -v
+显示版本信息就说明安装完成
+运行nginx
+nginx
+在本地浏览器输入可以看到
+
+如果拒绝访问，确认自己的服务器开放了80端口
+(2)配置nginx远程连接服务器
+备份配置文件
+sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
+编辑配置文件
+sudo vim /etc/nginx/nginx.conf
+找到http &#123;开头的块
+里面会有server开头的块，如下图，默认不是注释掉的
+
+只需要修改80端口server里面的就可以，后面解释ssl的配置
+把其中的
+root         /usr/share/nginx/html;
+修改为
+root         /home/git/projects/hexo-blog;
+保存，检验配置
+sudo nginx -t
+如果不使用sudo可能会有警告提示user命令失效
+
+说明配置正确，如果提示其他内容，检查是否存在拼错或者其他错误
+重启nginx
+systemctl reload nginx
+systemctl restart nginx
+或者
+sudo nginx -s reload
+5.配置Hexo编辑本地网站主目录下的_config.yml
+找到
+deploy:  type: git  repo:    github: git@github.com:xxxxxxxxxx.github.io.git    git1: git@&lt;ip1&gt;:/home/git/repos/hexo-blog.git    git2: git@&lt;ip2&gt;:/home/git/repos/hexo-blog.git  branch: main
+可以同时上传到多个服务器上
+上传网站
+hexo g -d
+6.限制git用户权限（可选）查看git-shells是否在登录方式里
+cat /etc/shells
+如果没有
+which git-shellsudo vim /etc/shells
+添加到后面
+/usr/bin/git-shell
+如下图
+
+然后修改
+sudo vim /etc/passwd
+找到git用户
+只修改划线部分
+/usr/bin/git-shell
+
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Hexo</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Git 工作流程</title>
     <url>/2024/04/5dbdb580/</url>
     <content><![CDATA[Git 工作流程——以Github为例适用于个人和小团队的标准工作模式
@@ -2043,204 +2188,6 @@ sudo nginx -s reload
       </tags>
   </entry>
   <entry>
-    <title>分水岭提取教程</title>
-    <url>/2025/05/2ef32537/</url>
-    <content><![CDATA[准备工具
-Arcgis Pro
-
-ArcMap
-
-完整的DEM数据（如果有缺失，需要提前补缺（填补空缺值））
-
-
-开始教程1. 填洼（Fill）通过填充表面栅格中的汇来移除数据中的小缺陷。
-地理处理工具 -&gt; 搜索填洼 -&gt; 输入栅格 -&gt; 输出栅格
-英文：打开ArcToolbox -&gt;  搜索 Fill
-
-2. 流向 （FLow Direction）使用 D8、多流向 (MFD) 或 D-Infinity (DINF) 方法创建从每个像元到其下坡相邻点的流向的栅格。
-地理处理工具 -&gt; 搜索流向 -&gt; 输入处理后的栅格数据 -&gt; 输出流向栅格
-英文：打开ArcToolbox -&gt;  搜索 Flow Direction
-
-这里类型一般使用默认的D8即可，具体类型区别请查看帮助文档。
-3. 计算河流网络（计算流量（Flow Accumulation））（可选）此部计算是为了下一步更好的选点做准备。如果地形不复杂，也可直接使用D8流向栅格做参考。
-地理处理工具 -&gt; 搜索流量 -&gt; 输入流向栅格数据 -&gt; 输出流量栅格
-英文：打开ArcToolbox -&gt;  搜索 Flow Accumulation
-
-4. 创建点要素文件找到目录窗口，打开到需要保存到的文件夹，右键文件夹，选择新建，选择Shapefile
-
-
-创建完成之后，找到编辑工具栏；选择创建选项。打开的窗口中选择刚刚创建的文件。
-
-
-然后，在河流的上游和下游选点（至少各一个）。不要求完全选到源头，但汇出口尽量选到。
-
-根据创建的河网和流向栅格创建，之后生成的效果不好就回来修改这个文件
-
-5. 提取分水岭（Watershed）地理处理工具 -&gt; 搜索集水区 -&gt; 输入流向栅格数据 -&gt; 输入点要素文件 -&gt; 输出集水区栅格
-英文：打开ArcToolbox -&gt;  搜索 Watershed
-
-字段默认id即可
-
-集水区生成与点的位置有关，它会把每一个点的上游集水区域选择上，但由于地形数据原因会导致有些连续的流域选择不上，使用多个点可尽量保证选择全部区域；
-字段的作用是区分该点对应的集水区，这些点的id都相同，因此只会创建一个集水区；如果需要创建多个集水区，需要使用不同的id区分。
-
-反复调整点要素文件，即可得到该区域的一个集水区栅格文件。将栅格转为面（地理处理工具 -&gt; 栅格转面）即可得到集水区的要素文件。
-]]></content>
-      <categories>
-        <category>ArcGis</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>栅格</tag>
-        <tag>分水岭</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hexo博客部署到云服务器教程</title>
-    <url>/2025/03/ee12770f/</url>
-    <content><![CDATA[准备工作
-Ubuntu（Linux）系统
-Git
-Nginx
-Hexo（本地）
-
-环境配置1.使用root用户或者具有管理员权限的用户连接至云服务器2.安装Git(1)查看是否安装好gitgit --version
-如果提示git版本，说明已经安装git，跳到下一步。如果提示找不到git命令，说明未安装。
-运行以下命令安装git：
-apt install git
-再次查看是否完成git安装：
-git --version
-(2)创建git用户，并配置仓库创建用户
-adduser git
-根据提示设置密码，其他信息可以位空
-切换至git用户
-su git
-打开用户目录
-cd
-cd默认打开当前用户的目录，即/home/git/
-创建一个保存网页文件的文件夹
-mkdir -p projects/hexo-blog
-新建并打开仓库文件夹
-mkdir repos &amp;&amp; cd repos
-第一次使用git会提示设置默认分支名称，我们这里提前设置为main（或者master）
-
-如果之前一直在使用github的pages，大概率你的主分支是main，为了方便统一，这里也设置为main
-
-git config --global init.defaultBranch main
-初始化仓库
-git init --bare hexo-blog.git
-(3)创建钩子函数cd hexo-blog.git/hooks
-新建文件
-vim post-receive
-按i进入编辑模式
-粘贴以下内容：
-#!/bin/shgit --work-tree=/home/git/projects/hexo-blog --git-dir=/home/git/repos/hexo-blog checkout -f
-按ESC再输入:wq按Enter即可
-(4)修改权限chmod +x post-receive
-退回root用户（也可以切换到可以使用sudo的用户，使用sudo完成）
-exit
-修改权限
-chown -R git:git /home/git/repos/hexo-blog.git
-(5)测试可用性在本地终端中使用：
-git clone git@&lt;ip&gt;:/home/git/repos/hexo-blog.git
-ip为远程服务器的ip
-3.设置免密SSH连接(1)创建authorized_keys并修改权限使用git用户建立远程连接
-cd /home/git/.ssh
-如果没有就创建该目录
-touch authorized_keys
-该文件内保存公钥(.pub)内容
-修改权限
-chmod 600 authorized_keys
-(2)创建密钥对（如果已有可跳过）查看本地是否存在密钥
-Windows：C:/Users/&lt;username&gt;/.ssh
-Linux:/home/&lt;username&gt;/.ssh
-Mac:/Users/&lt;username&gt;/.ssh
-如果目录下存在id_rsa和id_rsa.pub则说明存在密钥对
-如果没有
-ssh-keygen -t rsa
-全Enter即可
-(3)建立链接本地终端输入
-ssh-copy-id -i C:/Users/&lt;username&gt;/.ssh/id_rsa.pub git@&lt;ip&gt;
-也可以手动复制文件id_rsa.pub的内容到远程authorized_keys
-测试连接
-本地终端输入
-ssh git@&lt;ip&gt;
-
-此时使用git登陆远程主机，不需要输入密码
-如果仍然需要密码，排查前面步骤是否出错，可以查看/home/git/.ssh/authorized_keys文件的内容是否与本地一致
-确认前面没有问题，需要修改ssh的配置文件
-sudo vim /etc/ssh/sshd_config
-修改其中的一些配置
-# 是否让 sshd 去检查用户家目录或相关档案的权限数据，# 这是为了担心使用者将某些重要档案的权限设错，可能会导致一些问题所致。# 例如使用者的 ~.ssh/ 权限设错时，某些特殊情况下会不许用户登入# 修改此项仅为临时方案，建议将目录权限修改为正确权限（chmod）StrictModes no# 是否允许用户自行使用成对的密钥系统进行登入行为，仅针对 version 2。# 至于自制的公钥数据就放置于用户家目录下的 .ssh/authorized_keys 内RSAAuthentication yesPubkeyAuthentication yesAuthorizedKeysFile      .ssh/authorized_keys# 有了证书登录了，就禁用密码登录。PasswordAuthentication no
-保存配置，重启ssh
-systemctl restart ssh
-或者
-systemctl restart sshd
-
-4.安装Nginx(1)使用root或者带有管理权限的用户登陆apt install nginx
-或者
-sudo apt install nginx
-查看是否安装完成
-nginx -v
-显示版本信息就说明安装完成
-运行nginx
-nginx
-在本地浏览器输入可以看到
-
-如果拒绝访问，确认自己的服务器开放了80端口
-(2)配置nginx远程连接服务器
-备份配置文件
-sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
-编辑配置文件
-sudo vim /etc/nginx/nginx.conf
-找到http &#123;开头的块
-里面会有server开头的块，如下图，默认不是注释掉的
-
-只需要修改80端口server里面的就可以，后面解释ssl的配置
-把其中的
-root         /usr/share/nginx/html;
-修改为
-root         /home/git/projects/hexo-blog;
-保存，检验配置
-sudo nginx -t
-如果不使用sudo可能会有警告提示user命令失效
-
-说明配置正确，如果提示其他内容，检查是否存在拼错或者其他错误
-重启nginx
-systemctl reload nginx
-systemctl restart nginx
-或者
-sudo nginx -s reload
-5.配置Hexo编辑本地网站主目录下的_config.yml
-找到
-deploy:  type: git  repo:    github: git@github.com:xxxxxxxxxx.github.io.git    git1: git@&lt;ip1&gt;:/home/git/repos/hexo-blog.git    git2: git@&lt;ip2&gt;:/home/git/repos/hexo-blog.git  branch: main
-可以同时上传到多个服务器上
-上传网站
-hexo g -d
-6.限制git用户权限（可选）查看git-shells是否在登录方式里
-cat /etc/shells
-如果没有
-which git-shellsudo vim /etc/shells
-添加到后面
-/usr/bin/git-shell
-如下图
-
-然后修改
-sudo vim /etc/passwd
-找到git用户
-只修改划线部分
-/usr/bin/git-shell
-
-]]></content>
-      <categories>
-        <category>Ubuntu</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>Hexo</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>CHD集群使用教程</title>
     <url>/2025/09/4b096d8e/</url>
     <content><![CDATA[准备工作CHD集群使用的是RHEL7.8和RHEL8.3(Red Hat Enterprise Linux)系统，我们以RHEL8.3为基础配置环境.
@@ -2370,6 +2317,59 @@ jctrl kill &lt;作业号&gt;
         <tag>教程及说明</tag>
         <tag>RHEL</tag>
         <tag>云计算</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>分水岭提取教程</title>
+    <url>/2025/05/2ef32537/</url>
+    <content><![CDATA[准备工具
+Arcgis Pro
+
+ArcMap
+
+完整的DEM数据（如果有缺失，需要提前补缺（填补空缺值））
+
+
+开始教程1. 填洼（Fill）通过填充表面栅格中的汇来移除数据中的小缺陷。
+地理处理工具 -&gt; 搜索填洼 -&gt; 输入栅格 -&gt; 输出栅格
+英文：打开ArcToolbox -&gt;  搜索 Fill
+
+2. 流向 （FLow Direction）使用 D8、多流向 (MFD) 或 D-Infinity (DINF) 方法创建从每个像元到其下坡相邻点的流向的栅格。
+地理处理工具 -&gt; 搜索流向 -&gt; 输入处理后的栅格数据 -&gt; 输出流向栅格
+英文：打开ArcToolbox -&gt;  搜索 Flow Direction
+
+这里类型一般使用默认的D8即可，具体类型区别请查看帮助文档。
+3. 计算河流网络（计算流量（Flow Accumulation））（可选）此部计算是为了下一步更好的选点做准备。如果地形不复杂，也可直接使用D8流向栅格做参考。
+地理处理工具 -&gt; 搜索流量 -&gt; 输入流向栅格数据 -&gt; 输出流量栅格
+英文：打开ArcToolbox -&gt;  搜索 Flow Accumulation
+
+4. 创建点要素文件找到目录窗口，打开到需要保存到的文件夹，右键文件夹，选择新建，选择Shapefile
+
+
+创建完成之后，找到编辑工具栏；选择创建选项。打开的窗口中选择刚刚创建的文件。
+
+
+然后，在河流的上游和下游选点（至少各一个）。不要求完全选到源头，但汇出口尽量选到。
+
+根据创建的河网和流向栅格创建，之后生成的效果不好就回来修改这个文件
+
+5. 提取分水岭（Watershed）地理处理工具 -&gt; 搜索集水区 -&gt; 输入流向栅格数据 -&gt; 输入点要素文件 -&gt; 输出集水区栅格
+英文：打开ArcToolbox -&gt;  搜索 Watershed
+
+字段默认id即可
+
+集水区生成与点的位置有关，它会把每一个点的上游集水区域选择上，但由于地形数据原因会导致有些连续的流域选择不上，使用多个点可尽量保证选择全部区域；
+字段的作用是区分该点对应的集水区，这些点的id都相同，因此只会创建一个集水区；如果需要创建多个集水区，需要使用不同的id区分。
+
+反复调整点要素文件，即可得到该区域的一个集水区栅格文件。将栅格转为面（地理处理工具 -&gt; 栅格转面）即可得到集水区的要素文件。
+]]></content>
+      <categories>
+        <category>ArcGis</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>栅格</tag>
+        <tag>分水岭</tag>
       </tags>
   </entry>
 </search>
