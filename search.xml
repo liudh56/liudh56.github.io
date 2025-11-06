@@ -1,0 +1,2243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>可靠度分析程序说明文件</title>
+    <url>/2024/04/74b4d97f/</url>
+    <content><![CDATA[非饱和黄土边坡失效概率计算程序本程序是基于有限元的边坡可靠度分析程序，改进自Griffith教授 的非饱和黄土边坡稳定性计算程序
+本程序使用强度折减法计算稳定系数，使用Monte-Carlo法计算失效概率；
+将计算作业量，分成线程数量的段数，将作业量平均分配给每一个线程；
+本程序使用MPI实现并行运算
+程序文件
+slope_new/Subroutine.pyslope_new/slope2.f90
+示例数据文件
+exmaple/1.datexmaple/1_c.txtexmaple/1_phi.txtexample/1_gamma.txt !未给出exmaple/1_mstd.txtexmaple/1_grid.txt
+结果文件 未给出
+1_fs.res1_fail.res
+前置安装教程
+Fortran程序前置安装：OpenCoarrays
+
+以Ubuntu22.04安装Open-coarrays 2.9.2为例：
+sudo apt-get updatesudo apt-get install cmake gfortranwget https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gztar xf 2.9.2.tar.gzcd OpenCoarrays-2.9.2makedir buildcd buildcmake ..makesudo make install
+！若OpenCoarrays2.9.2 下载失败可手动下载并上传到/home/username/再解压编译安装
+
+可选安装—后台运行Screen
+
+安装：sudo apt-get install screen列出全部会话：screen -ls新建：screenscreen -S name删除：screen -S name -X quit ! 或在窗口内使用快捷键ctrl + D放置后台：使用快捷键ctrl+A再ctrl+D 返回窗口：screen -Rscreen -r name 
+
+Python程序须安装Python3.x ！无须安装在服务器中，仅做数据处理工作，在本地使用即可
+
+程序运行依赖numpy库，可使用pip安装：
+pip install numpy
+程序使用教程
+运行Subroutine.py
+
+cd 代码所在目录python ./Subroutine.py
+ 根据提示操作即可使用教程
+
+将生成文件与slope2.f90放在同一文件夹内（本文件夹即要上传的文件夹）
+
+文件包括：
+xxx.datxxx_c.txt xxx_phi.txt xxx_gamma.txt #具体文件数量与设为随机的参数有关
+dat文件详细 
+其他python程序使用文件（无需上传）：
+xxx_mstd.txtxxx_grid.txt
+Fortran程序—在服务器中运行
+将上文中的文件夹上传至服务器并打开目录
+
+编译命令：
+
+
+caf slope2.f90 -o slope
+
+运行：
+
+cafrun -n 4 slope！ 4代表线程数，可更改，若线程数报错改用下面的命令
+ 或者：使用下面命令适用于多主机的情况，根据主机实际情况分配线程数。
+mpirun --host host1:40 host2:40 -n 80 filenamempirun --host hostfile -n 80 filename !使用该命令须先创建hostfile文件
+
+保存结果文件到本地与Subroutine.py文件放置在同一文件内
+
+运行Subroutine.py程序并选择功能3计算失效概率，结果保存在xxx_fail.res文件内。
+Subroutine.py程序使用方式1. 输入项目名称xxx。2. 选择功能（输入序号）。1. （首次使用）引导填写并重新生成xxx.dat和xxx_mstd.txt文件   2. 根据xxx_mstd.txt生成phi、c和gamma的值   3. 计算失效概率,并生成xxx_fail.res文件,储存失效概率   4. 生成xxx_grid.txt文件,储存网格点的序号(多层土的情况使用)   5. 根据xxx_mstd.txt重新生成某参数值0. 退出程序(默认)
+功能使用教程
+第一次使用选择1填写xxx.dat和xxx_mstd.txt文件（也可直接修改示例文件来使用）
+
+建议先查看示例文件
+若填写过程中出现填写错误，可继续填写，等待填写完成再从生成文件内修改错误
+功能4，可协助填写xxx.dat文件，后文介绍
+
+再选择2根据提示进行选择（以内摩擦角和粘聚力为随机参数为例）
+
+请输入模拟次数:10000请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 10请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布) 1已生成xxx_c.txt文件!请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 20请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布): 1已生成xxx_phi.txt文件!
+
+文件上传计算
+
+计算完成后，将结果文件xxx_fs.res放置与本程序在同一文件夹内，运行程序选择3，结果保存在xxx_fail.res文件
+
+
+功能4介绍（单层土不需要使用）
+！根据自己划分的每层土的单元格数（不是高度）填写即可，注意与ny1和ny2区分请输入第1层土的厚度(竖向单元格数): 16请输入第2层土的厚度(竖向单元格数): 5已生成xxx_grid.txt文件!
+xxx_grid.txt的内容复制到xxx.dat文件的以下位置：
+&quot;Choose whether to set it as a random variable (the order is: phi c gamma,1 is random)&quot;1 1 0&quot;Property group assigned to each element (etype, data not needed if np_types=1)&quot;（--------此位置--------）&quot;Pseudo-static analysis: Horizontal acceleration factor (k_h)&quot;0.0
+]]></content>
+      <categories>
+        <category>边坡</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>失效概率</tag>
+        <tag>Monte-Carlo</tag>
+        <tag>边坡稳定性</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>学习笔记——流体力学基本方程 (一)</title>
+    <url>/2024/04/98e90823/</url>
+    <content><![CDATA[学习视频Bilibili-流体力学基础科普-北斗导航Compass参考教材：Fundamentals of AERODYNAMICS by John D. Anderson, Jr.
+一、基本概念1. 什么是流体？
+对比固体和流体的区别
+
+
+对于固体剪切力与形变量成正比
+对于流体剪切力与形变量的时间变化率成正比
+
+
+解释流体为什么能流起来？
+
+
+对于流体如果流体中的剪切力是常数，则其形变量的时间变化率也应为常数，即流体一直发生形变（流动）
+
+
+流体在抗压时可以静止，在抗剪时一定在运动
+
+2. 流体质点将流体看作无穷多的质点的结合，符合连续介质假设
+3. 描述流体的物理量
+包括速度、密度、压强、温度等等
+
+
+压强(压力) Pressure 单位Pa
+
+
+P=\frac{F}{A}\ \ \ \ 当A\rightarrow0时\ \ \ P=frac{dF}{dA}
+密度 单位 $kg/m^3$ 
+
+
+\rho=\frac{m}{V}\ \ \ 当V\rightarrow0时\ \ \ \rho=\frac{dm}{dV}
+温度 单位K
+
+
+0°C=273.15K4. 描述流体运动的方法
+拉格朗日法
+
+
+以质点为研究对象,跟踪质点的运动
+
+
+欧拉法
+
+
+以确定空间为研究对象,研究某一空间点不同时间下,在此空间点的质点的运动
+
+
+
+
+
+
+积分方法
+微分方法
+
+
+
+
+拉格朗日法
+一坨流体
+质点
+
+
+欧拉法
+控制体
+空间点
+
+
+
+
+二、基本方程1. 质量守恒方程(连续方程) 控制体内流体总质量的增量 = 流入控制体的流体质量
+欧拉法连续方程的微分形式
+
+\frac{\partial \rho}{\partial t}+\frac{\partial (\rho u)}{\partial x}+\frac{\partial (\rho v)}{\partial y}+\frac{\partial (\rho w)}{\partial z}=0其中 $\rho,u,v,w$ 均是 $x,y,z,t$ 的函数,如 $\rho(x,y,z,t)$ 
+方程左边: 单位时间 控制体内流体总质量的增量(为负数就是减量)
+首先,表示总质量
+
+m={\iiint}_{cv}\rho dV对时间t求偏导,得
+
+\frac{\partial m}{\partial t}=\frac{\partial ({\iiint}_{cv}\rho dV)}{\partial t}={\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV方程右边: 单位时间 流入控制体的流体质量
+
+
+质量=密度*体积
+
+
+h=v*\Delta t\cos\theta
+V=Sh=Sv*\Delta t\cos\theta则 $\Delta t$ 时间范围内
+
+m=\rho V=\rho Sv\Delta t\cos\theta
+m|_{单位时间}=\rho Sv\cos\theta对控制体边界面积分
+
+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}规定控制体表面的外法线方向为正,则方程右边应为添加负号
+即
+
+-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}则可得到积分形式的质量守恒方程
+
+{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV=-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}也即
+
+{\iiint}_{cv}\frac{\partial \rho}{\partial t}\ dV+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}=0根据高斯定理
+
+{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}={\iiint}_{cv}[\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV则积分形式的质量守恒方程可以合并为
+
+{\iiint}_{cv}[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV=0可得微分形式的质量守恒方程
+
+\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}=0用哈密顿算子表示,可写为
+
+\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})=0下期内容：
+2. 动量守恒方程 控制体内流体总动量的增量 = 流入控制体的流体动量 + 外界的力产生的动量增量
+3. 能量守恒方程 控制体内流体的总能量的增量 = 流入控制体的流体能量 + 外界的作用产生的能量增量
+]]></content>
+      <categories>
+        <category>流体力学</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>流体力学</tag>
+        <tag>质量守恒方程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>非饱和土手动迭代计算程序修改说明</title>
+    <url>/2024/04/863a85e0/</url>
+    <content><![CDATA[修改内容1、输入参数改变t(nl) 每层层底沉积年代(37 行)土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)水位位置（坡顶为 0，y 方向为负值）(58 行)非饱和抗剪强度公式中 κ(59 行)
+2、输入所有节点孔压(53 行)READ(12,*)inpore  !所有节点孔压
+3、输出 prop(nprops,np_types)(98-85 行)nprops=10 !分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率CALL g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)
+首先，求prop1：一列单元的参数(其中重度为干重度)其次，求prop：所有单元参数(其中重度为干重度)之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率最后，利用含水率计算天然重度
+4、输出 surf(2,nosurf) (79 行)根据水位计算水位线上各节点坐标
+call WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)
+5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)CALL water_loads
+7、对于孔压 inpore 的处理首先，单元循环内提取该单元所有节点的孔压(172行)其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)之后，高斯循环中计算高斯点吸应力pore (181行)最后，修正正应力(186-188行)
+8、若收敛，对应力进行恢复(193-195 行)9、奇偶分层下的变形图(224 行)CALL dismsh
+输入说明w1   s1   w2   h1   h2   nl !分层数  用于划分黄土古土壤序列情况8    4     4    14   8    4h(nl) !每层层底距坡顶距离4   12   16   22ny(nl) !每层划分网格数2    4    2   3t(nl) !每层层底沉积年代8   12   18   33nx1    nx2   ny1    ny24       2     7    4!土水特征参数a、m、n随沉积年代模型参数0.044     7.062      -0.0000724      0.3318              -0.000161      1.509224.4397   -113.0186   0.000000176   -0.0000591   0.2077   0.000000331   -0.000128   1.2664!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重0  18.5       0.17    0      0.0        1.25   0.018    0.4623   1.0e5   0.3  2.710  18.5       3.56   500     0.0        1.39   0.0035   0.6489   1.0e5   0.3  2.72!水位位置（坡顶为0，y方向为负值）-100!非饱和抗剪强度公式中κ1.4!收敛准则  计算次数0.0001   500!折减次数9!折减系数0.8  0.9  1.0  1.1  1.2  1.3  1.4  1.5  1.6
+
+非本人原创内容
+]]></content>
+      <categories>
+        <category>边坡</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>边坡稳定性</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
+        <tag>孔压</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>非饱和土边坡稳定性计算程序说明文件</title>
+    <url>/2024/04/71e392b0/</url>
+    <content><![CDATA[一、数据文件注意：以下文件内不要输入注释文字1. dat文件!dx  h2v1.0  2.0!nx1 nx2 ny1 ny220  20  10  5!树荷载的左列和右列数，树荷载kN(各单元格相同)27 32 10.0!内摩擦角，粘聚力，剪胀角，重度，弹性模量，泊松比, a, m, n, theta_s 其中,重度=ρ_d*gam_w,theta_s=1-ρ_d/G_s20.0  15.0  0.0  20.0  1.0e5  0.3 15 0.2 4 0.907749!水位位置（坡顶为0，y方向为负值）-20!非饱和抗剪强度公式中κ2!收敛准则  计算次数0.0001 500!折减次数6!折减系数1.2  1.3  1.4  1.5  1.55 1.6
+
+其中,第三行表示荷载的加荷位置和大小
+27 ! 表示起点在第27列（从左至右）32 ! 表示终点在第32列（从左至右）30 ! 表示荷载为30kN
+对应下图中的红色位置
+
+2. 孔压文件x_f.txt按节点列依次输入节点处的孔压每个单元格有3列共8个节点，呈323分布，如下图所示，阴影部分为一个单元格，黄色为单元格号按照节点的1234...顺序竖向填写x_f.txt文件，每节点占一行 
+
+二、源代码本程序单元格序号是从上至下，从左至右依次排序,如下例
+1 6 2 7  113 8  12 154 9  13 16 18 205 10 14 17 19 21
+在叠加荷载时，因为所有单元格的g都是按照3 2 1 4 6 7 8 5 的顺序保存，因此我们仅需找到对应的单元格号以及146号节点的相对位置
+146号节点的相对位置为g(6), g(8), g(10),下文有介绍
+接下来只需找到单元格号即可。
+计算单元号if (tree_load/=0) then !荷载不为零再进行运算  allocate(tree_nodes(nx1+nx2+ny1*ngrad))  tree_nodes=0   ! tree_nodes(nx1+nx2+ny1*ngrad)是储存表面单元格的单元号  itree = 2 !用于计数，记录需加荷的单元格数量  tree_nodes(1)=1   ! 顶面和斜面前ngrad行  do i=2,nx1+ngrad      tree_nodes(itree) = (i-1)*nye+1     itree = itree + 1  end do  ! 斜面ngrad行以后  do i=1,ny1-1    do j=1,ngrad       if (j==1) then          tree_nodes(itree) = tree_nodes(itree-1)+nye-i+1       else          tree_nodes(itree) = tree_nodes(itree-1)+nye-i       end if       itree = itree + 1    end do  end do  ! 底面第一列  tree_nodes(itree) = tree_nodes(itree-1)+ny2+1  itree = itree + 1  ! 底面以后  do i=2,nx2     tree_nodes(itree) = tree_nodes(itree-1)+ny2     itree = itree + 1  end do  tree_nodes_= tree_nodes(nel_left:nel_right) ! 储存实际需要加荷的单元格的序号
+分配荷载到节点  ALLOCATE(weight_load(8),tree(ndof))  !荷载在节点上的分布权重  weight_load = (/0.166667,0.0,0.0,0.666667,0.0,0.166667,0.0,0.0/)  !计算各节点荷载大小  tree=zero  tree(6)=tree_load*weight_load(1)  tree(8)=tree_load*weight_load(4)  tree(10)=tree_load*weight_load(6)  ! 此处注意区分(见下图)  ! g数组按3x 3y 2x 2y 1x 1y 4x 4y 6x 6y 7x 7y 8x 8y 5x 5y的顺序保存  ! weight_load按1 2 3 4 5 6 7 8来保存  ! 则1 4 6号节点的y方向对应g(6),g(8),g(10)end if
+
+叠加荷载itree=1 ! 作tree_nodes_数组的索引，将序号依次读出elements_2: DO iel=1,nels   ...   gravlo(g)=gravlo(g)-eld*prop(4,etype(iel))   if (tree_load.ne.0.0) then !荷载不为零时计算      if ((iel==tree_nodes_(itree)).and.(itree.le.size(tree_nodes_))) then !判断是否为需加荷的单元         gravlo(g) = gravlo(g) - tree !根据自由度编号加到指定位置         itree=itree+1      end if   end ifEND DO elements_2
+
+叠加外部水荷载叠加外部水荷载的方式与上方叠加外部荷载的方法类似，将水的压力 $\gamma_w*h$ 叠加到相应的表面节点上
+IF(wl&gt;g_coord(2,1))THEN  ! 水位淹没整个边坡      p3=(wl-g_coord(2,1))*gam_w      DO i=1,nx1         gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6         gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3         gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6      END DO      DO i=nx1+1,nx1+ny1*ngrad         if (mod(i-nx1,ngrad)/=0)then            y5=g_coord(1,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else            y5=g_coord(2,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            y7=g_coord(2,g_num(7,tree_nodes(i)))            p7=(wl-y7)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN ! 如果有破角台阶         p3=(wl-g_coord(2,nn-2*ny2))*gam_w !p3==p5         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   ELSE IF(wl&gt;g_coord(2,nn-2*ny2))THEN ! 水面在斜面位置(低于坡顶,高于坡脚)      nw=int((-wl)/dx)      do i=nx1+nw*ngrad+ngrad,nx1+ny1*ngrad         y5=g_coord(2,g_num(5,tree_nodes(i)))         y7=g_coord(2,g_num(7,tree_nodes(i)))         p5=(wl-y5)*gam_w         p7=(wl-y7)*gam_w         if(i==nx1+nw*ngrad+ngrad)then ! 如果水面恰好穿过某行单元格            cx=y5-wl            cy=cx            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))           &amp;               +p7*cy*(cy**2-two*cy*dx+dx**2)/(d6*dx**2)            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))           &amp;               -p7*(cy**3-cy**2*dx-cy*dx**2+dx**3)/(d3*dx**2)            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))           &amp;               -p7*(dx**3-cy**3)/(d6*dx*dx)         else if(mod(i-nx1,ngrad)/=0)then ! 方格斜面台阶内部(仅有上表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else ! 方格斜面台阶最外部的单元格(上表面和右表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN          p3=(wl-g_coord(2,nn-2*ny2))*gam_w         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   END IF
+叠加孔压根据Vanapalli公式, 使用体积含水率、孔压等参数计算出基质吸力项, 叠加到正应力上
+
+elements_3: DO iel=1,nels            bload=zero            phi=prop(1,iel)            tnph=TAN(phi*pi/d180)            phif=ATAN(tnph/srf(iy))*d180/pi            psi=prop(3,iel)            tnps=TAN(psi*pi/d180)            psif=ATAN(tnps/srf(iy))*d180/pi            cf=prop(2,iel)/srf(iy)            e=prop(5,iel)            v=prop(6,iel)            CALL deemat(dee,e,v)            num=g_num(:,iel)            coord=TRANSPOSE(g_coord(:,num))            do i=1,nod               call Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) ! 计算基质吸力项            end do            g=g_g(:,iel)            eld=loads(g)            gauss_pts_2: DO i=1,nip               call shape_fun(fun,points,i)               pore(iel,i)=dot_product(fun,suc_sig)               CALL bee8(bee,coord,points(i,1),points(i,2),det)               eps=MATMUL(bee,eld)               eps=eps-evpt(:,i,iel)               sigma=MATMUL(dee,eps)               sigma(1)=sigma(1)-pore(iel,i) ! 此处124为正应力项, 3为剪应力项               sigma(2)=sigma(2)-pore(iel,i)               sigma(4)=sigma(4)-pore(iel,i)               CALL invar(sigma,sigm,dsbar,lode_theta)               !-----------------------check whether yield is violated-------------------               CALL mocouf(phif,cf,sigm,dsbar,lode_theta,f)               IF(f&gt;fmax)fmax=f               IF(converged.OR.iters==limit)THEN                  sigma(1)=sigma(1)+pore(iel,i)                  sigma(2)=sigma(2)+pore(iel,i)                  sigma(4)=sigma(4)+pore(iel,i)                  devp=sigma               ELSE                  IF(f&gt;=zero.OR.(converged.OR.iters==limit))THEN                     CALL mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)                     CALL formm(sigma,m1,m2,m3)                     flow=f*(m1*dq1+m2*dq2+m3*dq3)                     erate=MATMUL(flow,sigma)                     evp=erate*dt                     evpt(:,i,iel)=evpt(:,i,iel)+evp                     devp=MATMUL(dee,evp)                  END IF               END IF               IF(f&gt;=zero)THEN                  eload=MATMUL(devp,bee)                  bload=bload+eload*det*weights(i)               END IF            END DO gauss_pts_2            !-----------------------compute the total bodyloads vector----------------            bdylds(g)=bdylds(g)+bload            bdylds(0)=zero         END DO elements_3
+]]></content>
+      <categories>
+        <category>边坡</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>边坡稳定性</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
+        <tag>非饱和土</tag>
+        <tag>方形网格</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu22.04双系统安装教程</title>
+    <url>/2024/05/deb026e9/</url>
+    <content><![CDATA[准备工作
+良好的网络环境
+一块8g以上的U盘(注意备份数据, 该U盘会被格式化)
+Windows电脑
+
+硬件要求
+
+双核2 GHz处理器或更高
+4 GB系统内存
+25 GB磁盘存储空间
+
+
+装机需谨慎, 做好数据备份1. 系统镜像的下载打开Ubuntu系统下载 | Ubuntu 此页面,点击下载Ubuntu桌面版, 
+或者从网盘中下载: 
+百度云：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
+
+再选择Ubuntu22.04.4 LTS,点击下载22.04.4
+
+将此文件下载保存至易寻找的位置, 以F:/Ubuntu为例, 稍后会使用. 
+其他版本可在官网下载Get Ubuntu | Download | Ubuntu 安装步骤大致相同
+2. 安装写盘工具Rufus打开Rufus - 轻松创建 USB 启动盘 页面, 找到下载,选择Windows x64平台的便携版, 下载打开即用. 
+
+插入U盘,打开软件
+
+点击选择, 设备选择刚刚插入的U盘, 镜像文件点击右侧选择, 选中刚刚下载的镜像文件, 我的是位于F:/Ubuntu, 选项如下图即可, 点击开始, 等待写入完成, 点击关闭, 弹出U盘
+
+3. 关闭Bitlocker或者备份Bitlocker恢复密钥如果硬盘设置了Bitlocker, 一定要提前找到恢复密钥, 可以先保存到手机上, 一般在微软账户里会有备份恢复密钥
+如果找不到了, 开始前一定要关闭Bitlocker. 改动引导顺序和安全启动选项会触发BitLocker, 要求输入恢复密钥. 否则你将无法打开Windows系统或已加密数据
+关闭过程时间可能较长
+4. 压缩硬盘空间(双系统需要,若全新安装不需要)打开Windows的磁盘管理工具, 右键开始菜单图标, 选择磁盘管理
+
+找到需要压缩的分区, 右键点击压缩卷
+
+输入合适的空间, 建议40GB以上, 最低不低于官网要求的25GB, 点击压缩即可
+
+5. 关闭安全启动, 设置U盘启动网络上搜索自己的电脑进入BIOS的方法, surface go系列是按音量加键, 一般电脑是按F2或者F10, 以自己的电脑为准, 进入BIOS,关闭安全启动, 设置启动顺序, 将USB设备设置到最上面, 由于每台设备情况不同, 此处设置请自行搜索自己电脑的教程. 
+
+surface go系列安全启动会有三个选项
+
+微软
+
+微软和第三方
+
+关闭
+
+
+选择微软和第三方即可
+
+6. 插入U盘, 启动电脑在上一步设置完成之后, 若处于开机状态就插入U盘, 重启电脑, 引导位置选择
+
+ Try or Install Ubuntu
+
+
+等待进入安装界面, 选择中文
+
+如果出现窗口显示不全, 点击试用Ubuntu,如果像我一样可以看到全部窗口, 就点击安装Ubuntu, 跳转到下面开始安装教程
+
+点击试用之后, 会出现如下界面
+
+点击该图标, 再打开设置, 找到显示器, 缩放比例选择100%, 点击保存(我使用的虚拟机没有该选项, 就在红框的位置. 保存在夜灯右边位置, 修改后会出现)
+
+保存之后再选择安装Ubuntu就可以了
+
+开始安装键盘布局默认即可
+
+
+
+
+双系统手动分区
+
+建议分区
+
+创建交换空间
+
+
+填写大小: 建议与内存大小相同, 4G 8G 16G都可
+分区类型: 逻辑分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: 交换空间
+
+
+创建根目录分区
+
+
+填写大小: 如果空间太小就把剩下的全给根目录, 方便后面扩容, 如果空间充足就给20GB以上均可,主要存放系统文件和安装软件
+分区类型: 主分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: Ext4 日志文件系统
+挂载点: /
+
+可选分区
+
+创建引导分区(双系统同盘可不创建, 放置在Windows系统的引导分区里即可)
+
+
+填写大小: 建议200MB-1024MB根据个人情况来,这里我给了500MB
+分区类型: 主分区
+新分区位置: 空间起始分区(下面也都是这个不用改)
+用于: EFI
+
+
+如果空间充足可给/home分区单独设置, 后面想扩容之类的就上面三个分区就可以了, 后面扩容完可以再分
+
+
+填写大小: 20GB以上均可, 看个人使用情况, 存放用户文件, 类似Windows的Users目录
+分区类型: 主分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: Ext4 日志文件系统
+挂载点: /home
+
+最终效果如下
+
+
+ 点击现在安装  —&gt; 继续, 时区选择上海, 点击继续
+
+用户信息按自己的填写即可. 可以勾选自动登录, 每次开机不需要选择用户, 自动登录.
+
+点击继续即可安装, 安装之后选择重启, 根据提示会让你拔掉U盘, 按ENTER(回车键)
+
+至此双系统就安装好了. 每次启动时, 系统会提示选择Ubuntu还是Windows系统一般是4个选项
+
+Ubuntu
+Ubuntu高级设置
+Windows
+EFI
+
+顺序可能不同,名称仅为示例, 很容易识别
+
+若未关闭Bitlocker, 进入Windows系统需要输入一次恢复密钥, 下次进入就不需要了.
+
+如果安装没有什么问题, 之前下载的镜像文件就可以清理了
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Ubuntu</tag>
+        <tag>系统安装</tag>
+        <tag>硬盘分区</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git撤销操作</title>
+    <url>/2024/05/a2778edb/</url>
+    <content><![CDATA[Git 撤销操作学习视频：十分钟学会常用git撤销操作，全面掌握git的时光机 
+初始状态
+
+Disk
+
+Init
+
+
+Staging(add)
+
+Init
+
+
+Local-git(commit)
+
+Init
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+情况一仅对文件做了修改但未add, 想要返回到初始状态
+状态如下
+
+
+Disk
+
+Init — change
+
+
+Staging(add)
+
+Init
+
+
+Local-git(commit)
+
+Init
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+想要删除此修改, 只需使用以下命令, &lt;filename&gt;表示要恢复的文件名
+git checkout &lt;filename&gt;或者git restore &lt;filename&gt;
+操作后恢复到原始状态
+
+
+Disk
+
+Init~~ — change~~
+
+
+Staging(add)
+
+Init 
+
+
+Local-git(commit)
+
+Init
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+情况二若文件已经add
+状态如下
+
+
+Disk
+
+Init — change
+
+
+Staging(add)
+
+Init — change
+
+
+Local-git(commit)
+
+Init
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+
+若仅取消暂存, 可以使用下面的命令恢复
+
+git reset &lt;filename&gt;或者git restore --staged &lt;filename&gt;
+此操作仅会把文件重暂存区取出, 不会删除修改
+操作后恢复到以下状态
+
+
+Disk
+
+Init — change
+
+
+Staging(add)
+
+Init~~ — change~~
+
+
+Local-git(commit)
+
+Init
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+
+若想要连修改一起撤回, 使用以下命令
+
+git checkout HEAD &lt;filename&gt;
+
+HEAD表示最近的一次提交, 类似的HEAD~1表示倒数第二次提交
+
+情况三更改已经提交, 也就是如下状态
+
+
+Disk
+
+Init — change
+
+
+Staging(add)
+
+Init — change
+
+
+Local-git(commit)
+
+Init — change
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+
+此时要想仅取消此提交不撤销更改, 使用以下命令
+
+git reset --soft HEAD~1
+此时状态如下
+
+
+Disk
+
+Init — change
+
+
+Staging(add)
+
+Init — change
+
+
+Local-git(commit)
+
+Init—change
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+
+若想要将暂存一起取消, 则不使用--soft参数, 即
+
+git reset HEAD~1等价于git reset --mixed HEAD~1
+此时状态如下
+
+
+Disk
+
+Init — change
+
+
+Staging(add)
+
+Init — change
+
+
+Local-git(commit)
+
+Init—change
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+
+若想完全回到上一次提交(本提交的前一次), 文件的修改也完全恢复到该次提交的状态. 使用以下命令
+
+git reset --hard HEAD~1
+此时恢复到如下状态
+
+
+Disk
+
+Init — change
+
+
+Staging(add)
+
+Init — change
+
+
+Local-git(commit)
+
+Init—change
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+
+对于以上的恢复, 还有一种方式, 即在change的基础上加一个-change使文件在结果上恢复到上一次提交的状态
+使用以下命令可以实现
+git revert HEAD
+效果如下
+
+
+Disk
+
+Init — change — -change    ==  Init
+
+
+Staging(add)
+
+Init — change— -change
+
+
+Local-git(commit)
+
+Init—change— -change
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+此命令还可以用于撤销之前的某一次提交的修改
+例如, 当前状态如下
+
+
+Disk
+
+Init — change1 —change2
+
+
+Staging(add)
+
+Init — change1 —change2
+
+
+Local-git(commit)
+
+Init — change1 —change2
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+使用如下命令, 撤销change1, &lt;hash&gt;指要撤销提交的hash值
+git revert HEAD~1或者git revert &lt;hash&gt;
+达到如下效果
+
+
+Disk
+
+Init — change1 —change2 —-change1
+
+
+Staging(add)
+
+Init — change1 —change2—-change1
+
+
+Local-git(commit)
+
+Init — change1 —change2—-change1
+
+
+Remote-git(push)
+
+Init
+
+
+
+
+此命令在远程提交的撤销中起着重要作用, 见下文
+
+情况四修改已经push到了Github上
+状态如下
+
+
+Disk
+
+Init — change
+
+
+Staging(add)
+
+Init — change
+
+
+Local-git(commit)
+
+Init — change
+
+
+Remote-git(push)
+
+Init — change
+
+
+
+
+
+对于公有分支(不止一人使用该分支的情况), 只能使用revert
+
+git revert HEAD
+恢复到如下状态
+
+
+Disk
+
+Init — change — -change 
+
+
+Staging(add)
+
+Init — change— -change
+
+
+Local-git(commit)
+
+Init—change— -change
+
+
+Remote-git(push)
+
+Init —change— -change
+
+
+
+
+
+对于个人分支, reset和revert均可, 但若使用reset恢复了提交, 在push时需要加上-f
+
+git push -f
+
+-f表示强制, 在共有分支应避免使用, 或者禁止使用
+
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Git</tag>
+        <tag>Github</tag>
+        <tag>工作流程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git 安装及配置教程</title>
+    <url>/2024/05/cbf708ce/</url>
+    <content><![CDATA[1. 下载安装包打开Git官网下载安装包, 嫌速度慢可以使用下面的链接下载
+蓝奏云(不限速)：https://wwt.lanzoul.com/b00rn0x92b 密码:gdo1
+百度云(会员)：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
+
+
+下载完成后，双击打开安装包
+2. 开始安装
+
+
+
+
+
+
+
+
+
+
+
+
+
+点击安装, 等待安装完成
+
+3. 配置Git(1). 配置用户信息输入以下命令配置用户信息, 修改成自己的信息
+git config --global user.name &quot;liudh&quot;git config --global user.email &quot;xxxxxxx@xx.com&quot;
+
+可以使用以下命令查看配置信息
+git config user.namegit config user.email
+(2). 设置代理(需自备代理)在向Github推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理
+使用以下命令查看代理配置
+git config --global --get http.proxygit config --global --get https.proxy
+如果没有内容说明没有代理
+下面使用以下命令配置代理
+git config --global http.proxy 127.0.0.1:7890git config --global https.proxy 127.0.0.1:7890
+
+具体地址和端口在系统代理的位置查看
+
+
+如果不想使用代理, 使用以下命令取消
+git config --global --unset http.proxygit config --global --unset https.proxy
+
+至此, 就可以愉快地开始使用Git了
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Git</tag>
+        <tag>安装教程</tag>
+        <tag>Windows</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu搭建Webdav</title>
+    <url>/2024/05/e8755f24/</url>
+    <content><![CDATA[参考文章: Linux搭建WebDav服务 - Colzry’s Blog
+
+以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决
+
+步骤一: 安装WebDAV服务首先, 我们需要安装WebDAV Server, 打开页面下载合适的版本, 本文以linux-amd64-webdav.tar.gz为例, 其中amd64表示x64架构
+然后, 解压并移动文件到/usr/bin/, 其余的README和LICENSE文件可删除
+tar -zxvf linux-amd64-webdav.tar.gzmv webdav /usr/bin/
+步骤二: 配置WebDAV服务安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 /home/liudh/webdav的目录, 注意修改用户名liudh为自己的用户名
+mkdir /home/liudh/webdav
+然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑
+vim /opt/webdav_config.yaml
+在配置文件中, 我们需要添加以下内容. 
+
+注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容
+注意缩进, cors和users后的参数均需要两个空格的缩进, 带-的参数需再缩进两个空格(四个)
+每一个参数:后均有一个空格
+
+# Server related settingsaddress: 0.0.0.0port: 10101# 如果无需验证填 falseauth: true# 如果不需要 https 则填 falsetls: false# https证书和密钥，如果 tls 为 false，cert 和 key 不需要# cert: cert_path# key: key_path# 访问前缀，建议默认prefix: /debug: false# 如果 auth 为 false 生效，文件共享的路径scope: .modify: truerules: []# 跨域设置cors:  enabled: true  credentials: true  allowed_headers:    - Depth  allowed_hosts:    - http://localhost:10101  allowed_methods:    - GET  exposed_headers:    - Content-Length    - Content-Range# 用户信息，如果 auth 为 true 生效users:  - username: liudh    password: passwd    scope: /home/liudh/webdav/    # 是否允许修改    modify: true# 可以根据此模板继续添加其他用户
+保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功
+/usr/bin/webdav -c /opt/webdav_config.yaml
+步骤三: 添加守护进程vim /usr/lib/systemd/system/webdav.service
+将以下内容添加到文件中
+[Unit]Description=WebDAV serverAfter=network.target[Service]Type=simpleUser=rootExecStart=/usr/bin/webdav -c /opt/webdav_config.yamlRestart=on-failure[Install]WantedBy=multi-user.target
+保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证
+systemctl daemon-reloadsystemctl start webdav.servicesystemctl status webdav.servicesystemctl enable webdav.service
+之后修改配置文件后, 可以使用以下命令重启服务
+systemctl restart webdav.service
+步骤四: 挂载webdav测试服务使用任意webdav挂载软件, 挂载测试, 注意填写参数如下
+协议: http # 如果配置了ssl证书就用https主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要用户名: liudh # 都改成自己的密码: passwd
+之后就可以上传下载文件测试一下了, 如果有错误就用
+systemctl status webdav.service
+查看错误日志. 
+
+如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下
+
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Webdav</tag>
+        <tag>云服务</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Fortran转C++的一些注意事项</title>
+    <url>/2024/05/5a883584/</url>
+    <content><![CDATA[一、命名在Fortran中, 所有的字符都是不区分大小写的. 在编译时, 全部使用小写字符. 但是, 在C++中是会区分大小写的. 因此, 在转换时要注意统一大小写. 
+二、数据类型1. 可直接转换的参数类型
+整型: integer  = int
+浮点数: real  = float
+双浮点数: real(8)  = double
+逻辑: logical = bool
+
+
+对于科学计数法, Fortran中d表示双精度浮点数, 如1.2d3. 在C++中并不能直接识别, 但是C++中默认使用双精度浮点数. 因此可直接使用1.2e3来代替.
+
+2. 可代替的参数类型
+字符串character: 可使用std::string代替 (须#indlude &lt;string&gt;)
+
+
+在c++中char只能储存一个字符, 需要使用数组来保存字符串. 因此在使用上character和string更类似
+对于字符串的连接, Fortran中使用//, C++中使用+
+
+
+复数complex: 可使用std::complex代替 (须#include &lt;complex&gt;)
+
+
+C++的std::complex内提供了一些用于复数运算的函数, 
+例如: 
+std::real(获取复数的实部)
+std::imag(获取复数的虚部)
+std::abs(获取复数的模)
+std::arg(获取复数的辐角)
+std::norm(获取复数的模的平方)
+std::conj(获取复数的共轭复数)
+
+
+自定义类型type: 可使用结构体struct代替
+
+
+对于参数的访问, 在Fortran中使用%在c++中使用.
+
+
+动态数组allocatable: 可使用向量vector代替 (须#include &lt;vector&gt;)
+
+
+对于结构体类型的向量, 使用vecname.assign(quantity, vecname());来调整向量的大小. 但是注意这会清除向量中原有的内容
+对于数值类型的向量, 使用vecname.resize()来调整大小
+使用vecname.size()可以得到向量当前的大小
+
+
+动态type数组: 使用std::vector&lt;structname&gt;来定义
+
+
+对于动态type数组这类变量, 在Fortran中的初始化: 
+!在Fortran2003以后的标准中, type可以直接给定默认值type material	real :: mass = 0.0	real :: speed = 0.0	real :: Vx(3) = 0.0, Vy(3) = 0.0, Vz(3)=0.0type(material),allocatable::material_list(:)allocate(material_list(3))!对于之前的标准, 或者没有定义默认值, 再或者需要再次初始化, 可以使用以下方式type material	real mass	real speed	real Vx(3), Vy(3), Vz(3)type(material),allocatable::material_list(:)allocate(material_list(3))do i=1,3	material_list(i)%mass = 0.0	material_list(i)%speed = 0.0	material_list(i)%Vx = (/0.0, 0.0, 0.0/)	material_list(i)%Vy = (/0.0, 0.0, 0.0/)	material_list(i)%Vz = (/0.0, 0.0, 0.0/)end do! 特别的,在Fortran中,不加索引号会对数组内的全部元素赋值type material	real mass	real speed	real Vx(3), Vy(3), Vz(3)type(material),allocatable::material_list(:)allocate(material_list(3))material_list%mass = 0.0material_list%speed = 0.0material_list%Vx = (/0.0, 0.0, 0.0/)material_list%Vy = (/0.0, 0.0, 0.0/)material_list%Vz = (/0.0, 0.0, 0.0/)!与上面带索引号的方式,效果相同, C++中不能这样做
+在c++中: 
+//在C++11以后的标准中可以直接对结构体设置默认值struct material //定义结构体&#123; float mass = 0.0f; //0.0默认是double类型, 浮点数的0.0要加上f float speed = 0.0f; float Vx[3] = &#123;0.0f&#125;, Vy[3] = &#123;0.0f&#125;, Vz[3] = &#123;0.0f&#125;;//此处c++会将数组里的其他值也初始化为0.0f&#125;;std::vector&lt;material&gt; material_list; //创建结构体向量material_list.assign(3,material()); //修改向量大小//对于之前的标准或者没有定义默认值, 再或者想要填充为其他值material temp; temp.mass = 0.0;temp.speed = 0.0;for (int i = 1; i &lt; 3; i++ )&#123; temp.Vx[i] = 0.0; temp.Vy[i] = 0.0; temp.Vz[i] = 0.0;&#125;;material_list.assign(3,temp); //assign函数会将material的大小调整为3, 并将所有值填充为temp
+
+3. 需要注意的参数类型
+数组: 在Fortran中,数组的索引序号默认是从1开始, 而在C++中序号是从0开始. 这要求我们在使用循环操作数组时要注意索引序号. 其次, 在存储数据时, Fortran是使用列主序, 即一个二维数组(3,4)表示的是3列4行. 而在c++中二维数组[3,4]表示的是3行4列
+
+
+Fortran和C++数组主要的区别：
+
+索引起始位置：在Fortran中, 数组的索引默认从1开始, 并且可以自定义索引序号. 而在C++中, 数组的索引始终从0开始. 
+内存布局：Fortran使用列优先(column-major)顺序存储多维数组, 而C++(和大多数其他C风格的语言)使用行优先(row-major)顺序存储多维数组. 
+动态数组：在Fortran中, 可以很容易地创建动态数组, 而在C++中, 创建动态数组需要更多的工作. 不过, C++提供了std::vector这样的容器类, 可以方便地创建和管理动态数组. 
+数组作为函数参数：在Fortran中, 当数组作为函数参数时, 会传递数组的引用, 而不是数组本身. 这意味着, 如果在函数内部修改了数组, 那么在函数外部的数组也会被修改. 在C++中, 如果你直接将数组作为函数参数, 那么实际上传递的是数组的指针, 如果你想要达到和Fortran相同的效果, 你需要显式地使用引用或者指针. 
+数组大小：在Fortran中, 数组本身知道其大小, 而在C++中, 原生数组不知道其大小, 你需要自己保持对数组大小的跟踪. 不过, C++的std::array和std::vector等容器类知道它们的大小. 
+
+
+
+数组的运算: 在Fortran中, 对于数组可以直接使用+ - * / **等运算符号, 其意义为数组中对应位置的元素相加, 减, 赋值. 
+
+例如:
+integer:: i(3),j(3)i = 1i = i + 1j = ii = i - j
+在这段代码中, 定义了两个长度为3的一维数组. 
+
+第2行, 将i中的元素全部赋值为1. 
+第3行, 将i中的每一个元素都加1, i中所有元素变为2.  
+第4行, 将i中元素的值,对应赋值给j数组, j中元素也都变为了2.  
+第5行, 将i中的元素对应减去j中的元素并赋值给i,  这时, i中的元素全部变为了1.  
+
+这些在C++中是无法直接做到的, 可以借助一些库或者使用循环或者STL中的一些标准函数来完成这些操作. 
+
+copy从一个数组复制到另一个数组 (std::copy(first,last,dest)前两个参数控制复制到数组的开始和结尾, 第三个为要复制的数组)
+
+fill填充数组,用于数组的初始化 (std::fill(first,last,init)前两个控制范围,最后一个为填充值)
+
+transform转换
+
+transform算法接受一个或两个输入范围, 以及一个输出范围, 并根据提供的一元函数对象或二元函数对象对”输入范围内的元素” 进行转换;
+
+InputIt first1参数: 输入容器的起始迭代器(包含);
+InputIt last1参数: 输入容器的终止迭代器(不包含);
+InputIt2 first2参数: 第二个输入容器的起始迭代器(包含);
+OutputIt d_first参数: 输出容器的开始迭代器, 输出元素个数根据输入元素的范围确定,transform会将变换结果存储到输出容器中;
+UnaryOperation unary_op参数: 一元函数对象, 将输入容器的每个元素输入到该一元函数对象中, 将计算结果输出到输出容器中;
+
+
+
+
+三、运算符号
++ - * / 都可以直接转换, 除了上面提到的应用在数组的计算上时
+
+**幂乘运算在c++中可使用#include &lt;cmath&gt;库中的pow来代替
+
+
+
+用法: std::pow(底数,指数)
+
+
+求余mod()在c++中为%
+在c++中, 还有--和++等自减和自增运算, 注意其在使用时前缀和后缀的区别: 可以理解为前缀既算值又变, 后缀只算值不变. 当然这句话仅对其所在的一个语句生效, 无论是自增还是自减, 在这条语句结束后, 数值都发生了改变. 
+
+
+例如: 
+int a=10;int b;b = ++a; //前缀自增a变为了11, 其参与计算的值也变为11, b=11, a=11b = a++; //后缀自增a从上面的11变为了12, 但在这条语句中a参与计算的值还是11, b=11, a=11, 结束后a=12b = a; //在上面的语句结束后a参与计算的值变为了12, b=12, a=12
+在上面的基础上, b=++a--;中的a b参与计算的值分别为多少? 该语句结束后a b的值又是多少? 
+b=13 a=13;b=13 a=12;
+同时这两个运算符的优先级是要高于其它的
+b = 1 + a--; //先计算a--再计算+1
+三个运算符相连时
+b = a++-1; //等价于b=(a++)-1b = a+++1; //等价于b=(a++)+1, 但不建议这样做
+
+C++中内置了(cmath)一些数学运算函数, 下面是常用的一些函数:
+double cos(double); //返回弧度角的余弦double sin(double); //正弦double tan(double); //正切double log(double); //返回输入参数的自然对数-lndouble pow(double, double); //返回第一个参数的第二个参数次方double hypot(double, double); //返回两个参数平方和的平方根double sqrt(double); //返回参数的平方根int abs(int); //返回整数的绝对值double fabs(double); //返回浮点数的绝对值double floor(double); //返回小于或等于传入的参数的最大整数
+四、控制结构1. 循环结构在Fortran中, 循环结构有两种do和do while. 分别对应着c++中的for和while. 除此之外, c++还有一种结构do ... while. 它与while的区别在于: while是先判断后执行, do ... while是先执行后判断. 
+循环控制语句对应关系:
+
+exit: 在c++中为break
+cycle: 在c++中为continue
+
+
+此外, 在c++中还有一种控制语句goto即跳转到某一被标记的语句执行. 但是, 在程序中不建议使用该语句! 
+
+2. 判断语句在Fortran中, 判断语句有if-then, if-then-else 和if-else if-else. 这与c++中的if, if-else以及if-else if-else是一一对应的. 他们的用法相同.
+需要注意的是, 在Fortran中的select case语句与c++中的switch语句有一些使用上的差别.
+
+select case语句在运行选择的case后会结束select也就是只进行一次选择. 而在c++的switch语句中, 如果不使用break语句, 会一直进行switch. 
+相当于Fortran的选择语句中, 所有的case都带有一个break. 
+如果将do while(.true.)与select case()语句结合, 当某个case中有一个exit语句, 它会结束do while的循环. 而在c++中, while和switch都使用break来打断, 所以case中的break只会结束switch而不会结束while(true). 因此, 在转换时需要增加while结束的条件.  
+例如:
+do while(.true.)    key = Keyord(kw,nbkw)    select case(key)        case(1)        	exit        case(2)        	call GetString(Title)        case(3)        	nb_particle = GetInt()        	write(*,&quot;(a,i12)&quot;) &#x27;Number of particles = &#x27;,nb_particle        	write(iomsg,&quot;(a,i12)&quot;) &#x27;Number of particles = &#x27;,nb_particle       		allocate(particle_list(nb_particle))        	call InitParticle()        case default        	stop &#x27;STOP - Error encountered in reading data&#x27;    end selectend do 
+改为c++
+while (true)&#123;    key = KeyWord(kw, nbkw);    switch (key + 1)    &#123;        case 1:            break;        case 2:            Title = GetString();            break;        case 3:            nb_particle = GetInt();            cout &lt;&lt; &quot;Number of particles = &quot; &lt;&lt; nb_particle &lt;&lt; endl;            outfile &lt;&lt; &quot;Number of particles = &quot; &lt;&lt; nb_particle &lt;&lt; endl;            particle_list.assign(nb_particle, Particle());            break;        default:            cout &lt;&lt; &quot;STOP - Error encountered in reading data&quot; &lt;&lt; endl;            exit(1);    &#125;    if (key == 0) break;&#125;
+或者使用do...while
+do&#123;	key = KeyWord(kw, nbkw);   	switch (key + 1)    &#123;    	//...    &#125;&#125;while(key != 0);
+
+五、子程序和函数子程序对于独立的子程序 (不引用其他的module) 可直接使用void函数替代. 对于function函数子程序可以对应类型的函数替代, 即有返回值的函数. 
+例子:
+subroutine sum100(sum_)	implicit none	integer,intent(out)::sum_	integer :: i	sum_ = 0	do i=1,100		sum_ = sum_ +i	endoend subroutine sum100
+这个程序会计算1~100的和并输出到sum这个量
+call sum100(sum1)
+转换成c++
+int sum = 0;void sum100 (int &amp;sum_)&#123;	for (int i=1; i&lt;=100; i++) //在循环体中Fortran判断结束的条件默认是小于等于	&#123;		sum_ += i	&#125;&#125;sum100(sum);
+
+ 这类子程序的特点: 有明确的输入的输出, 全部工作都在子程序内完成, 不牵扯其他的module或子程序. 
+
+
+关于参数的传递在Fortran的子程序中, 参数的传递默认按照引用来传递. 即, 如果你在子程序内改变了这一变量(未规定为in类型), 外部的变量也会改变. 这与C++中使用&amp;符号传递参数的作用相同.
+有些子程序, 在编写时, 未规定传入参数的类型为输入(in)还是输出(out). 在转换为C++时, 需要注意分辨是否需要改变外部的变量.
+
+在转换时, in类型的变量在子程序中是无法改变的, 因此我们在写c++的函数时, 不需要加&amp;. 而对于out类型的变量, 必须要加上&amp;, 否则不能改变外部的变量.
+对于全局变量而言, 不需要作为传入参数. 可以直接使用并改变该变量的值.
+
+六、模块(Module)对于这类文件, 可以使用头文件+全局变量+源文件的模式
+对于全局常量和结构体, 只需要定义在头文件内即可. 在头文件中, 结构体的定义和常量的定义不使用extern声明. 
+在编写代码时, 可以使用namespace对不同文件的参数作区分, 防止出现命名上的冲突 (可不使用). 在c++中, 还可以使用class来更好的组织和封装数据及函数. 
+如果原模块没有私有变量, 可直接使用namespace.
+
+以下是GPT对两种方式的优缺点的判断:使用namespace的优点：
+
+namespace可以用来避免命名冲突. 你可以在不同的namespace中定义同名的函数或变量, 而不会产生冲突. 
+namespace可以嵌套, 这使得你可以更好地组织你的代码. 
+namespace可以在多个文件中定义, 这使得你可以将相关的代码和数据分散在多个文件中. 
+
+使用namespace的缺点：
+
+namespace不能用来封装数据. 在namespace中定义的所有函数和变量都是公开的, 任何人都可以访问. 
+namespace不能用来实现面向对象编程的特性, 如继承和多态. 
+
+使用class的优点：
+
+class可以用来封装数据和函数. 你可以控制哪些数据和函数是公开的(public), 哪些是私有的(private). 
+class可以用来实现面向对象编程的特性, 如继承和多态. 
+class可以用来创建对象, 这使得你可以在运行时动态地创建和销毁数据和函数. 
+
+使用class的缺点：
+
+class不能像namespace那样用来避免命名冲突. 在同一个namespace中, 不能有两个同名的class. 
+class不能在多个文件中定义. 一个class的所有成员都必须在同一个文件中定义. 
+
+
+
+欢迎补充和指正
+]]></content>
+      <categories>
+        <category>编程语言</category>
+      </categories>
+      <tags>
+        <tag>Fortran</tag>
+        <tag>学习笔记</tag>
+        <tag>C++</tag>
+        <tag>语言转换</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>基于Hexo和Github部署个人博客完整教程</title>
+    <url>/2024/06/4a79202d/</url>
+    <content><![CDATA[安装流程
+安装node.js
+
+安装Git
+
+安装Hexo
+
+创建Github仓库
+
+安装上传插件
+
+更改配置
+
+上传网页
+
+
+1. 安装node.js打开node.js官网Node.js — Run JavaScript Everywhere (nodejs.org)点击下载
+
+打开安装至默认位置即可
+
+
+
+
+
+自动安装一些工具, 可以选上, 然后安装. 等待安装完成
+
+点击完成, 会弹出一些窗口
+
+按任意键继续即可, 等待安装完成. 
+
+过程较长, 耐心等待安装完成. 
+
+2. 安装Git查看往期教程Git 安装及配置教程 | Firefly Blog | 萤火虫博客 (fireflye.asia)
+3. 安装Hexo完成上面的安装后, 可以使用以下命令检查是否安装成功.
+打开git bash,输入
+node -vnpm -vgit -v
+显示版本信息, 说明安装成功.
+
+之后再输入以下命令安装hexo
+npm install -g hexo-cli
+等待安装完成, 网络问题请自学寻找代理, 或寻找可用镜像源. 显示以下信息说明安装完成
+
+还可以使用以下命令来查看安装情况
+hexo -v
+若显示版本信息, 说明已成功安装
+打开一个要存放网站文件的位置, 例如F:\web\. 打开此文件夹, 右键选择open git bash here
+
+或者 直接打开git bash 输入cd f:\web. 路径替换为自己的路径. 
+
+打开后会显示(我使用的虚拟机放在了桌面. 不建议这样做. 文件夹需要妥善保存.)
+
+输入以下命令初始化hexo(一定要在刚刚的文件夹内-路径显示)
+hexo init
+保证网络畅通, 耐心等待初始化完成. 
+
+到此, hexo初始化完成. 下面配置github仓库. 
+4. 创建Github仓库打开Github注册一个自己的账号
+
+输入自己的邮箱, 密码等
+
+用户名建议设置简单易记一些, 待会创建的网站域名与自己的用户名有关
+
+总览
+
+点击继续, 通过验证码和邮箱数字验证就可以注册成功.
+
+点击左侧的绿色按钮新建仓库Create repository. 
+
+到此, 仓库已经创建完成
+
+接下来还需要配置一下上传的密钥对
+打开git bash, 输入以下命令 (“email”替换为自己的邮箱)
+ssh-keygen -t rsa -b 4096 -C &quot;email&quot;
+然后按三下回车键, 即均保持默认不设置密码. 也可根据自己需要修改
+
+
+第一次是保存位置
+第二次是密码
+第三次是重复密码
+
+创建完成后, 打开保存的目录. 默认在C:\Users\用户名\.ssh
+
+第一个是私钥, 自己一定要保存好, 不能给别人.
+将第二个pub结尾的用记事本打开, 将里面的内容复制出来.
+
+复制好后, 返回Github
+
+
+
+
+密钥添加完成
+5. 安装上传插件打开git bash
+npm install hexo-deployer-git --save
+
+安装完成
+6. 更改配置打开网站文件夹
+
+用记事本打开_config.yml
+
+# 配置说明, 不要复制. 按说明修改# Hexo Configuration## Docs: https://hexo.io/docs/configuration.html## Source: https://github.com/hexojs/hexo/# Sitetitle: Hexo  # 网站的大标题subtitle: &#x27;&#x27;  # 副标题description: &#x27;&#x27; # 描述keywords:  # 网站的关键词author: John Doe # 作者language: en  # 语言 中文 zh-CNtimezone: &#x27;&#x27; # 时区 Asia/Shanghai# URL## Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;url: https://fireflyblog.github.io # 改成自己网址 https://用户名.github.io # 注意是httpspermalink: :year/:month/:day/:title/  # 其他默认转到最后一项permalink_defaults:pretty_urls:  trailing_index: true # Set to false to remove trailing &#x27;index.html&#x27; from permalinks  trailing_html: true # Set to false to remove trailing &#x27;.html&#x27; from permalinks# Directorysource_dir: sourcepublic_dir: publictag_dir: tagsarchive_dir: archivescategory_dir: categoriescode_dir: downloads/codei18n_dir: :langskip_render:# Writingnew_post_name: :title.md # File name of new postsdefault_layout: posttitlecase: false # Transform title into titlecaseexternal_link:  enable: true # Open external links in new tab  field: site # Apply to the whole site  exclude: &#x27;&#x27;filename_case: 0render_drafts: falsepost_asset_folder: falserelative_link: falsefuture: truesyntax_highlighter: highlight.jshighlight:  line_number: true  auto_detect: false  tab_replace: &#x27;&#x27;  wrap: true  hljs: falseprismjs:  preprocess: true  line_number: true  tab_replace: &#x27;&#x27;# Home page setting# path: Root path for your blogs index page. (default = &#x27;&#x27;)# per_page: Posts displayed per page. (0 = disable pagination)# order_by: Posts order. (Order by date descending by default)index_generator:  path: &#x27;&#x27;  per_page: 10  order_by: -date# Category &amp; Tagdefault_category: uncategorizedcategory_map:tag_map:# Metadata elements## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/metameta_generator: true# Date / Time format## Hexo uses Moment.js to parse and display date## You can customize the date format as defined in## http://momentjs.com/docs/#/displaying/format/date_format: YYYY-MM-DDtime_format: HH:mm:ss## updated_option supports &#x27;mtime&#x27;, &#x27;date&#x27;, &#x27;empty&#x27;updated_option: &#x27;mtime&#x27;# Pagination## Set per_page to 0 to disable paginationper_page: 10pagination_dir: page# Include / Exclude file(s)## include:/exclude: options only apply to the &#x27;source/&#x27; folderinclude:exclude:ignore:# Extensions## Plugins: https://hexo.io/plugins/## Themes: https://hexo.io/themes/theme: landscape# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: &#x27;&#x27;
+这一部分单拿出来修改(注意缩进为2个空格, 冒号后面一个空格)
+# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository:  branch: main
+仓库地址在Github, 打开找到自己的仓库
+
+复制好后粘贴到仓库参数后面, 完整的配置修改如下
+# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository: git@github.com:fireflyblog/fireflyblog.github.io.git #替换为自己的链接  branch: main
+7. 上传网页一切配置好之后, 打开网站文件夹. 右键选择open git bash here
+输入以下命令生成和上传网页
+hexo ghexo d
+
+
+上传成功之后, 等待一会. 就可以打开自己网页查看了(替换自己的用户名)
+https://fireflyblog.github.io
+
+至此, 网站已经搭建完成
+
+还有一些其他常使用的命令
+新建文章
+hexo new &quot;title&quot;
+本地部署预览
+hexo s
+清理生成文件(一般切换主题需要先清理再生成. 新建文章之类的不需要此操作.)
+hexo clean
+
+文章保存在
+网站文件夹\source\_posts
+
+文章格式说明以及主题美化待更新…
+]]></content>
+      <categories>
+        <category>Github</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Git</tag>
+        <tag>Hexo</tag>
+        <tag>静态网页</tag>
+        <tag>Blog</tag>
+        <tag>博客</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Mavic 3 classic屏控航线(航点)飞行教程</title>
+    <url>/2024/08/78788d45/</url>
+    <content><![CDATA[准备工作遥控手柄(带屏)
+航线规划软件(网页) - Rainbow Cloud
+SD卡, 读卡器, 电脑
+1. 创建航线首先, 打开Rainbow Cloud网站. 
+网页界面如下: 
+
+点击左侧新建任务. 
+
+选择正射
+
+输入任务名称
+
+确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围. 
+
+然后, 调整这个范围至合适位置. 可以移动和添加顶点
+
+然后, 调整右侧参数栏的参数. 
+
+
+其余设置与上图保持一致, 保存任务
+
+点击右上角任务导出
+
+选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.
+
+点击下载, 将文件下载并导入到SD卡中.
+2. 导入航线根据导入教程导入文件Mavic3系列屏控手动导入Kmz航点任务
+2.1 创建并备份航线创建任意数量的航点, 保存. 
+航点文件保存位置如下
+
+一串英文字符的文件夹内存放的就是航线文件(kmz格式)
+将整个waypoint文件夹复制至SD卡中
+2.2 替换kmz文件将已经下载好的Kmz文件同样导入到SD卡的该文件夹内
+注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).
+将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)
+最后将替换好的waypoint文件夹替换回去 
+]]></content>
+      <categories>
+        <category>无人机</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>DJI</tag>
+        <tag>Mavic 3 classic</tag>
+        <tag>正射航线</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>物质点法--学习笔记(一)</title>
+    <url>/2024/07/af38f644/</url>
+    <content><![CDATA[1. 物质点法​    物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到计算网格得到, 求解后将计算网格结点的运动量映射回各质点, 从而得到这些质点在下一时刻的运动量(对流计算步). 
+​    物质点法是一种完全的拉格朗日质点类方法, 在每步中质点和计算网格没有相对运动, 避免了欧拉法因非线性对流项产生的数值困难. 质点已经携带了连续体的所有物质信息, 因此物质点法在每个时间步结束时抛弃变形后的计算网格, 在新的时间步中仍可以采用未变形的计算网格. 
+
+​    在并行算法方面, 主要基于消息传递模型(MPI)和信息共享模型(OpenMP)实现. 
+2. 控制方程2.1 物体运动和变形的描述​    物体在 t = 0 时刻所占据的空间区域称为初始构形. 物体在 t 时刻所占据的空间区域成为现时构形. 为了度量物体的运动, 需要选取一个特定的构形作为基准, 称为参考构形. 
+
+​    在参考构形中质点的矢径 $X$ 可以表示为
+
+\begin{equation}
+\label{eq21}
+X = X_i e_i, i = 1,2,3
+\end{equation}​    其中 $e_i$ 为直角坐标系的基矢量, $X_i$ 为参考构形中质点矢径 $X$ 在 $e_i$ 上的投影. 质点在参考构形中的矢径 $X$ 不随时间 $t$ 变化, $X_i$ 称为物质坐标或拉格朗日坐标, 它可以作为该质点的标记. 
+​    在现时构形中质点 $X$ 的矢径 $x$ 可以表示为
+
+\begin{equation}
+\label{eq22}
+x = x_i e_i , i = 1, 2, 3
+\end{equation}​    其中 $x_i$ 为矢径 $x$ 在 $e_i$ 上的投影, 坐标 $x_i$ 给出了质点 $X$ 在空间中的位置,称为空间坐标或欧拉坐标. 质点 $X$ 的运动方程可以表示为
+
+\begin{equation}
+\label{eq23}
+x_i = x_i(X,t)
+\end{equation}​    在拉格朗日描述中, 质点 $X$ 的位移为
+
+\begin{equation}
+\label{eq24}
+u_i = x_i (X, t) - X_i
+\end{equation}​    在欧拉描述中, 质点 $X$ 的位移为
+
+\begin{equation}
+\label{eq25}
+u_i = x_i - X_i(x,t)
+\end{equation}​    质点的速度等于其矢径 $x$ 的变化率, 即令 $X$ 保持不变时矢径 $x$ 对时间的偏导数. 令 $X$ 保持不变时物理量对时间的导数称为物质导数, 也称为全导数或拉格朗日导数. 由式 $(\ref{eq24})$ 可以得到质点的速度为
+
+\begin{equation}
+\label{eq26}
+v_i = \frac{\partial x_i(X, t)}{\partial t} = \frac{\partial u_i(X, t)}{\partial t} \equiv \dot{u}_i
+\end{equation}​    质点的加速度为其速度的物质导数, 即
+
+\begin{equation}
+\label{eq27}
+\alpha_i = \frac{\partial v_i(X,t)}{\partial t} = \frac{\partial^2 u_i (X, t)}{\partial t^2} \equiv \ddot{u}_i
+\end{equation}​    如果物理量 $F$ 是用空间坐标 $x$ 和时间 $t$ 描述的, 即 $F = F(x,t)$, 可以先利用式 $(\ref{eq23})$ 把它变换为复合函数 $F = F(x(X, t), t)$, 它的物质导数为
+
+\begin{equation}
+\begin{aligned}
+\label{eq28}
+\frac{DF(x, t)}{Dt} &= \frac{\partial F(x, t)}{\partial t} + \frac{\partial F(x, t)}{\partial x_i}\frac{\partial x_i(X, t)}{\partial t} \\ 
+&= \frac{\partial F(x, t)}{\partial t} + \frac{\partial F(x, t)}{\partial x_i}v_i 
+\end{aligned}
+\end{equation}​     $F(x, t)$ 描述的是时刻 $t$  空间点 $x$ 处的物理量, 因此 $\partial F(x, t)/\partial t$ 表示的是物理量在空间固定点 $x$ 处的变化率, 称为空间时间导数, 也称为局部导数或欧拉导数. 它反映了物理量的非定常性.
+2.2 变形梯度质点的现时坐标 $xi$ 相对于物质坐标 $X_j$ 的偏导数 $F{ij} = \partial x_i / \partial X_j$ 称为变形梯度, 它是一个非对称的二阶张量. 初始构形中由相邻质点 $X$ 和 $X+dX$ 构成的无限小线元 $dX$ 在现时构形中变为
+
+\begin{equation}
+\label{eq29}
+dx_i = x_i(X + dX, t) - x_i(X, t)
+\end{equation}对 $x_i(X + dX, t)$ 在 $X$ 处作泰勒展开, 并略去高阶小项得
+
+\begin{equation}
+\label{eq210}
+dx_i = \frac{\partial x_i}{\partial X_j} dX_j
+\end{equation}变形梯度的行列式
+
+\begin{equation}
+\label{eq211}
+J = 
+\begin{vmatrix} 
+\frac{\partial x_i}{\partial X_j}
+\end{vmatrix}
+=
+\begin{vmatrix} 
+\frac{\partial x_1}{\partial X_1} & \frac{\partial x_1}{\partial X_2} & \frac{\partial x_1}{\partial X_3}\\
+\frac{\partial x_2}{\partial X_1} & \frac{\partial x_2}{\partial X_2} & \frac{\partial x_2}{\partial X_3}\\
+\frac{\partial x_3}{\partial X_1} & \frac{\partial x_3}{\partial X_2} & \frac{\partial x_3}{\partial X_3}\\
+\end{vmatrix}
+\end{equation}称为雅可比行列式. 
+引入排列张量 $e_{ijk}$, 可将式 $(\ref{eq211})$ 展开为
+
+\begin{equation}
+\label{eq212}
+J = e_{ijk}\frac{\partial x_i}{\partial X_1} \frac{\partial x_j}{\partial X_2} \frac{\partial x_k}{\partial X_3}
+\end{equation}由行列式的性质和 $J$ 的定义式 $(\ref{eq211})$可得
+
+\begin{equation}
+\label{eq213}
+e_{plm}J = e_{ijk}\frac{\partial x_i}{\partial X_p} \frac{\partial x_j}{\partial X_l} \frac{\partial x_j}{\partial X_m}
+\end{equation}设初始构形中的平行六面体体元的三个线元分别是 $dX$, $\delta X$ 和 $\Delta X$, 它们在现时构形中分别为 $dx$, $\delta x$ 和 $\Delta x$, 且
+
+dx_i = \frac{\partial x_i}{\partial X_p}dX_p,\ \delta x_j = \frac{\partial x_j}{\partial X_l}\delta X_l,\ \Delta x_k = \frac{\partial x_k}{\partial X_m} \Delta X_m
+现时构形中由 $dx$, $\delta x$ 和 $\Delta x$ 构成的六面体体元的体积为
+
+\begin{equation}
+\label{eq214}
+dV = 
+\begin{vmatrix}
+dx_1 & dx_2 & dx_3\\
+\delta x_1 & \delta x_2 & \delta x_3\\
+\Delta x_1 & \Delta x_2 & \Delta x_3\\
+\end{vmatrix}
+= JdV_0
+\end{equation}因此变形梯度矩阵的行列式 $J$ 可用来表示变形过程中体元的体积变化, 即
+
+\begin{equation}
+\label{eq215}
+J = \frac{dV}{dV_0}
+\end{equation}可见 $J$ 表示变形前后体元体积之比. 
+2.3 变形率考察一个典型的质点 $P$, 它在时刻 $t$ 的坐标为 $x_j$, 瞬时速度为 $v_i(x_j, t)$. 与 $P$ 点相邻的质点 $P’$ 的坐标为 $x_j+dx_j$, 它相对于 $P$ 点的相对速度为
+
+\begin{equation}
+\label{eq216}
+dv_i = v_i(x_j + dx_j, t) - v_i(x_j, t) = \frac{\partial v_i}{\partial x_j} dx_j
+\end{equation}式中 $\partial v_i/\partial x_j$ 为速度梯度张量. 它可分解为对称部分和反对称部分之和, 即
+
+\begin{equation}
+\label{eq217}
+\frac{\partial v_i}{\partial x_j} = \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} - \frac{\partial v_j}{\partial x_i} \right) + \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i} \right)\\
+= \Omega_{ij} + D_{ij}
+\end{equation}式中
+
+\begin{equation}
+\label{eq218}
+\Omega_{ij} = \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} - \frac{\partial v_j}{\partial x_i} \right)
+\end{equation}
+\begin{equation}
+\label{eq219}
+D_{ij} = \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i} \right)
+\end{equation}分别为旋律张量和变形率张量. 
+与速度梯度分解相似， 相对速度式 $(\ref{eq216})$ 也可分解为
+
+\begin{equation}
+\label{eq220}
+dv_i = dv_i^* + dv_i^{**}
+\end{equation}其中
+
+\begin{equation}
+\label{eq221}
+dv_i^* = \Omega_{ij}dx_j, dv_i^{**} = D_{ij}dx_j
+\end{equation}旋率张量 $\Omega_{ij}$ 是反对称张量, 它只有 3 个独立的分量, 总存在一个对偶矢量(旋度矢量) $\omega$, 使得
+
+\begin{equation}
+\label{eq222}
+\Omega_{ij} = -e_{ijk}\omega_k
+\end{equation}将上式代入式 $(\ref{eq221})$ 的第一式得
+
+dv^*_i = -e_{ijk} \omega_k dx_j = (\omega \times dx)_i上式表明相对速度 $dv^$ 等于 $\omega$ 和 $dx$ 的矢量积. 在质点 $P$ 的邻域内, 相对速度 $dv^$ 对应于这个邻域绕过 $P$ 点的某轴的一个刚体运动, 矢量 $\omega$ 表示转动的角速度. 
+可以证明, 变形张量 $D{ij}$ 是相对于现时构形定义的柯西应变的速率, 也就是真实应变 $\epsilon{ij}$ 的速率 $\dot{\epsilon}_{ij}$, 即
+
+\begin{equation}
+\label{eq224}
+D_{ij} = \dot{\epsilon}_{ij}
+\end{equation}2.4 柯西应力
+考虑物体在时刻 $t$ 的现时构形内的一个有向面元 $n\Delta A$, 其法向单位向量 $n$ 在坐标轴 $e_k$ 上的投影记为  $n_k$. 面元 $n\Delta A$ 两侧的介质通过面元相互作用以力元 $\Delta T$, 这个力元除以面元的面积就定义了该面元上的应力矢量 $t^{(n)}$: 
+
+
+\begin{equation}
+\label{eq225}
+t_i^{(n)} = \lim_{\Delta A \rightarrow 0} \frac{\Delta T_i}{\Delta A} = \frac{dT_i}{dA}
+\end{equation}面元 $n\Delta A$ 与另外三个垂直于坐标轴的面元 $n^{(1)}\Delta A_1$, $n^{(2)}\Delta A_2$ 和 $n^{(3)}\Delta A_3$ 构成一个四面体, 且有 $\Delta A_k = \Delta An_k$. 面元 $n^{(k)}\Delta A_k$ 上的应力矢量记为 $t^{(k)}$, 由平衡条件可得
+
+\begin{equation}
+\label{eq226}
+\Delta T_i = t_i^{(n)} \Delta A = t_i^{(k)} \Delta A_k = t_i^{(k)} \Delta An_k = \sigma_{ki} n_k \Delta A
+\end{equation}其中 $\sigma_{ki} = t_i^{(k)}$ 是垂直于坐标轴 $x_k$ 的面元 $n^{(k)} \Delta A_k$ 上的应力矢量 $t^{(k)}$ 在坐标轴 $x_i$ 上的分量. 由式$(\ref{eq225})$和式$(\ref{eq226})$得
+
+\begin{equation}
+\label{eq227}
+t_i^{(n)} = \sigma_{ki}n_k 
+\end{equation}
+​                                 (箭头朝外)
+由现时构形中垂直于坐标轴的三个面元上的应力矢量的九个分量 $\sigma_{ij}$ 定义了一个张量, 称为柯西应力张量. 由微元体关于力矩的平衡条件可以证明柯西应力张量是对称的, 即
+
+\begin{equation}
+\label{eq228}
+\sigma_{ij} = \sigma{ji}
+\end{equation}柯西应力是定义在现时构形每单位面积上的接触力, 它是与变形相关的真实应力. 
+2.5 焦曼应力率
+ 考察一承受单向应力 $\sigma$ 作用并绕 $x3$ 轴作刚体转动的杆, 如图2.4所示. 在杆平行于 $x_1$ 的瞬时，$\sigma{11} = \sigma$, $\sigma{22} = 0$, 而当杆转动到平行于 $x_2$ 轴的位置时, $\sigma{11} = 0$, $\sigma{22} = \sigma$. 相对于在空间固定的坐标系 $Px_1x_2$ 而言, 虽然杆内应力状态并未变化, 但刚体转动改变了柯西应力张量的分量, 导致柯西应力 $\sigma{ij}$ 的变化率,无论是空间导数 $\partial \sigma{ij}/\partial t$ 还是物质导数 $\dot{\sigma}{ij}$ 都不等于零. 因此在本构方程中使用与变形率 $D{ij}$ 相关联的应力率时, 无论 $\partial \sigma{ij}/\partial t$ 还是 $\dot{\sigma}_{ij}$ 都不是一个适当的度量. 用于本构方程中的应力率必须不受刚体转动的影响, 即必须是客观张量. 
+
+
+
+考虑包含 $P$ 点的一个作瞬时转动的物质元, 动坐标系 $P\bar{x}_1\bar{x}_2\bar{x}_3$ 与物质元固连, 跟随物质元一起作瞬时刚体转动. 虽然柯西应力张量在空间固定坐标系 $Px_1x_2x_3$ 中的变化率不为零, 但它在动坐标系 $P\bar{x}_1\bar{x}_2\bar{x}_3$ 中的变化率为零, 是一个客观张量. 
+
+在所考察的时刻 $t$, 动坐标系与固定坐标系 $x_i$ 重合, 如图 2.5 所示. 在 $P$ 点附近的任一相邻质点 $Q$, 其在动坐标系中的坐标 $d\bar{x}_i$ 不受刚体转动影响, 而它在固定坐标系中的坐标以速率
+
+\begin{equation}
+\label{eq229}
+dv_i = \Omega_{ij}d\bar{x}_j
+\end{equation}变化. 在时刻 $t+dt$, 有
+
+\begin{equation}
+\label{eq230}
+dx_i = d\bar{x}_i + dv_i dt = (\delta_{ij} + \Omega_{ij} dt)d\bar{x}_j
+\end{equation}
+由式($\ref{eq230}$)可知, 动坐标系和固定坐标系之间的坐标变换的变换系数为
+
+\begin{equation}
+\label{eq231}
+c_{ij} = \delta_{ij} + \Omega_{ij}dt
+\end{equation}在动坐标系内定义应力率
+
+\begin{equation}
+\label{eq232}
+\sigma_{ij}^{\nabla}(t) = \lim_{dt \rightarrow 0} \frac{1}{dt}[\bar{\sigma}_{ij}(t+dt) - \bar{\sigma}_{ij}(t)]
+\end{equation}显然物质元作刚体运动时, $\sigma_{ij}^{\nabla}(t) = 0$. 质点 $P$ 在时刻 $t+dt$ 相对于固定坐标系的应力张量是
+
+\begin{equation}
+\label{eq233}
+\sigma _{ij}(t_dt) = \sigma_{ij}(t) + \dot{\sigma}_{ij}(t) dt
+\end{equation}利用坐标变换将这个应力张量的分量变换到随体坐标系 $P\bar{x}_1\bar{x}_2\bar{x}_3$ 中, 有
+
+\begin{equation}
+\begin{aligned}
+\label{eq234}
+\bar{\sigma}_{ij}(t + dt) & = c_{pi} c_{qj} \sigma_{pq}(t + dt)\\
+& = (\delta_{pi} + \Omega_{pi}dt)(\delta_{qj} + \Omega_{qj}dt)[\sigma_{pq}(t) + \dot{\sigma}_{pq}(t)dt]\\
+& = \sigma_{ij}(t) + (\dot{\sigma}_{ij} + \sigma_{ip}\Omega_{pj} + \sigma_{pi}\Omega_{pi})dt + O(dt^2)
+\end{aligned}
+\end{equation}将上式代入式$(\ref{eq232})$, 并利用 $\bar{\sigma}{ij}(t) = \sigma{ij}(t)$ 和 $\Omega_{ij}$ 的反对称性, 最后得
+
+\begin{equation}
+\label{eq235}
+\sigma_{ij}^{\nabla} = \dot{\sigma}_{ij} - \sigma_{ip}\Omega_{jp} - \sigma_{pj}\Omega_{ip}
+\end{equation}按上式定义的应力率叫焦曼应力率, 它是不受刚体转动影响的客观张量, 可以在本构方程中使用. 
+]]></content>
+      <categories>
+        <category>MPM</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>物质点法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>论文研读心得(一)</title>
+    <url>/2024/12/3e16e77c/</url>
+    <content><![CDATA[原文A depth-averaged two-dimensional sediment transport model for environmental studies in the Scheldt Estuary and tidal river network - ScienceDirect
+附PDF: https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh
+工作内容针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。
+流体力学和盐度模型河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程
+浅水方程(Shallow water equations){连续方程}
+\frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) = 0
+\frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u = -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}其中 t 是时间, $H=h+\eta$ 是水深, h 是水柱参考高度; $f=2\omega\sin \phi$为科里奥利参数, 以$\omega$为地球角速度, 以$\phi$为纬度; k为单位向上矢量; G为重力加速度; $\rho$ 是水的密度, 假设水的密度是恒定的, $P_a$ 是水面的大气压力; $\nu$ 为水平涡动粘度; $\tau_s$和$\tau_b$分别为表面和底部应力矢量. 
+深度平均盐度运输方程
+\frac{\partial (HS)}{\partial t} + \nabla\cdot (HuS) = \nabla \cdot (Hk\nabla S)其中k为扩散系数
+水平涡粘性系数根据 Smagorinsky（1963）的工作，水平涡粘性系数 $\nu$ 通常按照以下形式给出：
+
+ν = C_s^2 * Δx * |S|这里，
+$C_s$ 是 Smagorinsky 常数，一般取值在 0.1 到 0.2 之间；$Δx$ 是网格间距，代表了模型分辨率；$|S|$ 是应变率张量 S 的模，它描述了速度场的空间变化，具体为：
+
+S = (∇u + (∇u)^T) / 2其中 $∇u$ 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：
+
+|S| = sqrt(2 * S_{ij} * S_{ij})这里的 $S_ij$ 表示应变率张量的分量。
+曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)
+\tau_b = \rho g n^2 \frac{u \begin{Vmatrix} u \end{Vmatrix} }{H^{1/3}}其中 n 是曼宁系数. 在大陆架等于$0.0235\ s\ m^{-1/3}$ , 在Antwerp附近, 从河口线性增加到$0.028\ s\ m^{-1/3}$
+扩散系数 k (Okubo)
+k = c_k \Delta^{1.15}其中 $c_k$ 为常数, $\Delta$ 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 $c_k = 150\ m^{0.85}s^{-1}$. 
+泥沙模型泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即$C{ss}$, 悬浮沉积物的深度平均浓度[$kg\ m^{−3}$], 以及$C{sb}$, 新鲜层中底层沉积物的浓度[$kg\ m^{−2}$]。母层是沉积物的无限来源, 只有当$C_{sb}$局部为零时才会被侵蚀。
+悬浮中的沉积物是通过平流和扩散输送的, 而底部的沉积物则不是。在区域的二维部分, 悬浮泥沙浓度和新沉积泥沙浓度服从如下方程:
+
+\frac{\partial (HC_{ss})}{\partial t} + \nabla \cdot (HuC_{ss}) = \nabla \cdot (Hk\nabla C_{ss}) + E_f + E_p - D
+\frac{\partial C_{sb}}{\partial t} = D - E_f
+式中$E_f$为新鲜层沉积物的侵蚀速率, $E_p$为母层沉积物的侵蚀速率, $D$为新鲜层沉积物的沉积速率。
+假设母层从未供应, 并且两个底层之间没有交换。此外, 也没有考虑床质输运。
+侵蚀速率 (Partheniades(1965))
+E_f = \left\{ \begin{aligned}
+&M\left( \frac{\tau_b}{\tau_e} -1\right) &     & if\ \tau_b > \tau_e\ and\ C_{sb} > 0 \\
+&0 &    &otherwise
+\end{aligned}
+\right.
+E_p = \left\{ \begin{aligned}
+&M\left( \frac{\tau_b}{\tau_{e,p}} -1\right) &     & if\ \tau_b > \tau_{e,p}\ and\ C_{sb} = 0 \\
+&0 &    &otherwise
+\end{aligned}
+\right.当$\taub$(底部应力向量的范数$\tau_b$) 高于一个阈值$\tau_e$时, 沉积物从新鲜层被侵蚀, 或者, 如果新鲜层局部是空的, 当$\tau_b$高于另一个阈值$\tau{e,p}$; M被称为侵蚀速率参数。
+沉积速率(Einstein和Krone (1962))
+D=w_sC_{ss}其中 $w_s$ 为沉降速度. 
+
+w_S = w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m其中 $C{ss,0}=0.1\ kg m^{-3}$ 是 Scheldt SSC的参考值, $w{s,0}$ 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999). 
+
+连续方程的推导
+引入自由表面的运动学条件和底部运动学条件
+
+u_z|_{z=z_s} = \frac{dz_s}{dt} = \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x} u_x + \frac{\partial z_s}{\partial y} u_y
+u_z|_{z=z_b} = \frac{dz_b}{dt} = \frac{\partial z_b}{\partial t} + \frac{\partial z_b}{\partial x} u_x + \frac{\partial z_b}{\partial y} u_y对连续性方程沿水深方向进行积分
+
+\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j} dz = 0 \ (j=1,2,3)
+\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j}dz + u_z|_{z_s} - u_z|_{u_b} = 0 \ (j=1,2)由牛顿-莱布尼兹公式
+
+\frac{\partial}{\partial x_j} \int_a^b f dz = \int_a^b \frac{\partial f}{\partial x_j} dz + f|_b \frac{\partial b}{\partial x_j} - f|_a \frac{\partial a}{\partial x_j}将上式第一项展开，可得
+
+\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + u_z|_{z_s} - u_z|_{z_b} = 0 \ (j=1,2)代入两个运动学条件，可得
+
+\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x_j} u_j|_{z_s} - \frac{\partial z_b}{\partial t} - \frac{\partial z_b}{\partial x_j} u_j|_{z_b} = 0 \ (j=1,2)化简，得
+
+\frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz + \frac{\partial z_s}{\partial x_j} - \frac{\partial z_b}{\partial x_j} = 0 \ (j=1,2)由 $H=z_s-z_b$, 进一步化简为
+
+\frac{\partial H}{\partial t} + \frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz = 0 \ (j=1,2)又有
+
+\int_{z_b}^{z_s} u_j dz = HU_j \ (j=1,2)代入上式，得
+
+\frac{\partial H}{\partial t} + \frac{\partial HU_j}{\partial x_j} = 0 \ (j=1,2)即
+
+\frac{\partial H}{\partial t} + \frac{\partial HU_x}{\partial x} + \frac{\partial HU_y}{\partial y} = 0本篇文章中 $H = h + \eta$, $H$ 为水深，$h$ 为参考水柱高度（河床到基准面的高度），$\eta$ 为水面相对于基准面的高度，是一个瞬时变化量。
+因此，第一项水深随时间的变化率写为 $\frac{\partial \eta}{\partial t}$，第二三项的为水平方向的水流通量，其通过面积可表示为 $H$, 因此此项应写为 $\frac{\partial Hu_j}{\partial x_j}$. 
+综上
+
+\frac{\partial \eta}{\partial t} + \frac{\partial Hu_j}{\partial x_j} = 0 \ (j=1,2)使用哈密顿算子可以表示为
+
+\frac{\partial \eta}{\partial t} + \nabla \cdot (Hu) = 0
+]]></content>
+      <categories>
+        <category>深度平均</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>深度平均</tag>
+        <tag>心得体会</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Nginx反向代理教程</title>
+    <url>/2025/03/4bc19655/</url>
+    <content><![CDATA[准备工作
+Ubuntu系统
+Nginx
+
+配置教程1.备份配置文件sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
+2.编辑配置文件sudo vim /etc/nginx/nginx.conf
+找到http&#123;&#125;块中的server&#123;&#125;块，注释掉原有的server&#123;&#125;
+
+3.按原有配置添加新的server块(1) 默认的错误界面server &#123;    listen 443 ssl default_server;    server_name _;    ssl_certificate /etc/nginx/xxx.crt;    ssl_certificate_key /etc/nginx/xxx.key;    return 404;&#125;
+(2) 主域名server &#123;     listen 443 ssl;     server_name fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;         root /home/www/website;         index  index.html index.htm;     &#125;&#125;
+其中root改为自己本地的网站目录
+(3) 主域名转发server &#123;        listen 80;        server_name fireflye.top;        return 301 https://$host$request_uri;        &#125;
+(4) 二级域名端口转发示例server &#123;     listen 443 ssl;     server_name xxx.fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;       proxy_set_header X-Forwarded-Proto $scheme;       proxy_set_header Host $host;       proxy_set_header X-Real-IP $remote_addr;       proxy_set_header Range $http_range;       proxy_set_header If-Range $http_if_range;       proxy_redirect off;       proxy_pass https://127.0.0.1:xxx;       client_max_body_size 20000m;       &#125;&#125; server &#123;        listen 80;        server_name xxx.fireflye.top;        return 301 https://$host$request_uri;				&#125;
+其他均可套此模版
+
+注意http{}需要闭合，最后的大括号容易被误删
+
+(5) 检验配置并重启nginxsudo nginx -t
+
+证明无错误，重启nginx
+sudo nginx -s reload
+4.SSL证书可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器
+
+每个证书有效期三个月
+除www外的二级域名需要单独申请
+总有效证书最多50个(到期会释放个数)
+
+]]></content>
+      <categories>
+        <category>Nginx</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>反向代理</tag>
+        <tag>端口转发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>分水岭提取教程</title>
+    <url>/2025/05/2ef32537/</url>
+    <content><![CDATA[准备工具
+Arcgis Pro
+
+ArcMap
+
+完整的DEM数据（如果有缺失，需要提前补缺（填补空缺值））
+
+
+开始教程1. 填洼（Fill）通过填充表面栅格中的汇来移除数据中的小缺陷。
+地理处理工具 -&gt; 搜索填洼 -&gt; 输入栅格 -&gt; 输出栅格
+英文：打开ArcToolbox -&gt;  搜索 Fill
+
+2. 流向 （FLow Direction）使用 D8、多流向 (MFD) 或 D-Infinity (DINF) 方法创建从每个像元到其下坡相邻点的流向的栅格。
+地理处理工具 -&gt; 搜索流向 -&gt; 输入处理后的栅格数据 -&gt; 输出流向栅格
+英文：打开ArcToolbox -&gt;  搜索 Flow Direction
+
+这里类型一般使用默认的D8即可，具体类型区别请查看帮助文档。
+3. 计算河流网络（计算流量（Flow Accumulation））（可选）此部计算是为了下一步更好的选点做准备。如果地形不复杂，也可直接使用D8流向栅格做参考。
+地理处理工具 -&gt; 搜索流量 -&gt; 输入流向栅格数据 -&gt; 输出流量栅格
+英文：打开ArcToolbox -&gt;  搜索 Flow Accumulation
+
+4. 创建点要素文件找到目录窗口，打开到需要保存到的文件夹，右键文件夹，选择新建，选择Shapefile
+
+
+创建完成之后，找到编辑工具栏；选择创建选项。打开的窗口中选择刚刚创建的文件。
+
+
+然后，在河流的上游和下游选点（至少各一个）。不要求完全选到源头，但汇出口尽量选到。
+
+根据创建的河网和流向栅格创建，之后生成的效果不好就回来修改这个文件
+
+5. 提取分水岭（Watershed）地理处理工具 -&gt; 搜索集水区 -&gt; 输入流向栅格数据 -&gt; 输入点要素文件 -&gt; 输出集水区栅格
+英文：打开ArcToolbox -&gt;  搜索 Watershed
+
+字段默认id即可
+
+集水区生成与点的位置有关，它会把每一个点的上游集水区域选择上，但由于地形数据原因会导致有些连续的流域选择不上，使用多个点可尽量保证选择全部区域；
+字段的作用是区分该点对应的集水区，这些点的id都相同，因此只会创建一个集水区；如果需要创建多个集水区，需要使用不同的id区分。
+
+反复调整点要素文件，即可得到该区域的一个集水区栅格文件。将栅格转为面（地理处理工具 -&gt; 栅格转面）即可得到集水区的要素文件。
+]]></content>
+      <categories>
+        <category>ArcGis</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>分水岭</tag>
+        <tag>栅格</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo博客部署到云服务器教程</title>
+    <url>/2025/03/ee12770f/</url>
+    <content><![CDATA[准备工作
+Ubuntu（Linux）系统
+Git
+Nginx
+Hexo（本地）
+
+环境配置1.使用root用户或者具有管理员权限的用户连接至云服务器2.安装Git(1)查看是否安装好gitgit --version
+如果提示git版本，说明已经安装git，跳到下一步。如果提示找不到git命令，说明未安装。
+运行以下命令安装git：
+apt install git
+再次查看是否完成git安装：
+git --version
+(2)创建git用户，并配置仓库创建用户
+adduser git
+根据提示设置密码，其他信息可以位空
+切换至git用户
+su git
+打开用户目录
+cd
+cd默认打开当前用户的目录，即/home/git/
+创建一个保存网页文件的文件夹
+mkdir -p projects/hexo-blog
+新建并打开仓库文件夹
+mkdir repos &amp;&amp; cd repos
+第一次使用git会提示设置默认分支名称，我们这里提前设置为main（或者master）
+
+如果之前一直在使用github的pages，大概率你的主分支是main，为了方便统一，这里也设置为main
+
+git config --global init.defaultBranch main
+初始化仓库
+git init --bare hexo-blog.git
+(3)创建钩子函数cd hexo-blog.git/hooks
+新建文件
+vim post-receive
+按i进入编辑模式
+粘贴以下内容：
+#!/bin/shgit --work-tree=/home/git/projects/hexo-blog --git-dir=/home/git/repos/hexo-blog checkout -f
+按ESC再输入:wq按Enter即可
+(4)修改权限chmod +x post-receive
+退回root用户（也可以切换到可以使用sudo的用户，使用sudo完成）
+exit
+修改权限
+chown -R git:git /home/git/repos/hexo-blog.git
+(5)测试可用性在本地终端中使用：
+git clone git@&lt;ip&gt;:/home/git/repos/hexo-blog.git
+ip为远程服务器的ip
+3.设置免密SSH连接(1)创建authorized_keys并修改权限使用git用户建立远程连接
+cd /home/git/.ssh
+如果没有就创建该目录
+touch authorized_keys
+该文件内保存公钥(.pub)内容
+修改权限
+chmod 600 authorized_keys
+(2)创建密钥对（如果已有可跳过）查看本地是否存在密钥
+Windows：C:/Users/&lt;username&gt;/.ssh
+Linux:/home/&lt;username&gt;/.ssh
+Mac:/Users/&lt;username&gt;/.ssh
+如果目录下存在id_rsa和id_rsa.pub则说明存在密钥对
+如果没有
+ssh-keygen -t rsa
+全Enter即可
+(3)建立链接本地终端输入
+ssh-copy-id -i C:/Users/&lt;username&gt;/.ssh/id_rsa.pub git@&lt;ip&gt;
+也可以手动复制文件id_rsa.pub的内容到远程authorized_keys
+测试连接
+本地终端输入
+ssh git@&lt;ip&gt;
+
+此时使用git登陆远程主机，不需要输入密码
+如果仍然需要密码，排查前面步骤是否出错，可以查看/home/git/.ssh/authorized_keys文件的内容是否与本地一致
+确认前面没有问题，需要修改ssh的配置文件
+sudo vim /etc/ssh/sshd_config
+修改其中的一些配置
+# 是否让 sshd 去检查用户家目录或相关档案的权限数据，# 这是为了担心使用者将某些重要档案的权限设错，可能会导致一些问题所致。# 例如使用者的 ~.ssh/ 权限设错时，某些特殊情况下会不许用户登入# 修改此项仅为临时方案，建议将目录权限修改为正确权限（chmod）StrictModes no# 是否允许用户自行使用成对的密钥系统进行登入行为，仅针对 version 2。# 至于自制的公钥数据就放置于用户家目录下的 .ssh/authorized_keys 内RSAAuthentication yesPubkeyAuthentication yesAuthorizedKeysFile      .ssh/authorized_keys# 有了证书登录了，就禁用密码登录。PasswordAuthentication no
+保存配置，重启ssh
+systemctl restart ssh
+或者
+systemctl restart sshd
+
+4.安装Nginx(1)使用root或者带有管理权限的用户登陆apt install nginx
+或者
+sudo apt install nginx
+查看是否安装完成
+nginx -v
+显示版本信息就说明安装完成
+运行nginx
+nginx
+在本地浏览器输入可以看到
+
+如果拒绝访问，确认自己的服务器开放了80端口
+(2)配置nginx远程连接服务器
+备份配置文件
+sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
+编辑配置文件
+sudo vim /etc/nginx/nginx.conf
+找到http &#123;开头的块
+里面会有server开头的块，如下图，默认不是注释掉的
+
+只需要修改80端口server里面的就可以，后面解释ssl的配置
+把其中的
+root         /usr/share/nginx/html;
+修改为
+root         /home/git/projects/hexo-blog;
+保存，检验配置
+sudo nginx -t
+如果不使用sudo可能会有警告提示user命令失效
+
+说明配置正确，如果提示其他内容，检查是否存在拼错或者其他错误
+重启nginx
+systemctl reload nginx
+systemctl restart nginx
+或者
+sudo nginx -s reload
+5.配置Hexo编辑本地网站主目录下的_config.yml
+找到
+deploy:  type: git  repo:    github: git@github.com:xxxxxxxxxx.github.io.git    git1: git@&lt;ip1&gt;:/home/git/repos/hexo-blog.git    git2: git@&lt;ip2&gt;:/home/git/repos/hexo-blog.git  branch: main
+可以同时上传到多个服务器上
+上传网站
+hexo g -d
+6.限制git用户权限（可选）查看git-shells是否在登录方式里
+cat /etc/shells
+如果没有
+which git-shellsudo vim /etc/shells
+添加到后面
+/usr/bin/git-shell
+如下图
+
+然后修改
+sudo vim /etc/passwd
+找到git用户
+只修改划线部分
+/usr/bin/git-shell
+
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git 工作流程</title>
+    <url>/2024/04/5dbdb580/</url>
+    <content><![CDATA[Git 工作流程——以Github为例适用于个人和小团队的标准工作模式
+学习视频：十分钟学会正确的github工作流，和开源作者们使用同一套流程
+假设项目初始内容如下
+
+
+Github: 
+
+main(master) 分支 Init 内容
+
+
+Loacl git: 
+
+main(master) 分支 Init 内容
+
+
+DIsk: 
+
+main(master) 分支 Init 内容（仅作理解）
+
+
+
+
+1. 建立个人工作分支使用如下命令创建一个个人工作的分支并切换到该分支上
+git checkout -b my-feature
+当前状态如下
+
+
+Github: 
+
+main(master) 分支 Init 内容
+
+
+Loacl git: 
+
+main(master) 分支 Init 内容
+my-feature分支 Init 内容
+
+
+DIsk: 
+
+my-feature分支 Init 内容
+
+
+
+
+2. 对本地内容进行修改、提交、推送(1) 当前状态如下
+
+Github: 
+
+main(master) 分支 Init 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init 内容
+my-feature分支 Init 内容
+
+
+DIsk: 
+
+my-feature分支 Init-changes 内容
+
+
+
+
+使用git diff可查看对比做出修改的内容
+(2) 暂存更改内容使用git add &lt;filename&gt;暂存已做出的修改
+此时状态如下
+
+
+Github: 
+
+main(master) 分支 Init 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init 内容
+my-feature分支 Init-changes 内容
+
+
+DIsk: 
+
+my-feature分支 Init-changes 内容
+
+
+
+
+(3) 提交已暂存的更改使用git commit命令提交
+若想添加注释可使用如下命令
+git commit -m &quot;text&quot;
+此时状态如下
+
+
+Github: 
+
+main(master) 分支 Init 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init 内容
+my-feature分支 Init-f-commit 内容
+
+
+DIsk: 
+
+my-feature分支 Init-f-commit 内容
+
+
+
+
+(4) 将内容push到Github上使用git push origin my-feature将内容push到Github中自己的分支
+此时状态如下
+
+
+Github:
+
+main(master) 分支 Init 内容
+my-feature分支 Init-f-commit 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init 内容
+my-feature分支 Init-f-commit 内容
+
+
+DIsk: 
+
+my-feature分支 Init-f-commit 内容
+
+
+
+
+若此时GitHub中的main(master)分支有其他的修改或提交，须进行第三步处理主分支的改变
+此时状态如下
+
+
+Github:
+
+main(master) 分支 Init-update 内容
+my-feature分支 Init-f-commit 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init 内容
+my-feature分支 Init-f-commit 内容
+
+
+DIsk: 
+
+my-feature分支 Init-f-commit 内容
+
+
+
+
+3. 处理主分支的改变(1) 本地返回main(master)分支git checkout main
+此时状态如下
+
+
+Github:
+
+main(master) 分支 Init-update 内容
+my-feature分支 Init-f-commit 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init 内容
+my-feature分支 Init-f-commit 内容
+
+
+DIsk: 
+
+main(master)分支 Init 内容
+
+
+
+
+(2) 拉取远程改变git pull origin main
+此时状态如下
+
+
+Github:
+
+main(master) 分支 Init-update 内容
+my-feature分支 Init-f-commit 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init-update 内容
+my-feature分支 Init-f-commit 内容
+
+
+DIsk: 
+
+main(master)分支 Init-update 内容
+
+
+
+
+(3) 切换回my-feature分支并合并代码使用以下命令切换回my-feature分支
+git checkout my-feature
+再使用以下命令合并代码
+git rebase main
+此时可能会出现rebase conflict，需要手动选择要保留的代码
+此时状态如下
+
+
+Github:
+
+main(master) 分支 Init-update 内容
+my-feature分支 Init-f-commit 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init-update 内容
+my-feature分支 Init-f-commit 内容
+
+
+DIsk: 
+
+my-feature分支 Init-update-f-commit 内容
+
+
+
+
+(4) 推送my-feature分支使用以下命令推送
+git push -f origin my-feature
+-f表示强制，切忌在pushmain分支时使用，须谨慎谨慎再谨慎!!!!!!!!!
+此时状态如下
+
+
+Github:
+
+main(master) 分支 Init-update 内容
+my-feature分支 Init-update-f-commit 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init-update 内容
+my-feature分支 Init-f-commit 内容
+
+
+DIsk: 
+
+my-feature分支 Init-update-f-commit 内容
+
+
+
+
+(5) 审查并合并到main分支此时生成新的pull request,项目管理员审查代码之后Squash and merge合并分支的改变并同步到main分支，简化提交内容，此时状态如下
+
+
+Github:
+
+main(master) 分支 Init-update-update2 内容
+my-feature 分支
+
+
+Loacl git:  
+
+main(master) 分支 Init-uodate 内容
+my-feature分支 Init-f-commit 内容
+
+
+DIsk: 
+
+my-feature分支 Init-update-f-commit 内容
+
+
+
+
+(6) 清理本地分支a. 切换到main(master)分支
+git checkout main
+b. 删除my-feature分支
+git branch -D my-feature
+-D表示强制删除，切忌使用在main分支上，须谨慎谨慎再谨慎!!!!!!!!
+此时状态如下
+
+
+Github:
+
+main(master) 分支 Init-update-update2 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init-update 内容
+my-feature分支 Init-f-commit 内容
+
+
+DIsk: 
+
+main(master)分支 Init-update 内容
+
+
+
+
+c. 拉取最新main(master)分支
+git pull origin main
+此时状态如下
+
+
+Github:
+
+main(master) 分支 Init-update-update2 内容
+
+
+Loacl git:  
+
+main(master) 分支 Init-update-update2 内容
+
+
+DIsk: 
+
+main(master)分支 Init-update-update2 内容
+
+
+
+
+至此一个工作环节结束
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Git</tag>
+        <tag>Github</tag>
+        <tag>工作流程</tag>
+      </tags>
+  </entry>
+</search>
