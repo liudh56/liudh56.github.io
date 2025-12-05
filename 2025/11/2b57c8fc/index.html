@@ -1,0 +1,217 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>论文研读(二) | Firefly Blog | 萤火虫博客</title><meta name="author" content="Liudh"><meta name="copyright" content="Liudh"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="Two-phase two-point MPM modeling of submarine granular flows considering solid-to-fluid phase transition over frictional plane"><meta property="og:type" content="article"><meta property="og:title" content="论文研读(二)"><meta property="og:url" content="https://fireflye.top/2025/11/2b57c8fc/"><meta property="og:site_name" content="Firefly Blog | 萤火虫博客"><meta property="og:description" content="Two-phase two-point MPM modeling of submarine granular flows considering solid-to-fluid phase transition over frictional plane"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://fireflye.top/img/cover/2025-11-10-mpm-bj2.jpg"><meta property="article:published_time" content="2025-11-10T07:27:20.000Z"><meta property="article:modified_time" content="2025-12-05T10:17:40.204Z"><meta property="article:author" content="Liudh"><meta property="article:tag" content="学习笔记"><meta property="article:tag" content="两相两点"><meta property="article:tag" content="相变"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://fireflye.top/img/cover/2025-11-10-mpm-bj2.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://fireflye.top/2025/11/2b57c8fc/"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//hm.baidu.com"><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media=&quot;all&quot;"><script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="https://hm.baidu.com/hm.js?317136679115f8c00b2042f2137bc84f";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE={title:"论文研读(二)",isPost:!0,isHome:!1,isHighlightShrink:!1,isToc:!0,postUpdate:"2025-12-05 18:17:40"}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/modify.css"><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+document.addEventListener('pjax:send', () => {
+  Pace.restart()
+})</script><link rel="stylesheet" href="/css/barber-shop.css"><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/luban.png" onerror="onerror=null,src=&quot;/img/friend_404.gif&quot;" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">19</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">41</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr class="custom-hr"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image:url(/img/cover/2025-11-10-mpm-bj2.jpg)"><nav id="nav"><span id="blog-info"><a href="/" title="Firefly Blog | 萤火虫博客"><span class="site-name">Firefly Blog | 萤火虫博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">论文研读(二)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-11-10T07:27:20.000Z" title="发表于 2025-11-10 15:27:20">2025-11-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-12-05T10:17:40.204Z" title="更新于 2025-12-05 18:17:40">2025-12-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/MPM/">MPM</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" data-flag-title="论文研读(二)"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image: url(/img/cover/2025-11-10-mpm-bj2.jpg);"></div><article class="post-content" id="article-container"><h1 id="考虑摩擦及固态到液态相变的海底颗粒流两相两点MPM建模"><a href="#考虑摩擦及固态到液态相变的海底颗粒流两相两点MPM建模" class="headerlink" title="考虑摩擦及固态到液态相变的海底颗粒流两相两点MPM建模"></a>考虑摩擦及固态到液态相变的海底颗粒流两相两点MPM建模</h1><h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><blockquote><p>精确建模海底颗粒流对滑坡灾害评估至关重要. 现有的数值方法虽关注海底滑坡的大变形特征和流体‐土体耦合, 但通常忽略了土壤的非线性固‐液相变以及对摩擦边界的合理处理. 为弥补这些不足, 本研究提出一种新型两相两点物质点法(MPM)模型, 可显式解析颗粒固‐液相变及摩擦边界. 开发的MPM框架采用两组拉格朗日物质点, 严格耦合土壤和水, 有效捕捉复杂的土‐水相互作用. 首次在两相两点MPM中引入弹塑性‐μ(I)相变模型, 以考虑颗粒从类固态到类流态的相变过程. 此外, 将摩擦接触算法引入MPM以表示摩擦边界. 为验证所提方法在模拟海底颗粒流方面的有效性, 分析了三个基准案例, 包括一个具有解析解的一维固结问题和两个实验性水下滑坡案例. 模拟结果与解析解及实验结果高度一致, 验证了模型的有效性. 特别地, 本研究对比了弹塑性‐μ(I)相变模型与纯固态弹塑性模型, 并利用提出的MPM模型评估了摩擦边界对海底滑坡的影响. 数值结果表明: (i)纯弹塑性模型相较于弹塑性‐μ(I)模型倾向于高估滑坡滑动距离; (ii)增加基底摩擦不仅显著减少土体滑动距离, 还能抑制流体涡旋, 从而削弱土‐水相互作用系统中的波浪.</p></blockquote><h2 id="研究背景"><a href="#研究背景" class="headerlink" title="研究背景"></a>研究背景</h2><p>海底滑坡是海洋环境中最为复杂和最具破坏性的地质灾害之一. 历史教训惨痛: 1929年格兰德滩滑坡切断了600公里外的通信电缆; 1998年巴布亚新几内亚滑坡引发15米高海啸, 吞噬2200多条生命. 准确预测海底滑坡的动态行为, 对保障海洋工程设施安全和沿海社区防护至关重要.</p><p><img src="/2025/11/2b57c8fc/image-20251110154230001.png" alt="image-20251110154230001" style="zoom:33%"></p><h2 id="存在的问题"><a href="#存在的问题" class="headerlink" title="存在的问题"></a>存在的问题</h2><p><strong>问题一：固-液相变行为缺失</strong></p><p>海底滑坡经历典型的“启动—运移—沉积”三阶段（图1）。在启动阶段，不稳定斜坡上的颗粒材料从固态转变为流体态；运移阶段，失效的颗粒体以流体态大规模运移；沉积阶段，材料重新恢复固态。这一复杂的相变过程在传统数值模型中被完全忽略——通常只采用单一的纯弹塑性模型或纯流体模型，无法捕捉材料状态的关键转变。</p><p><strong>问题二：边界条件过度简化</strong></p><p>多数模型将边界条件简化为无摩擦或完全黏着，忽略了实际滑坡体与海底之间的复杂摩擦作用，导致预测结果偏离实际。</p><p><img src="/2025/11/2b57c8fc/image-20251110171725768.png" alt="image-20251110171725768" style="zoom:50%"></p><h2 id="创新解决方案：考虑摩擦边界和相变的两相两点MPM框架"><a href="#创新解决方案：考虑摩擦边界和相变的两相两点MPM框架" class="headerlink" title="创新解决方案：考虑摩擦边界和相变的两相两点MPM框架"></a>创新解决方案：考虑摩擦边界和相变的两相两点MPM框架</h2><p>文章研究创新性地提出了考虑摩擦边界和相变的两相两点物质点法（MPM）模型，这一框架具有三大核心创新：</p><p><strong>创新一：双拉格朗日物质点系统</strong></p><p>采用两套独立的物质点分别代表土体骨架和孔隙水，精确捕捉复杂的土-水相互作用机制（图2）。</p><p><img src="/2025/11/2b57c8fc/image-20251110155524759.png" alt="image-20251110155524759" style="zoom:33%"></p><p><strong>创新二：弹塑性-μ(I)相变本构模型</strong></p><p>首次将率无关的弹塑性应力（表征固态行为）和率相关的黏性应力（表征流体态行为）通过叠加方式结合，实现从固态到流体态的无缝过渡。该模型通过等效塑性应变和等效剪切粘度两个关键变量，清晰揭示材料在不同阶段的力学响应。</p><p><strong>创新三：摩擦接触算法</strong></p><p>引入基于库仑摩擦的接触算法，真实反映滑坡体与底床之间的摩擦效应。</p><h2 id="框架理论"><a href="#框架理论" class="headerlink" title="框架理论"></a>框架理论</h2><h3 id="1-控制方程"><a href="#1-控制方程" class="headerlink" title="1. 控制方程"></a>1. 控制方程</h3><p>固体骨架和液相的质量守恒方程表示为:</p><script type="math/tex;mode=display">\frac{d(n_s\rho_s)}{dt}=-\nabla\cdot(n_s\rho_s\mathbf{v}_s) \tag{1}</script><script type="math/tex;mode=display">\frac{d(n_w\rho_w)}{dt}=-\nabla\cdot(n_w\rho_w\mathbf{v}_w) \tag{2}</script><p>其中 $\rho_s$ 和 $\rho_w$ 分别为固体骨架和水的密度; $v_s$ 和 $v_w$分别表示固体骨架和水的速度; $n_s$为固体骨架的体积浓度; $n_w$为水的体积浓度, 也称为孔隙率。注意 $n_s+n_w=1$.</p><p>固体骨架和液相的动量守恒方程表示为:</p><script type="math/tex;mode=display">n_s \rho_s \dot{v}_s = \nabla \cdot \bar{\sigma}_s + n_s \rho_s b + f^i \tag{3}</script><script type="math/tex;mode=display">n_w \rho_w \dot{v}_w = \nabla \cdot \bar{\sigma}_w + \nabla \cdot s_w + n_w \rho_w b - f^i \tag{4}</script><p>其中$\bar{\sigma}_{s}$和$\bar{\sigma}_w$分别为体积平均的固相和液相应力, 分别表示为$\bar{\sigma}_s=\sigma’-(1-n_w)p_wI$和$\bar{\sigma}_w=-n_w p_wI$; $\sigma’$为太沙基有效应力; $s_w$为液相的粘性应力; $b$表示体力; $f^i$表示固‐流相互作用力, 表达式见下式：</p><script type="math/tex;mode=display">f^i=\frac{n_w\rho_wg}k(v_w-v_s)+\beta n_w^2\rho_w\|v_w-v_s\|(v_w-v_s)+\mathbf{\sigma}_w\nabla n \tag{5}</script><p>其中, k是水力传导率(m/s)，表示为$k = \frac{\kappa \rho_w g}{\mu_w}$, 且$\kappa = \frac{d^2 n_w^2}{180(1 - n_w)^2}$其中$\kappa$是绝对渗透率(m³); $ \mu_w $ 表示水的粘度，$ d $ 表示土粒的直径；$\beta$ 是描述拖曳力与速度之间非线性关系的系数。</p><p>联立式(3)和式(4)得混合物方程：</p><script type="math/tex;mode=display">n_w \rho_w \dot{v}_w + n_s \rho_s \dot{v}_s = \nabla \cdot \sigma + \rho_m b \tag{6}</script><p>其中$\sigma$是柯西总应力张量，表示为$\sigma = \sigma’ - p_w I$，这符合有效应力原理；$\rho_m$ 是混合物密度，表示为 $\rho_m = n_s \rho_s + n_w \rho_w$。</p><p>为了求解方程(1)-(6)，需要建立某些假设来简化这些方程。</p><p>(i) 固体骨架不可压缩，且标量场（密度和孔隙率）的梯度被忽略，即 $\frac{d\rho_s}{dt} = \nabla \rho_s = \nabla n_s = 0$。因此，固相的质量守恒可以重写为：</p><script type="math/tex;mode=display">\frac{dn_s}{dt} = -n_s \nabla \cdot (\mathbf{v}_s) \tag{7}</script><p>(ii) 流体（水）为弱可压缩且标量场（密度）的梯度被忽略，即 $\frac{d\rho_w}{dt} \neq 0$，$\nabla \rho_w = 0$。因此，流相的质量守恒可以重写为：</p><script type="math/tex;mode=display">\frac{1}{\rho_w} \frac{d\rho_w}{dt} = -\frac{1}{n_w} [n_s \nabla \cdot (\mathbf{v}_s) + n_w \nabla \cdot (\mathbf{v}_w)] \tag{8}</script><p>(iii) 固-流相间相互作用力（方程(5)）被简化为：</p><script type="math/tex;mode=display">f^i = \frac{n_w \rho_w g}{k} (\mathbf{v}_w - \mathbf{v}_s) \tag{9}</script><p>此外，必须提出合适的固相和流相本构模型来闭合上述方程组。固体骨架使用第2.4小节详述的固-流相变本构模型进行模拟。水被视为弱可压缩材料，其本构模型可通过 $\frac{d\rho_w}{dt} = \frac{\rho_w}{K_w} \frac{dp_w}{dt}$ 表达。将此方程与方程(8)结合，水压力则由下式给出：</p><script type="math/tex;mode=display">\frac{dp_w}{dt} = -\frac{K_w}{n_w} [n_s \nabla \cdot (\mathbf{v}_s) + n_w \nabla \cdot (\mathbf{v}_w)] \tag{10}</script><p>其中 $K_w$ 是水的弹性模量。</p><p>对于自由水条件，压力简化为：</p><script type="math/tex;mode=display">\frac{dp_w}{dt} = -K_w \nabla \cdot (\mathbf{v}_w) \tag{11}</script><h3 id="2-摩擦接触算法"><a href="#2-摩擦接触算法" class="headerlink" title="2. 摩擦接触算法"></a>2. 摩擦接触算法</h3><p>基于库仑摩擦的接触算法（由Nguyen等人于2023年提出）被集成到物质点法(MPM)框架中，以考虑摩擦边界的影响。该算法中切向速度由库仑摩擦定律控制，具体步骤如下：</p><p>(i) 确定切向和法向速度：</p><script type="math/tex;mode=display">v_{I}^{\text{nor},(k)} = \mathbf{n} \left( v_{I}^{k} \cdot \mathbf{n} \right) \tag{34}</script><script type="math/tex;mode=display">v_{I}^{\text{tan},(k)} = v_{I}^{k} - v_{I}^{\text{nor},(k)} = v_{I}^{k} - \mathbf{n} \left( v_{I}^{k} \cdot \mathbf{n} \right) \tag{35}</script><p>其中$n$为法向量；$v_I^k$为边界处的速度；$v_I^{nor,(k)}$和$v_I^{tan,(k)}$分别为法向速度和切向速度。基于公式(34)和(35)，可以计算出切向和法向速度的大小$\left| v_I^{nor,(k)} \right|$和$\left| v_I^{tan,(k)} \right|$.</p><p>滑动平面的法向量通过平面上的三个点计算得出，计算公式如下：</p><script type="math/tex;mode=display">e_n = \frac{\left( x_j - x_i \right) \times \left( x_k - x_i \right) }{\left\| \left( x_j - x_i \right) \times \left( x_k - x_i \right) \right\| } \tag{36}</script><p>其中$x_i$、$x_j$和$x_k$分别为滑动平面中节点$i$、$j$和$k$的节点坐标。</p><p>(ii) 通过切向和法向速度确定切向和法向力：</p><script type="math/tex;mode=display">f_I^{nor,(k)} = v_I^{nor,(k)} \frac{m_I^k}{dt} \tag{37}</script><script type="math/tex;mode=display">f_I^{tan,(k)} = v_I^{tan,(k)} \frac{m_I^k}{dt} \tag{38}</script><p>其中$f_I^{nor,(k)}$和$f_I^{tan,(k)}$分别为法向力和切向力。</p><p>(iii) 确定摩擦力$f_{I}^{fti,(k)}$</p><p>当切向力的大小较小时，施加的摩擦力会完全抵抗切向运动，从而有效地将切向速度设为零。当切向力超过某个阈值(即$\mu_{fit} \left| f_I^{nor,(k)}\right|$)时，摩擦力将与法向力的大小成正比，并沿与切向力相反的方向作用。</p><script type="math/tex;mode=display">f_I^{fti,(k)} = -\frac{g_I^{tan,(k)} }{\left\| f_I^{tan,(k)} \right\| } min\left( \mu_{fit} \left\| f_I^{nor,(k)} \right\|, \left\| f_I^{tan,(k)} \right\| \right) \tag{39}</script><p>其中 $\mu_{fit}$ 是基底摩擦参数；$\left| f_I^{nor,(k)} \right|$ 和 $\left| f_I^{tan,(k)} \right|$ 分别表示法向力和切向力的大小。</p><p>(iv) 通过摩擦力修正切向速度(见公式(40))。在修正边界网格处的切向速度后，直接将法向速度设为零，以防止颗粒穿透边界。</p><script type="math/tex;mode=display">\begin{cases}
+若 : \left\| v_I^{tan,(k)} \right\| = 0 : \hat{v}_I^{tan,(k)} = 0 \\
+若 : \left\| v_I^{tan,(k)} \right\| \neq 0 : \hat{v}_I^{tan,(k)} = v_I^{tan,(k)} + \frac{f_I^{fti,(k)} }{m_I^k} dt
+\end{cases} \tag{40}</script><p>其中 $\hat{v}_I^{tan,(k)}$ 是修正后的切向速度。</p><p>基底摩擦参数$\mu<em>{fit}$主要受边界条件影响，并且可能在不同的天然滑坡场地和实验室测试案例中有所变化。对于实验室实验，$\mu</em>{fit}$理想情况下应通过标准的基底摩擦试验确定（参见Kelenenová等人, 2020；Lin等人, 2023）。从物理意义上讲，$\mu_{fit}$的取值范围是0到1，文献中的值通常在0.2到0.8之间（参见Yu等人, 2023）。</p><p>当无法直接测量时，可以通过以下过程来标定$\mu<em>{fit}$：(i) 首先确定土壤本构参数；然后 (ii) 在一系列$\mu</em>{fit}$取值下，将实验得到的颗粒流结果与 MPM 模拟结果进行比较，以确定最佳参数。需要注意的是，准确确定$\mu_{fit}$仍然具有挑战性，值得在未来研究中进一步深入探讨。</p><h3 id="3-相变本构模型"><a href="#3-相变本构模型" class="headerlink" title="3. 相变本构模型"></a>3. 相变本构模型</h3><p>颗粒材料表现出复杂的非线性行为，其特征是在类固体和类流体状态之间转变。为捕捉这种响应，我们在两相两点物质点法(MPM)框架中引入了弹塑性-μ(I)相变本构模型。该模型桥接了土壤力学中类固体的弹塑性应力和流体力学中类流体的粘性应力，能够无缝表征颗粒介质在破坏启动、流态化传播和沉积阶段的力学行为。</p><p>弹塑性-μ(I)相变模型采用叠加方法来描述相变机制，这与经典的统一摩擦-碰撞框架（Johnson and Jackson, 1987; Johnson et al., 1990）保持一致。在该框架中，颗粒介质的应力被分为两个部分：表示类固体行为的率无关弹塑性部分，以及描述类流体行为的率相关粘性应力。该模型通过弹塑性和粘性应力的动态演化来表征相变过程：在低应变率下，弹塑性应力占主导，表明材料处于类固体状态，此时碰撞应力可忽略不计；在高应变率下，粘性应力占优势，表明材料处于类流体状态，而摩擦应力则保持可忽略不计。</p><script type="math/tex;mode=display">\sigma' = \sigma_{sp} + \sigma_v \tag{41}</script><p>其中$\sigma’$为土骨架的总有效应力张量；$\sigma_{sp}$为弹塑性应力；$\sigma_v$为粘性应力。</p><p>弹塑性-μ(I)模型已在我们的前期工作中进行了讨论和验证（Feng et al., ）。为清晰起见，详细的模型信息见附录A和B。关键输入参数的总结在表2中给出。</p><p><img src="/2025/11/2b57c8fc/image-20251110171855901.png" alt="image-20251110171855901" style="zoom:50%"></p><h2 id="模型验证与关键发现"><a href="#模型验证与关键发现" class="headerlink" title="模型验证与关键发现"></a>模型验证与关键发现</h2><p>研究通过三个典型算例系统验证了模型的可靠性：</p><p><strong>验证一：一维固结问题</strong></p><p><img src="/2025/11/2b57c8fc/image-20251110171914077.png" alt="image-20251110171914077" style="zoom:50%"></p><p>MPM计算结果与Terzaghi经典解析解高度吻合（图4），证明了模型在处理土-水耦合问题中的基本可靠性。</p><p><img src="/2025/11/2b57c8fc/image-20251110172508203.png" alt="image-20251110172508203" style="zoom:33%"></p><p><strong>验证二：Grilli水下滑坡实验</strong></p><p><img src="/2025/11/2b57c8fc/image-20251110172627760.png" alt="image-20251110172627760" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110172705742.png" alt="image-20251110172705742" style="zoom:33%"></p><p>模拟结果与实验观测高度一致（图7、图9）。特别值得关注的是：</p><ul><li><p>相变模型准确再现了滑坡体形态演变全过程</p></li><li><p>纯弹塑性模型会<strong>系统性高估滑坡运移距离</strong>（图11、表4），因其忽略了黏性阻力</p></li><li><p>成功捕捉了由土体运动诱导的流体涡旋生成和传播过程（图10）</p><p><img src="/2025/11/2b57c8fc/image-20251110173230943.png" alt="image-20251110173230943" style="zoom:50%"></p><p><img src="/2025/11/2b57c8fc/image-20251110172734752.png" alt="image-20251110172734752" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110172949868.png" alt="image-20251110172949868" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173023122.png" alt="image-20251110173023122" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173051408.png" alt="image-20251110173051408" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173208040.png" alt="image-20251110173208040" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173248112.png" alt="image-20251110173248112" style="zoom:50%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173436926.png" alt="image-20251110173436926" style="zoom:33%"></p></li></ul><p><strong>验证三：Rzadkiewicz海底滑坡实验</strong></p><p><img src="/2025/11/2b57c8fc/image-20251110173405125.png" alt="image-20251110173405125" style="zoom:50%"></p><p>进一步考察摩擦边界的影响，发现：</p><ul><li><p>MPM结果在土体剖面和自由水面演化方面均优于SPH和PFEM方法（图15-16、表5）</p></li><li><p>基底摩擦系数增大显著<strong>减少土体运移距离</strong>，并有效<strong>抑制流体涡旋强度</strong>（图17-18）</p></li><li><p>摩擦效应通过改变土-水界面动量传递，直接影响海啸波幅大小</p><p><img src="/2025/11/2b57c8fc/image-20251110173505338.png" alt="image-20251110173505338" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173527438.png" alt="image-20251110173527438" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173551843.png" alt="image-20251110173551843" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173721318.png" alt="image-20251110173721318" style="zoom:50%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173653600.png" alt="image-20251110173653600" style="zoom:33%"></p><p><img src="/2025/11/2b57c8fc/image-20251110173741945.png" alt="image-20251110173741945" style="zoom:33%"></p></li></ul><h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>文章建立的新型MPM框架，首次在考虑摩擦边界的条件下，实现了对海底颗粒流从固态到流体态全过程的精准模拟。主要结论包括：</p><p>(i) 总体而言，所提出的MPM模型的数值结果与实验数据的关键方面吻合良好，包括海底颗粒流过程、最终沉积形态和滑坡引发的海啸。虽然存在轻微差异，但该模型与大多数实验观察结果显示出良好的定性和定量一致性。</p><p>(ii) 该模型有效捕捉了海底颗粒流过程中颗粒介质的多阶段响应，其应力状态从弹塑性应力转变为弹塑性-粘性应力，并随着材料在类固体和类流体状态之间交替而恢复为弹塑性应力。</p><p>(iii) 数值结果表明，在动态的土-水系统中，颗粒介质的运动决定了流体相涡旋的方向。</p><p>(iv) 与纯类固体弹塑性模型的比较表明，纯类固体弹塑性模型往往会高估海底颗粒流的流动距离，这凸显了纳入相变机制的重要性。</p><p>(v) 不同基底摩擦参数的对比分析表明，较高的基底摩擦会减少颗粒介质的流动距离并抑制流体相涡旋，从而削弱波的形成。</p><blockquote><p>本文基于 Ocean Engineering 341 (2025) 论文《Two-phase two-point MPM modeling of submarine granular flows considering solid-to-fluid phase transition over frictional plane》整理.</p></blockquote></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><a class="post-meta__tags" href="/tags/%E4%B8%A4%E7%9B%B8%E4%B8%A4%E7%82%B9/">两相两点</a><a class="post-meta__tags" href="/tags/%E7%9B%B8%E5%8F%98/">相变</a></div><div class="post_share"><div class="social-share" data-image="/img/cover/2025-11-10-mpm-bj2.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media=&quot;all&quot;"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer=""></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="wechat"></a><div class="post-qr-code-desc">wechat</div></li><li class="reward-item"><a href="/img/zanshang.jpg" target="_blank"><img class="post-qr-code-img" src="/img/zanshang.jpg" alt="zanshang"></a><div class="post-qr-code-desc">zanshang</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="alipay"></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2025/11/a648a944/" title="ASF-12.5m-DEM下载教程"><img class="cover" src="/img/cover/2025-11-09-asf-dem-download.jpg" onerror="onerror=null,src=&quot;/img/404.jpg&quot;" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">ASF-12.5m-DEM下载教程</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/05/a2778edb/" title="Git撤销操作"><img class="cover" src="/img/cover/2024-04-24-post-head-github-work.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-05-04</div><div class="title">Git撤销操作</div></div></a></div><div><a href="/2024/05/e8755f24/" title="Ubuntu搭建Webdav"><img class="cover" src="/img/cover/2024-05-05-webdav.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-05-05</div><div class="title">Ubuntu搭建Webdav</div></div></a></div><div><a href="/2024/07/af38f644/" title="物质点法--学习笔记(一)"><img class="cover" src="/img/cover/2024-07-12-mpm.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-12</div><div class="title">物质点法--学习笔记(一)</div></div></a></div><div><a href="/2024/12/3e16e77c/" title="论文研读(一)"><img class="cover" src="/img/cover/2024-12-08-read-experience.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-12-08</div><div class="title">论文研读(一)</div></div></a></div><div><a href="/2024/05/5a883584/" title="Fortran转C++的一些注意事项"><img class="cover" src="/img/cover/2024-05-13-16-37-32.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-05-13</div><div class="title">Fortran转C++的一些注意事项</div></div></a></div><div><a href="/2024/04/5dbdb580/" title="Git 工作流程"><img class="cover" src="/img/cover/2024-04-24-post-head-github-work.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-24</div><div class="title">Git 工作流程</div></div></a></div></div></div><hr class="custom-hr"><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/luban.png" onerror="this.onerror=null,this.src=&quot;/img/friend_404.gif&quot;" alt="avatar"></div><div class="author-info__name">Liudh</div><div class="author-info__description">世界那么大，多玩玩多看看。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">19</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">41</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/liudh56"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content"><p>本站使用静态网页，如有加载错误或未加载内容，请刷新重试!</p><p>如有侵权，请联系我，立即删除!</p><p>备用网址:<br><a herf="https://fireflye.top">https://fireflye.top</a><br><a herf="https://liudh56.github.io">https://liudh56.github.io</a></p></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%80%83%E8%99%91%E6%91%A9%E6%93%A6%E5%8F%8A%E5%9B%BA%E6%80%81%E5%88%B0%E6%B6%B2%E6%80%81%E7%9B%B8%E5%8F%98%E7%9A%84%E6%B5%B7%E5%BA%95%E9%A2%97%E7%B2%92%E6%B5%81%E4%B8%A4%E7%9B%B8%E4%B8%A4%E7%82%B9MPM%E5%BB%BA%E6%A8%A1"><span class="toc-text">考虑摩擦及固态到液态相变的海底颗粒流两相两点MPM建模</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%91%98%E8%A6%81"><span class="toc-text">摘要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A0%94%E7%A9%B6%E8%83%8C%E6%99%AF"><span class="toc-text">研究背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E5%9C%A8%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">存在的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E6%96%B0%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%EF%BC%9A%E8%80%83%E8%99%91%E6%91%A9%E6%93%A6%E8%BE%B9%E7%95%8C%E5%92%8C%E7%9B%B8%E5%8F%98%E7%9A%84%E4%B8%A4%E7%9B%B8%E4%B8%A4%E7%82%B9MPM%E6%A1%86%E6%9E%B6"><span class="toc-text">创新解决方案：考虑摩擦边界和相变的两相两点MPM框架</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%86%E6%9E%B6%E7%90%86%E8%AE%BA"><span class="toc-text">框架理论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%8E%A7%E5%88%B6%E6%96%B9%E7%A8%8B"><span class="toc-text">1. 控制方程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%91%A9%E6%93%A6%E6%8E%A5%E8%A7%A6%E7%AE%97%E6%B3%95"><span class="toc-text">2. 摩擦接触算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%9B%B8%E5%8F%98%E6%9C%AC%E6%9E%84%E6%A8%A1%E5%9E%8B"><span class="toc-text">3. 相变本构模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E9%AA%8C%E8%AF%81%E4%B8%8E%E5%85%B3%E9%94%AE%E5%8F%91%E7%8E%B0"><span class="toc-text">模型验证与关键发现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA"><span class="toc-text">结论</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer" style="background:0 0"><div id="footer-wrap"><div class="copyright">©2020 - 2025 By Liudh</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'Ov23li0goVev8xP2JO1a',
+      clientSecret: '98b26fc900fbefcb0e6a29235774e45fb91554d6',
+      repo: 'liudh56.github.io',
+      owner: 'liudh56',
+      admin: ['liudh56'],
+      id: 'c62676f64f27bd1d4d5757bbcefd0e57',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><script id="canvas_nest" defer="" color="126,97,255" opacity="0.8" zindex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful=!0,POWERMODE.shake=!1,POWERMODE.mobile=!1,document.body.addEventListener("input",POWERMODE)</script><script async="" data-pjax="" src="//cn.vercount.one/js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span> 数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
