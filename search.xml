@@ -1,89 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>非饱和土手动迭代计算程序修改说明</title>
-    <url>/2024/04/863a85e0/</url>
-    <content><![CDATA[修改内容1、输入参数改变t(nl) 每层层底沉积年代(37 行)土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)水位位置（坡顶为 0，y 方向为负值）(58 行)非饱和抗剪强度公式中 κ(59 行)
-2、输入所有节点孔压(53 行)READ(12,*)inpore  !所有节点孔压
-
-3、输出 prop(nprops,np_types)(98-85 行)nprops=10 !分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率CALL g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)
-
-首先，求prop1：一列单元的参数(其中重度为干重度)其次，求prop：所有单元参数(其中重度为干重度)之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率最后，利用含水率计算天然重度
-
-4、输出 surf(2,nosurf) (79 行)根据水位计算水位线上各节点坐标
-call WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)
-
-5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)CALL water_loads
-
-7、对于孔压 inpore 的处理首先，单元循环内提取该单元所有节点的孔压(172行)其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)之后，高斯循环中计算高斯点吸应力pore (181行)最后，修正正应力(186-188行)
-
-8、若收敛，对应力进行恢复(193-195 行)9、奇偶分层下的变形图(224 行)CALL dismsh
-
-输入说明w1   s1   w2   h1   h2   nl !分层数  用于划分黄土古土壤序列情况8    4     4    14   8    4h(nl) !每层层底距坡顶距离4   12   16   22ny(nl) !每层划分网格数2    4    2   3t(nl) !每层层底沉积年代8   12   18   33nx1    nx2   ny1    ny24       2     7    4!土水特征参数a、m、n随沉积年代模型参数0.044     7.062      -0.0000724      0.3318              -0.000161      1.509224.4397   -113.0186   0.000000176   -0.0000591   0.2077   0.000000331   -0.000128   1.2664!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重0  18.5       0.17    0      0.0        1.25   0.018    0.4623   1.0e5   0.3  2.710  18.5       3.56   500     0.0        1.39   0.0035   0.6489   1.0e5   0.3  2.72!水位位置（坡顶为0，y方向为负值）-100!非饱和抗剪强度公式中κ1.4!收敛准则  计算次数0.0001   500!折减次数9!折减系数0.8  0.9  1.0  1.1  1.2  1.3  1.4  1.5  1.6
-
-
-非本人原创内容
-]]></content>
-      <categories>
-        <category>边坡</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>边坡稳定性</tag>
-        <tag>Fortran</tag>
-        <tag>孔压</tag>
-        <tag>有限元</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>非饱和土边坡稳定性计算程序说明文件</title>
-    <url>/2024/04/71e392b0/</url>
-    <content><![CDATA[一、数据文件注意：以下文件内不要输入注释文字1. dat文件!dx  h2v1.0  2.0!nx1 nx2 ny1 ny220  20  10  5!树荷载的左列和右列数，树荷载kN(各单元格相同)27 32 10.0!内摩擦角，粘聚力，剪胀角，重度，弹性模量，泊松比, a, m, n, theta_s 其中,重度=ρ_d*gam_w,theta_s=1-ρ_d/G_s20.0  15.0  0.0  20.0  1.0e5  0.3 15 0.2 4 0.907749!水位位置（坡顶为0，y方向为负值）-20!非饱和抗剪强度公式中κ2!收敛准则  计算次数0.0001 500!折减次数6!折减系数1.2  1.3  1.4  1.5  1.55 1.6
-
-
-其中,第三行表示荷载的加荷位置和大小
-27 ! 表示起点在第27列（从左至右）32 ! 表示终点在第32列（从左至右）30 ! 表示荷载为30kN
-
-对应下图中的红色位置
-
-2. 孔压文件x_f.txt按节点列依次输入节点处的孔压每个单元格有3列共8个节点，呈323分布，如下图所示，阴影部分为一个单元格，黄色为单元格号按照节点的1234...顺序竖向填写x_f.txt文件，每节点占一行 
-
-
-二、源代码本程序单元格序号是从上至下，从左至右依次排序,如下例
-1 6 2 7  113 8  12 154 9  13 16 18 205 10 14 17 19 21
-
-在叠加荷载时，因为所有单元格的g都是按照3 2 1 4 6 7 8 5 的顺序保存，因此我们仅需找到对应的单元格号以及146号节点的相对位置
-146号节点的相对位置为g(6), g(8), g(10),下文有介绍
-接下来只需找到单元格号即可。
-计算单元号if (tree_load/=0) then !荷载不为零再进行运算  allocate(tree_nodes(nx1+nx2+ny1*ngrad))  tree_nodes=0   ! tree_nodes(nx1+nx2+ny1*ngrad)是储存表面单元格的单元号  itree = 2 !用于计数，记录需加荷的单元格数量  tree_nodes(1)=1   ! 顶面和斜面前ngrad行  do i=2,nx1+ngrad      tree_nodes(itree) = (i-1)*nye+1     itree = itree + 1  end do  ! 斜面ngrad行以后  do i=1,ny1-1    do j=1,ngrad       if (j==1) then          tree_nodes(itree) = tree_nodes(itree-1)+nye-i+1       else          tree_nodes(itree) = tree_nodes(itree-1)+nye-i       end if       itree = itree + 1    end do  end do  ! 底面第一列  tree_nodes(itree) = tree_nodes(itree-1)+ny2+1  itree = itree + 1  ! 底面以后  do i=2,nx2     tree_nodes(itree) = tree_nodes(itree-1)+ny2     itree = itree + 1  end do  tree_nodes_= tree_nodes(nel_left:nel_right) ! 储存实际需要加荷的单元格的序号
-
-分配荷载到节点  ALLOCATE(weight_load(8),tree(ndof))  !荷载在节点上的分布权重  weight_load = (/0.166667,0.0,0.0,0.666667,0.0,0.166667,0.0,0.0/)  !计算各节点荷载大小  tree=zero  tree(6)=tree_load*weight_load(1)  tree(8)=tree_load*weight_load(4)  tree(10)=tree_load*weight_load(6)  ! 此处注意区分(见下图)  ! g数组按3x 3y 2x 2y 1x 1y 4x 4y 6x 6y 7x 7y 8x 8y 5x 5y的顺序保存  ! weight_load按1 2 3 4 5 6 7 8来保存  ! 则1 4 6号节点的y方向对应g(6),g(8),g(10)end if
-
-
-
-叠加荷载itree=1 ! 作tree_nodes_数组的索引，将序号依次读出elements_2: DO iel=1,nels   ...   gravlo(g)=gravlo(g)-eld*prop(4,etype(iel))   if (tree_load.ne.0.0) then !荷载不为零时计算      if ((iel==tree_nodes_(itree)).and.(itree.le.size(tree_nodes_))) then !判断是否为需加荷的单元         gravlo(g) = gravlo(g) - tree !根据自由度编号加到指定位置         itree=itree+1      end if   end ifEND DO elements_2
-
-
-叠加外部水荷载叠加外部水荷载的方式与上方叠加外部荷载的方法类似，将水的压力 $\gamma_w*h$ 叠加到相应的表面节点上
-IF(wl&gt;g_coord(2,1))THEN  ! 水位淹没整个边坡      p3=(wl-g_coord(2,1))*gam_w      DO i=1,nx1         gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6         gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3         gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6      END DO      DO i=nx1+1,nx1+ny1*ngrad         if (mod(i-nx1,ngrad)/=0)then            y5=g_coord(1,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else            y5=g_coord(2,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            y7=g_coord(2,g_num(7,tree_nodes(i)))            p7=(wl-y7)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN ! 如果有破角台阶         p3=(wl-g_coord(2,nn-2*ny2))*gam_w !p3==p5         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   ELSE IF(wl&gt;g_coord(2,nn-2*ny2))THEN ! 水面在斜面位置(低于坡顶,高于坡脚)      nw=int((-wl)/dx)      do i=nx1+nw*ngrad+ngrad,nx1+ny1*ngrad         y5=g_coord(2,g_num(5,tree_nodes(i)))         y7=g_coord(2,g_num(7,tree_nodes(i)))         p5=(wl-y5)*gam_w         p7=(wl-y7)*gam_w         if(i==nx1+nw*ngrad+ngrad)then ! 如果水面恰好穿过某行单元格            cx=y5-wl            cy=cx            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))           &amp;               +p7*cy*(cy**2-two*cy*dx+dx**2)/(d6*dx**2)            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))           &amp;               -p7*(cy**3-cy**2*dx-cy*dx**2+dx**3)/(d3*dx**2)            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))           &amp;               -p7*(dx**3-cy**3)/(d6*dx*dx)         else if(mod(i-nx1,ngrad)/=0)then ! 方格斜面台阶内部(仅有上表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else ! 方格斜面台阶最外部的单元格(上表面和右表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN          p3=(wl-g_coord(2,nn-2*ny2))*gam_w         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   END IF
-
-叠加孔压根据Vanapalli公式, 使用体积含水率、孔压等参数计算出基质吸力项, 叠加到正应力上
-
-elements_3: DO iel=1,nels            bload=zero            phi=prop(1,iel)            tnph=TAN(phi*pi/d180)            phif=ATAN(tnph/srf(iy))*d180/pi            psi=prop(3,iel)            tnps=TAN(psi*pi/d180)            psif=ATAN(tnps/srf(iy))*d180/pi            cf=prop(2,iel)/srf(iy)            e=prop(5,iel)            v=prop(6,iel)            CALL deemat(dee,e,v)            num=g_num(:,iel)            coord=TRANSPOSE(g_coord(:,num))            do i=1,nod               call Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) ! 计算基质吸力项            end do            g=g_g(:,iel)            eld=loads(g)            gauss_pts_2: DO i=1,nip               call shape_fun(fun,points,i)               pore(iel,i)=dot_product(fun,suc_sig)               CALL bee8(bee,coord,points(i,1),points(i,2),det)               eps=MATMUL(bee,eld)               eps=eps-evpt(:,i,iel)               sigma=MATMUL(dee,eps)               sigma(1)=sigma(1)-pore(iel,i) ! 此处124为正应力项, 3为剪应力项               sigma(2)=sigma(2)-pore(iel,i)               sigma(4)=sigma(4)-pore(iel,i)               CALL invar(sigma,sigm,dsbar,lode_theta)               !-----------------------check whether yield is violated-------------------               CALL mocouf(phif,cf,sigm,dsbar,lode_theta,f)               IF(f&gt;fmax)fmax=f               IF(converged.OR.iters==limit)THEN                  sigma(1)=sigma(1)+pore(iel,i)                  sigma(2)=sigma(2)+pore(iel,i)                  sigma(4)=sigma(4)+pore(iel,i)                  devp=sigma               ELSE                  IF(f&gt;=zero.OR.(converged.OR.iters==limit))THEN                     CALL mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)                     CALL formm(sigma,m1,m2,m3)                     flow=f*(m1*dq1+m2*dq2+m3*dq3)                     erate=MATMUL(flow,sigma)                     evp=erate*dt                     evpt(:,i,iel)=evpt(:,i,iel)+evp                     devp=MATMUL(dee,evp)                  END IF               END IF               IF(f&gt;=zero)THEN                  eload=MATMUL(devp,bee)                  bload=bload+eload*det*weights(i)               END IF            END DO gauss_pts_2            !-----------------------compute the total bodyloads vector----------------            bdylds(g)=bdylds(g)+bload            bdylds(0)=zero         END DO elements_3
-]]></content>
-      <categories>
-        <category>边坡</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>边坡稳定性</tag>
-        <tag>Fortran</tag>
-        <tag>有限元</tag>
-        <tag>非饱和土</tag>
-        <tag>方形网格</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>可靠度分析程序说明文件</title>
     <url>/2024/04/74b4d97f/</url>
     <content><![CDATA[非饱和黄土边坡失效概率计算程序本程序是基于有限元的边坡可靠度分析程序，改进自Griffith教授 的非饱和黄土边坡稳定性计算程序
@@ -186,131 +103,95 @@ xxx_grid.txt的内容复制到xxx.dat文件的以下位置：
       </categories>
       <tags>
         <tag>教程及说明</tag>
+        <tag>失效概率</tag>
+        <tag>Monte-Carlo</tag>
         <tag>边坡稳定性</tag>
         <tag>Fortran</tag>
         <tag>有限元</tag>
-        <tag>失效概率</tag>
-        <tag>Monte-Carlo</tag>
         <tag>Python</tag>
       </tags>
   </entry>
   <entry>
-    <title>学习笔记——流体力学基本方程 (一)</title>
-    <url>/2024/04/98e90823/</url>
-    <content><![CDATA[学习视频Bilibili-流体力学基础科普-北斗导航Compass参考教材：Fundamentals of AERODYNAMICS by John D. Anderson, Jr.
-一、基本概念1. 什么是流体？
-对比固体和流体的区别
+    <title>非饱和土手动迭代计算程序修改说明</title>
+    <url>/2024/04/863a85e0/</url>
+    <content><![CDATA[修改内容1、输入参数改变t(nl) 每层层底沉积年代(37 行)土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)水位位置（坡顶为 0，y 方向为负值）(58 行)非饱和抗剪强度公式中 κ(59 行)
+2、输入所有节点孔压(53 行)READ(12,*)inpore  !所有节点孔压
+
+3、输出 prop(nprops,np_types)(98-85 行)nprops=10 !分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率CALL g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)
+
+首先，求prop1：一列单元的参数(其中重度为干重度)其次，求prop：所有单元参数(其中重度为干重度)之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率最后，利用含水率计算天然重度
+
+4、输出 surf(2,nosurf) (79 行)根据水位计算水位线上各节点坐标
+call WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)
+
+5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)CALL water_loads
+
+7、对于孔压 inpore 的处理首先，单元循环内提取该单元所有节点的孔压(172行)其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)之后，高斯循环中计算高斯点吸应力pore (181行)最后，修正正应力(186-188行)
+
+8、若收敛，对应力进行恢复(193-195 行)9、奇偶分层下的变形图(224 行)CALL dismsh
+
+输入说明w1   s1   w2   h1   h2   nl !分层数  用于划分黄土古土壤序列情况8    4     4    14   8    4h(nl) !每层层底距坡顶距离4   12   16   22ny(nl) !每层划分网格数2    4    2   3t(nl) !每层层底沉积年代8   12   18   33nx1    nx2   ny1    ny24       2     7    4!土水特征参数a、m、n随沉积年代模型参数0.044     7.062      -0.0000724      0.3318              -0.000161      1.509224.4397   -113.0186   0.000000176   -0.0000591   0.2077   0.000000331   -0.000128   1.2664!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重0  18.5       0.17    0      0.0        1.25   0.018    0.4623   1.0e5   0.3  2.710  18.5       3.56   500     0.0        1.39   0.0035   0.6489   1.0e5   0.3  2.72!水位位置（坡顶为0，y方向为负值）-100!非饱和抗剪强度公式中κ1.4!收敛准则  计算次数0.0001   500!折减次数9!折减系数0.8  0.9  1.0  1.1  1.2  1.3  1.4  1.5  1.6
 
 
-对于固体剪切力与形变量成正比
-
-
-对于流体剪切力与形变量的时间变化率成正比
-
-
-解释流体为什么能流起来？
-
-
-对于流体如果流体中的剪切力是常数，则其形变量的时间变化率也应为常数，即流体一直发生形变（流动）
-
-
-流体在抗压时可以静止，在抗剪时一定在运动
-
-2. 流体质点将流体看作无穷多的质点的结合，符合连续介质假设
-3. 描述流体的物理量
-包括速度、密度、压强、温度等等
-
-
-压强(压力) Pressure 单位Pa
-
-$$P&#x3D;\frac{F}{A}\ \ \ \ 当A\rightarrow0时\ \ \ P&#x3D;frac{dF}{dA}$$
-
-密度 单位 $kg&#x2F;m^3$
-
-$$\rho&#x3D;\frac{m}{V}\ \ \ 当V\rightarrow0时\ \ \ \rho&#x3D;\frac{dm}{dV}$$
-
-温度 单位K
-
-$$0°C&#x3D;273.15K$$
-4. 描述流体运动的方法
-拉格朗日法
-
-
-以质点为研究对象,跟踪质点的运动
-
-
-欧拉法
-
-
-以确定空间为研究对象,研究某一空间点不同时间下,在此空间点的质点的运动
-
-
-
-
-
-积分方法
-微分方法
-
-
-
-拉格朗日法
-一坨流体
-质点
-
-
-欧拉法
-控制体
-空间点
-
-
-二、基本方程1. 质量守恒方程(连续方程) 控制体内流体总质量的增量 &#x3D; 流入控制体的流体质量
-欧拉法连续方程的微分形式
-$$\frac{\partial \rho}{\partial t}+\frac{\partial (\rho u)}{\partial x}+\frac{\partial (\rho v)}{\partial y}+\frac{\partial (\rho w)}{\partial z}&#x3D;0$$
-其中 $\rho,u,v,w$ 均是 $x,y,z,t$ 的函数,如 $\rho(x,y,z,t)$ 
-方程左边: 单位时间 控制体内流体总质量的增量(为负数就是减量)
-首先,表示总质量
-$$m&#x3D;{\iiint}_{cv}\rho dV$$
-对时间t求偏导,得
-$$\frac{\partial m}{\partial t}&#x3D;\frac{\partial ({\iiint}{cv}\rho dV)}{\partial t}&#x3D;{\iiint}{cv}\frac{\partial \rho}{\partial t}\ dV$$
-方程右边: 单位时间 流入控制体的流体质量
-
-
-
-质量&#x3D;密度*体积
-
-$$h&#x3D;v*\Delta t\cos\theta$$
-$$V&#x3D;Sh&#x3D;Sv*\Delta t\cos\theta$$
-则 $\Delta t$ 时间范围内
-$$m&#x3D;\rho V&#x3D;\rho Sv\Delta t\cos\theta$$
-$$m|_{单位时间}&#x3D;\rho Sv\cos\theta$$
-对控制体边界面积分
-$${\iint}_{cs}\rho \vec{v}\cdot d\vec{S}$$
-规定控制体表面的外法线方向为正,则方程右边应为添加负号
-即
-$$-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}$$
-则可得到积分形式的质量守恒方程
-$${\iiint}{cv}\frac{\partial \rho}{\partial t}\ dV&#x3D;-{\iint}{cs}\rho \vec{v}\cdot d\vec{S}$$
-也即
-$${\iiint}{cv}\frac{\partial \rho}{\partial t}\ dV+{\iint}{cs}\rho \vec{v}\cdot d\vec{S}&#x3D;0$$
-根据高斯定理
-$${\iint}{cs}\rho \vec{v}\cdot d\vec{S}&#x3D;{\iiint}{cv}[\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV$$
-则积分形式的质量守恒方程可以合并为
-$${\iiint}_{cv}[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV&#x3D;0$$
-可得微分形式的质量守恒方程
-$$\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}&#x3D;0$$
-用哈密顿算子表示,可写为
-$$\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})&#x3D;0$$
-下期内容：
-2. 动量守恒方程 控制体内流体总动量的增量 &#x3D; 流入控制体的流体动量 + 外界的力产生的动量增量
-3. 能量守恒方程 控制体内流体的总能量的增量 &#x3D; 流入控制体的流体能量 + 外界的作用产生的能量增量
+非本人原创内容
 ]]></content>
       <categories>
-        <category>流体力学</category>
+        <category>边坡</category>
       </categories>
       <tags>
-        <tag>学习笔记</tag>
-        <tag>流体力学</tag>
-        <tag>质量守恒方程</tag>
+        <tag>教程及说明</tag>
+        <tag>边坡稳定性</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
+        <tag>孔压</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>非饱和土边坡稳定性计算程序说明文件</title>
+    <url>/2024/04/71e392b0/</url>
+    <content><![CDATA[一、数据文件注意：以下文件内不要输入注释文字1. dat文件!dx  h2v1.0  2.0!nx1 nx2 ny1 ny220  20  10  5!树荷载的左列和右列数，树荷载kN(各单元格相同)27 32 10.0!内摩擦角，粘聚力，剪胀角，重度，弹性模量，泊松比, a, m, n, theta_s 其中,重度=ρ_d*gam_w,theta_s=1-ρ_d/G_s20.0  15.0  0.0  20.0  1.0e5  0.3 15 0.2 4 0.907749!水位位置（坡顶为0，y方向为负值）-20!非饱和抗剪强度公式中κ2!收敛准则  计算次数0.0001 500!折减次数6!折减系数1.2  1.3  1.4  1.5  1.55 1.6
+
+
+其中,第三行表示荷载的加荷位置和大小
+27 ! 表示起点在第27列（从左至右）32 ! 表示终点在第32列（从左至右）30 ! 表示荷载为30kN
+
+对应下图中的红色位置
+
+2. 孔压文件x_f.txt按节点列依次输入节点处的孔压每个单元格有3列共8个节点，呈323分布，如下图所示，阴影部分为一个单元格，黄色为单元格号按照节点的1234...顺序竖向填写x_f.txt文件，每节点占一行 
+
+
+二、源代码本程序单元格序号是从上至下，从左至右依次排序,如下例
+1 6 2 7  113 8  12 154 9  13 16 18 205 10 14 17 19 21
+
+在叠加荷载时，因为所有单元格的g都是按照3 2 1 4 6 7 8 5 的顺序保存，因此我们仅需找到对应的单元格号以及146号节点的相对位置
+146号节点的相对位置为g(6), g(8), g(10),下文有介绍
+接下来只需找到单元格号即可。
+计算单元号if (tree_load/=0) then !荷载不为零再进行运算  allocate(tree_nodes(nx1+nx2+ny1*ngrad))  tree_nodes=0   ! tree_nodes(nx1+nx2+ny1*ngrad)是储存表面单元格的单元号  itree = 2 !用于计数，记录需加荷的单元格数量  tree_nodes(1)=1   ! 顶面和斜面前ngrad行  do i=2,nx1+ngrad      tree_nodes(itree) = (i-1)*nye+1     itree = itree + 1  end do  ! 斜面ngrad行以后  do i=1,ny1-1    do j=1,ngrad       if (j==1) then          tree_nodes(itree) = tree_nodes(itree-1)+nye-i+1       else          tree_nodes(itree) = tree_nodes(itree-1)+nye-i       end if       itree = itree + 1    end do  end do  ! 底面第一列  tree_nodes(itree) = tree_nodes(itree-1)+ny2+1  itree = itree + 1  ! 底面以后  do i=2,nx2     tree_nodes(itree) = tree_nodes(itree-1)+ny2     itree = itree + 1  end do  tree_nodes_= tree_nodes(nel_left:nel_right) ! 储存实际需要加荷的单元格的序号
+
+分配荷载到节点  ALLOCATE(weight_load(8),tree(ndof))  !荷载在节点上的分布权重  weight_load = (/0.166667,0.0,0.0,0.666667,0.0,0.166667,0.0,0.0/)  !计算各节点荷载大小  tree=zero  tree(6)=tree_load*weight_load(1)  tree(8)=tree_load*weight_load(4)  tree(10)=tree_load*weight_load(6)  ! 此处注意区分(见下图)  ! g数组按3x 3y 2x 2y 1x 1y 4x 4y 6x 6y 7x 7y 8x 8y 5x 5y的顺序保存  ! weight_load按1 2 3 4 5 6 7 8来保存  ! 则1 4 6号节点的y方向对应g(6),g(8),g(10)end if
+
+
+
+叠加荷载itree=1 ! 作tree_nodes_数组的索引，将序号依次读出elements_2: DO iel=1,nels   ...   gravlo(g)=gravlo(g)-eld*prop(4,etype(iel))   if (tree_load.ne.0.0) then !荷载不为零时计算      if ((iel==tree_nodes_(itree)).and.(itree.le.size(tree_nodes_))) then !判断是否为需加荷的单元         gravlo(g) = gravlo(g) - tree !根据自由度编号加到指定位置         itree=itree+1      end if   end ifEND DO elements_2
+
+
+叠加外部水荷载叠加外部水荷载的方式与上方叠加外部荷载的方法类似，将水的压力 $\gamma_w*h$ 叠加到相应的表面节点上
+IF(wl&gt;g_coord(2,1))THEN  ! 水位淹没整个边坡      p3=(wl-g_coord(2,1))*gam_w      DO i=1,nx1         gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6         gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3         gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6      END DO      DO i=nx1+1,nx1+ny1*ngrad         if (mod(i-nx1,ngrad)/=0)then            y5=g_coord(1,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else            y5=g_coord(2,g_num(5,tree_nodes(i)))            p5=(wl-y5)*gam_w            y7=g_coord(2,g_num(7,tree_nodes(i)))            p7=(wl-y7)*gam_w            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN ! 如果有破角台阶         p3=(wl-g_coord(2,nn-2*ny2))*gam_w !p3==p5         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   ELSE IF(wl&gt;g_coord(2,nn-2*ny2))THEN ! 水面在斜面位置(低于坡顶,高于坡脚)      nw=int((-wl)/dx)      do i=nx1+nw*ngrad+ngrad,nx1+ny1*ngrad         y5=g_coord(2,g_num(5,tree_nodes(i)))         y7=g_coord(2,g_num(7,tree_nodes(i)))         p5=(wl-y5)*gam_w         p7=(wl-y7)*gam_w         if(i==nx1+nw*ngrad+ngrad)then ! 如果水面恰好穿过某行单元格            cx=y5-wl            cy=cx            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))           &amp;               +p7*cy*(cy**2-two*cy*dx+dx**2)/(d6*dx**2)            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))           &amp;               -p7*(cy**3-cy**2*dx-cy*dx**2+dx**3)/(d3*dx**2)            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))           &amp;               -p7*(dx**3-cy**3)/(d6*dx*dx)         else if(mod(i-nx1,ngrad)/=0)then ! 方格斜面台阶内部(仅有上表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6         else ! 方格斜面台阶最外部的单元格(上表面和右表面接触水)            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p5/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p5/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(5,tree_nodes(i))))=gravlo(nf(1,g_num(5,tree_nodes(i))))-dx*p5/d6            gravlo(nf(1,g_num(6,tree_nodes(i))))=gravlo(nf(1,g_num(6,tree_nodes(i))))-dx*(p5+p7)/d3            gravlo(nf(1,g_num(7,tree_nodes(i))))=gravlo(nf(1,g_num(7,tree_nodes(i))))-dx*p7/d6         end if      END DO      IF(ny2&gt;0)THEN          p3=(wl-g_coord(2,nn-2*ny2))*gam_w         DO i=nx1+ny1*ngrad+1,nx1+ny1*ngrad+nx2            gravlo(nf(2,g_num(3,tree_nodes(i))))=gravlo(nf(2,g_num(3,tree_nodes(i))))-dx*p3/d6            gravlo(nf(2,g_num(4,tree_nodes(i))))=gravlo(nf(2,g_num(4,tree_nodes(i))))-dx*two*p3/d3            gravlo(nf(2,g_num(5,tree_nodes(i))))=gravlo(nf(2,g_num(5,tree_nodes(i))))-dx*p3/d6         END DO      END IF   END IF
+
+叠加孔压根据Vanapalli公式, 使用体积含水率、孔压等参数计算出基质吸力项, 叠加到正应力上
+
+elements_3: DO iel=1,nels            bload=zero            phi=prop(1,iel)            tnph=TAN(phi*pi/d180)            phif=ATAN(tnph/srf(iy))*d180/pi            psi=prop(3,iel)            tnps=TAN(psi*pi/d180)            psif=ATAN(tnps/srf(iy))*d180/pi            cf=prop(2,iel)/srf(iy)            e=prop(5,iel)            v=prop(6,iel)            CALL deemat(dee,e,v)            num=g_num(:,iel)            coord=TRANSPOSE(g_coord(:,num))            do i=1,nod               call Vanapalli(i,iel,nprops,kapa,prop,theta_w,suc_sig,n_inpore) ! 计算基质吸力项            end do            g=g_g(:,iel)            eld=loads(g)            gauss_pts_2: DO i=1,nip               call shape_fun(fun,points,i)               pore(iel,i)=dot_product(fun,suc_sig)               CALL bee8(bee,coord,points(i,1),points(i,2),det)               eps=MATMUL(bee,eld)               eps=eps-evpt(:,i,iel)               sigma=MATMUL(dee,eps)               sigma(1)=sigma(1)-pore(iel,i) ! 此处124为正应力项, 3为剪应力项               sigma(2)=sigma(2)-pore(iel,i)               sigma(4)=sigma(4)-pore(iel,i)               CALL invar(sigma,sigm,dsbar,lode_theta)               !-----------------------check whether yield is violated-------------------               CALL mocouf(phif,cf,sigm,dsbar,lode_theta,f)               IF(f&gt;fmax)fmax=f               IF(converged.OR.iters==limit)THEN                  sigma(1)=sigma(1)+pore(iel,i)                  sigma(2)=sigma(2)+pore(iel,i)                  sigma(4)=sigma(4)+pore(iel,i)                  devp=sigma               ELSE                  IF(f&gt;=zero.OR.(converged.OR.iters==limit))THEN                     CALL mocouq(psif,dsbar,lode_theta,dq1,dq2,dq3)                     CALL formm(sigma,m1,m2,m3)                     flow=f*(m1*dq1+m2*dq2+m3*dq3)                     erate=MATMUL(flow,sigma)                     evp=erate*dt                     evpt(:,i,iel)=evpt(:,i,iel)+evp                     devp=MATMUL(dee,evp)                  END IF               END IF               IF(f&gt;=zero)THEN                  eload=MATMUL(devp,bee)                  bload=bload+eload*det*weights(i)               END IF            END DO gauss_pts_2            !-----------------------compute the total bodyloads vector----------------            bdylds(g)=bdylds(g)+bload            bdylds(0)=zero         END DO elements_3
+]]></content>
+      <categories>
+        <category>边坡</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>边坡稳定性</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
+        <tag>非饱和土</tag>
+        <tag>方形网格</tag>
       </tags>
   </entry>
   <entry>
@@ -849,62 +730,122 @@ git push -f
       </tags>
   </entry>
   <entry>
-    <title>Ubuntu搭建Webdav</title>
-    <url>/2024/05/e8755f24/</url>
-    <content><![CDATA[参考文章: Linux搭建WebDav服务 - Colzry’s Blog
+    <title>学习笔记——流体力学基本方程 (一)</title>
+    <url>/2024/04/98e90823/</url>
+    <content><![CDATA[学习视频Bilibili-流体力学基础科普-北斗导航Compass参考教材：Fundamentals of AERODYNAMICS by John D. Anderson, Jr.
+一、基本概念1. 什么是流体？
+对比固体和流体的区别
 
-以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决
 
-步骤一: 安装WebDAV服务首先, 我们需要安装WebDAV Server, 打开页面下载合适的版本, 本文以linux-amd64-webdav.tar.gz为例, 其中amd64表示x64架构
-然后, 解压并移动文件到/usr/bin/, 其余的README和LICENSE文件可删除
-tar -zxvf linux-amd64-webdav.tar.gzmv webdav /usr/bin/
+对于固体剪切力与形变量成正比
 
-步骤二: 配置WebDAV服务安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 /home/liudh/webdav的目录, 注意修改用户名liudh为自己的用户名
-mkdir /home/liudh/webdav
 
-然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑
-vim /opt/webdav_config.yaml
+对于流体剪切力与形变量的时间变化率成正比
 
-在配置文件中, 我们需要添加以下内容. 
 
-注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容
-注意缩进, cors和users后的参数均需要两个空格的缩进, 带-的参数需再缩进两个空格(四个)
-每一个参数:后均有一个空格
+解释流体为什么能流起来？
 
-# Server related settingsaddress: 0.0.0.0port: 10101# 如果无需验证填 falseauth: true# 如果不需要 https 则填 falsetls: false# https证书和密钥，如果 tls 为 false，cert 和 key 不需要# cert: cert_path# key: key_path# 访问前缀，建议默认prefix: /debug: false# 如果 auth 为 false 生效，文件共享的路径scope: .modify: truerules: []# 跨域设置cors:  enabled: true  credentials: true  allowed_headers:    - Depth  allowed_hosts:    - http://localhost:10101  allowed_methods:    - GET  exposed_headers:    - Content-Length    - Content-Range# 用户信息，如果 auth 为 true 生效users:  - username: liudh    password: passwd    scope: /home/liudh/webdav/    # 是否允许修改    modify: true# 可以根据此模板继续添加其他用户
 
-保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功
-/usr/bin/webdav -c /opt/webdav_config.yaml
+对于流体如果流体中的剪切力是常数，则其形变量的时间变化率也应为常数，即流体一直发生形变（流动）
 
-步骤三: 添加守护进程vim /usr/lib/systemd/system/webdav.service
 
-将以下内容添加到文件中
-[Unit]Description=WebDAV serverAfter=network.target[Service]Type=simpleUser=rootExecStart=/usr/bin/webdav -c /opt/webdav_config.yamlRestart=on-failure[Install]WantedBy=multi-user.target
+流体在抗压时可以静止，在抗剪时一定在运动
 
-保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证
-systemctl daemon-reloadsystemctl start webdav.servicesystemctl status webdav.servicesystemctl enable webdav.service
+2. 流体质点将流体看作无穷多的质点的结合，符合连续介质假设
+3. 描述流体的物理量
+包括速度、密度、压强、温度等等
 
-之后修改配置文件后, 可以使用以下命令重启服务
-systemctl restart webdav.service
 
-步骤四: 挂载webdav测试服务使用任意webdav挂载软件, 挂载测试, 注意填写参数如下
-协议: http # 如果配置了ssl证书就用https主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要用户名: liudh # 都改成自己的密码: passwd
+压强(压力) Pressure 单位Pa
 
-之后就可以上传下载文件测试一下了, 如果有错误就用
-systemctl status webdav.service
+$$P&#x3D;\frac{F}{A}\ \ \ \ 当A\rightarrow0时\ \ \ P&#x3D;frac{dF}{dA}$$
 
-查看错误日志. 
+密度 单位 $kg&#x2F;m^3$
 
-如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下
+$$\rho&#x3D;\frac{m}{V}\ \ \ 当V\rightarrow0时\ \ \ \rho&#x3D;\frac{dm}{dV}$$
 
+温度 单位K
+
+$$0°C&#x3D;273.15K$$
+4. 描述流体运动的方法
+拉格朗日法
+
+
+以质点为研究对象,跟踪质点的运动
+
+
+欧拉法
+
+
+以确定空间为研究对象,研究某一空间点不同时间下,在此空间点的质点的运动
+
+
+
+
+
+积分方法
+微分方法
+
+
+
+拉格朗日法
+一坨流体
+质点
+
+
+欧拉法
+控制体
+空间点
+
+
+二、基本方程1. 质量守恒方程(连续方程) 控制体内流体总质量的增量 &#x3D; 流入控制体的流体质量
+欧拉法连续方程的微分形式
+$$\frac{\partial \rho}{\partial t}+\frac{\partial (\rho u)}{\partial x}+\frac{\partial (\rho v)}{\partial y}+\frac{\partial (\rho w)}{\partial z}&#x3D;0$$
+其中 $\rho,u,v,w$ 均是 $x,y,z,t$ 的函数,如 $\rho(x,y,z,t)$ 
+方程左边: 单位时间 控制体内流体总质量的增量(为负数就是减量)
+首先,表示总质量
+$$m&#x3D;{\iiint}_{cv}\rho dV$$
+对时间t求偏导,得
+$$\frac{\partial m}{\partial t}&#x3D;\frac{\partial ({\iiint}{cv}\rho dV)}{\partial t}&#x3D;{\iiint}{cv}\frac{\partial \rho}{\partial t}\ dV$$
+方程右边: 单位时间 流入控制体的流体质量
+
+
+
+质量&#x3D;密度*体积
+
+$$h&#x3D;v*\Delta t\cos\theta$$
+$$V&#x3D;Sh&#x3D;Sv*\Delta t\cos\theta$$
+则 $\Delta t$ 时间范围内
+$$m&#x3D;\rho V&#x3D;\rho Sv\Delta t\cos\theta$$
+$$m|_{单位时间}&#x3D;\rho Sv\cos\theta$$
+对控制体边界面积分
+$${\iint}_{cs}\rho \vec{v}\cdot d\vec{S}$$
+规定控制体表面的外法线方向为正,则方程右边应为添加负号
+即
+$$-{\iint}_{cs}\rho \vec{v}\cdot d\vec{S}$$
+则可得到积分形式的质量守恒方程
+$${\iiint}{cv}\frac{\partial \rho}{\partial t}\ dV&#x3D;-{\iint}{cs}\rho \vec{v}\cdot d\vec{S}$$
+也即
+$${\iiint}{cv}\frac{\partial \rho}{\partial t}\ dV+{\iint}{cs}\rho \vec{v}\cdot d\vec{S}&#x3D;0$$
+根据高斯定理
+$${\iint}{cs}\rho \vec{v}\cdot d\vec{S}&#x3D;{\iiint}{cv}[\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV$$
+则积分形式的质量守恒方程可以合并为
+$${\iiint}_{cv}[\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}]dV&#x3D;0$$
+可得微分形式的质量守恒方程
+$$\frac{\partial \rho}{\partial t}+\frac{\partial(\rho u)}{\partial x}+\frac{\partial(\rho v)}{\partial y}+\frac{\partial(\rho w)}{\partial z}&#x3D;0$$
+用哈密顿算子表示,可写为
+$$\frac{\partial \rho}{\partial t}+\vec{\nabla}\cdot(\rho\vec{v})&#x3D;0$$
+下期内容：
+2. 动量守恒方程 控制体内流体总动量的增量 &#x3D; 流入控制体的流体动量 + 外界的力产生的动量增量
+3. 能量守恒方程 控制体内流体的总能量的增量 &#x3D; 流入控制体的流体能量 + 外界的作用产生的能量增量
 ]]></content>
       <categories>
-        <category>Ubuntu</category>
+        <category>流体力学</category>
       </categories>
       <tags>
         <tag>学习笔记</tag>
-        <tag>Webdav</tag>
-        <tag>云服务</tag>
+        <tag>流体力学</tag>
+        <tag>质量守恒方程</tag>
       </tags>
   </entry>
   <entry>
@@ -1072,6 +1013,65 @@ EFI
       </tags>
   </entry>
   <entry>
+    <title>Ubuntu搭建Webdav</title>
+    <url>/2024/05/e8755f24/</url>
+    <content><![CDATA[参考文章: Linux搭建WebDav服务 - Colzry’s Blog
+
+以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决
+
+步骤一: 安装WebDAV服务首先, 我们需要安装WebDAV Server, 打开页面下载合适的版本, 本文以linux-amd64-webdav.tar.gz为例, 其中amd64表示x64架构
+然后, 解压并移动文件到/usr/bin/, 其余的README和LICENSE文件可删除
+tar -zxvf linux-amd64-webdav.tar.gzmv webdav /usr/bin/
+
+步骤二: 配置WebDAV服务安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 /home/liudh/webdav的目录, 注意修改用户名liudh为自己的用户名
+mkdir /home/liudh/webdav
+
+然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑
+vim /opt/webdav_config.yaml
+
+在配置文件中, 我们需要添加以下内容. 
+
+注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容
+注意缩进, cors和users后的参数均需要两个空格的缩进, 带-的参数需再缩进两个空格(四个)
+每一个参数:后均有一个空格
+
+# Server related settingsaddress: 0.0.0.0port: 10101# 如果无需验证填 falseauth: true# 如果不需要 https 则填 falsetls: false# https证书和密钥，如果 tls 为 false，cert 和 key 不需要# cert: cert_path# key: key_path# 访问前缀，建议默认prefix: /debug: false# 如果 auth 为 false 生效，文件共享的路径scope: .modify: truerules: []# 跨域设置cors:  enabled: true  credentials: true  allowed_headers:    - Depth  allowed_hosts:    - http://localhost:10101  allowed_methods:    - GET  exposed_headers:    - Content-Length    - Content-Range# 用户信息，如果 auth 为 true 生效users:  - username: liudh    password: passwd    scope: /home/liudh/webdav/    # 是否允许修改    modify: true# 可以根据此模板继续添加其他用户
+
+保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功
+/usr/bin/webdav -c /opt/webdav_config.yaml
+
+步骤三: 添加守护进程vim /usr/lib/systemd/system/webdav.service
+
+将以下内容添加到文件中
+[Unit]Description=WebDAV serverAfter=network.target[Service]Type=simpleUser=rootExecStart=/usr/bin/webdav -c /opt/webdav_config.yamlRestart=on-failure[Install]WantedBy=multi-user.target
+
+保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证
+systemctl daemon-reloadsystemctl start webdav.servicesystemctl status webdav.servicesystemctl enable webdav.service
+
+之后修改配置文件后, 可以使用以下命令重启服务
+systemctl restart webdav.service
+
+步骤四: 挂载webdav测试服务使用任意webdav挂载软件, 挂载测试, 注意填写参数如下
+协议: http # 如果配置了ssl证书就用https主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要用户名: liudh # 都改成自己的密码: passwd
+
+之后就可以上传下载文件测试一下了, 如果有错误就用
+systemctl status webdav.service
+
+查看错误日志. 
+
+如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下
+
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Webdav</tag>
+        <tag>云服务</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Git 安装及配置教程</title>
     <url>/2024/05/cbf708ce/</url>
     <content><![CDATA[1. 下载安装包打开Git官网下载安装包, 嫌速度慢可以使用下面的链接下载
@@ -1129,198 +1129,6 @@ git config --global --unset http.proxygit config --global --unset https.proxy
         <tag>Git</tag>
         <tag>安装教程</tag>
         <tag>Windows</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>基于Hexo和Github部署个人博客完整教程</title>
-    <url>/2024/06/4a79202d/</url>
-    <content><![CDATA[安装流程
-安装node.js
-
-安装Git
-
-安装Hexo
-
-创建Github仓库
-
-安装上传插件
-
-更改配置
-
-上传网页
-
-
-1. 安装node.js打开node.js官网Node.js — Run JavaScript Everywhere (nodejs.org)点击下载
-
-
-打开安装至默认位置即可
-
-
-
-
-
-
-
-
-
-
-自动安装一些工具, 可以选上, 然后安装. 等待安装完成
-
-
-点击完成, 会弹出一些窗口
-
-
-按任意键继续即可, 等待安装完成. 
-
-
-过程较长, 耐心等待安装完成. 
-
-
-2. 安装Git查看往期教程Git 安装及配置教程 | Firefly Blog | 萤火虫博客 (fireflye.asia)
-3. 安装Hexo完成上面的安装后, 可以使用以下命令检查是否安装成功.
-打开git bash,输入
-node -vnpm -vgit -v
-
-显示版本信息, 说明安装成功.
-
-之后再输入以下命令安装hexo
-npm install -g hexo-cli
-
-等待安装完成, 网络问题请自学寻找代理, 或寻找可用镜像源. 显示以下信息说明安装完成
-
-
-还可以使用以下命令来查看安装情况
-hexo -v
-
-若显示版本信息, 说明已成功安装
-打开一个要存放网站文件的位置, 例如F:\web\. 打开此文件夹, 右键选择open git bash here
-
-或者 直接打开git bash 输入cd f:\web. 路径替换为自己的路径. 
-
-打开后会显示(我使用的虚拟机放在了桌面. 不建议这样做. 文件夹需要妥善保存.)
-
-
-输入以下命令初始化hexo(一定要在刚刚的文件夹内-路径显示)
-hexo init
-
-保证网络畅通, 耐心等待初始化完成. 
-
-
-到此, hexo初始化完成. 下面配置github仓库. 
-4. 创建Github仓库打开Github注册一个自己的账号
-
-
-输入自己的邮箱, 密码等
-
-
-用户名建议设置简单易记一些, 待会创建的网站域名与自己的用户名有关
-
-
-总览
-
-
-点击继续, 通过验证码和邮箱数字验证就可以注册成功.
-
-
-点击左侧的绿色按钮新建仓库Create repository. 
-
-
-到此, 仓库已经创建完成
-
-接下来还需要配置一下上传的密钥对
-打开git bash, 输入以下命令 (“email”替换为自己的邮箱)
-ssh-keygen -t rsa -b 4096 -C &quot;email&quot;
-
-然后按三下回车键, 即均保持默认不设置密码. 也可根据自己需要修改
-
-
-
-第一次是保存位置
-第二次是密码
-第三次是重复密码
-
-创建完成后, 打开保存的目录. 默认在C:\Users\用户名\.ssh
-
-
-第一个是私钥, 自己一定要保存好, 不能给别人.
-将第二个pub结尾的用记事本打开, 将里面的内容复制出来.
-
-
-复制好后, 返回Github
-
-
-
-
-
-
-
-
-密钥添加完成
-5. 安装上传插件打开git bash
-npm install hexo-deployer-git --save
-
-
-
-安装完成
-6. 更改配置打开网站文件夹
-
-
-用记事本打开_config.yml
-
-
-# 配置说明, 不要复制. 按说明修改# Hexo Configuration## Docs: https://hexo.io/docs/configuration.html## Source: https://github.com/hexojs/hexo/# Sitetitle: Hexo  # 网站的大标题subtitle: &#x27;&#x27;  # 副标题description: &#x27;&#x27; # 描述keywords:  # 网站的关键词author: John Doe # 作者language: en  # 语言 中文 zh-CNtimezone: &#x27;&#x27; # 时区 Asia/Shanghai# URL## Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;url: https://fireflyblog.github.io # 改成自己网址 https://用户名.github.io # 注意是httpspermalink: :year/:month/:day/:title/  # 其他默认转到最后一项permalink_defaults:pretty_urls:  trailing_index: true # Set to false to remove trailing &#x27;index.html&#x27; from permalinks  trailing_html: true # Set to false to remove trailing &#x27;.html&#x27; from permalinks# Directorysource_dir: sourcepublic_dir: publictag_dir: tagsarchive_dir: archivescategory_dir: categoriescode_dir: downloads/codei18n_dir: :langskip_render:# Writingnew_post_name: :title.md # File name of new postsdefault_layout: posttitlecase: false # Transform title into titlecaseexternal_link:  enable: true # Open external links in new tab  field: site # Apply to the whole site  exclude: &#x27;&#x27;filename_case: 0render_drafts: falsepost_asset_folder: falserelative_link: falsefuture: truesyntax_highlighter: highlight.jshighlight:  line_number: true  auto_detect: false  tab_replace: &#x27;&#x27;  wrap: true  hljs: falseprismjs:  preprocess: true  line_number: true  tab_replace: &#x27;&#x27;# Home page setting# path: Root path for your blogs index page. (default = &#x27;&#x27;)# per_page: Posts displayed per page. (0 = disable pagination)# order_by: Posts order. (Order by date descending by default)index_generator:  path: &#x27;&#x27;  per_page: 10  order_by: -date# Category &amp; Tagdefault_category: uncategorizedcategory_map:tag_map:# Metadata elements## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/metameta_generator: true# Date / Time format## Hexo uses Moment.js to parse and display date## You can customize the date format as defined in## http://momentjs.com/docs/#/displaying/format/date_format: YYYY-MM-DDtime_format: HH:mm:ss## updated_option supports &#x27;mtime&#x27;, &#x27;date&#x27;, &#x27;empty&#x27;updated_option: &#x27;mtime&#x27;# Pagination## Set per_page to 0 to disable paginationper_page: 10pagination_dir: page# Include / Exclude file(s)## include:/exclude: options only apply to the &#x27;source/&#x27; folderinclude:exclude:ignore:# Extensions## Plugins: https://hexo.io/plugins/## Themes: https://hexo.io/themes/theme: landscape# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: &#x27;&#x27;
-
-这一部分单拿出来修改(注意缩进为2个空格, 冒号后面一个空格)
-# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository:  branch: main
-
-仓库地址在Github, 打开找到自己的仓库
-
-
-复制好后粘贴到仓库参数后面, 完整的配置修改如下
-# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository: git@github.com:fireflyblog/fireflyblog.github.io.git #替换为自己的链接  branch: main
-
-7. 上传网页一切配置好之后, 打开网站文件夹. 右键选择open git bash here
-输入以下命令生成和上传网页
-hexo ghexo d
-
-
-
-
-
-上传成功之后, 等待一会. 就可以打开自己网页查看了(替换自己的用户名)
-https://fireflyblog.github.io
-
-
-
-至此, 网站已经搭建完成
-
-还有一些其他常使用的命令
-新建文章
-hexo new &quot;title&quot;
-
-本地部署预览
-hexo s
-
-清理生成文件(一般切换主题需要先清理再生成. 新建文章之类的不需要此操作.)
-hexo clean
-
-
-文章保存在
-网站文件夹\source\_posts
-
-
-文章格式说明以及主题美化待更新…
-]]></content>
-      <categories>
-        <category>Github</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>Git</tag>
-        <tag>Hexo</tag>
-        <tag>静态网页</tag>
-        <tag>Blog</tag>
-        <tag>博客</tag>
       </tags>
   </entry>
   <entry>
@@ -1603,6 +1411,205 @@ SD卡, 读卡器, 电脑
       </tags>
   </entry>
   <entry>
+    <title>基于Hexo和Github部署个人博客完整教程</title>
+    <url>/2024/06/4a79202d/</url>
+    <content><![CDATA[安装流程
+安装node.js
+
+安装Git
+
+安装Hexo
+
+创建Github仓库
+
+安装上传插件
+
+更改配置
+
+上传网页
+
+
+1. 安装node.js打开node.js官网Node.js — Run JavaScript Everywhere (nodejs.org)点击下载
+
+
+打开安装至默认位置即可
+
+
+
+
+
+
+
+
+
+
+自动安装一些工具, 可以选上, 然后安装. 等待安装完成
+
+
+点击完成, 会弹出一些窗口
+
+
+按任意键继续即可, 等待安装完成. 
+
+
+过程较长, 耐心等待安装完成. 
+
+
+2. 安装Git查看往期教程Git 安装及配置教程 | Firefly Blog | 萤火虫博客 (fireflye.asia)
+3. 安装Hexo完成上面的安装后, 可以使用以下命令检查是否安装成功.
+打开git bash,输入
+node -vnpm -vgit -v
+
+显示版本信息, 说明安装成功.
+
+如果没有代理, 可用下面的淘宝镜像源:
+npm config set registry https://registry.npmmirror.com/
+
+之后再输入以下命令安装hexo
+npm install -g hexo-cli
+
+等待安装完成显示以下信息说明安装完成
+
+
+还可以使用以下命令来查看安装情况
+hexo -v
+
+若显示版本信息, 说明已成功安装
+打开一个要存放网站文件的位置, 例如F:\web\. 打开此文件夹, 右键选择open git bash here
+
+或者 直接打开git bash 输入cd f:\web. 路径替换为自己的路径. 
+
+打开后会显示(我使用的虚拟机放在了桌面. 不建议这样做. 文件夹需要妥善保存.)
+
+
+输入以下命令初始化hexo(一定要在刚刚的文件夹内-路径显示)
+hexo init
+
+保证网络畅通, 耐心等待初始化完成. 
+
+
+到此, hexo初始化完成. 下面配置github仓库. 
+4. 创建Github仓库打开Github注册一个自己的账号
+
+
+输入自己的邮箱, 密码等
+
+
+用户名建议设置简单易记一些, 待会创建的网站域名与自己的用户名有关
+
+
+总览
+
+
+点击继续, 通过验证码和邮箱数字验证就可以注册成功.
+
+
+点击左侧的绿色按钮新建仓库Create repository. 
+
+
+到此, 仓库已经创建完成
+
+接下来还需要配置一下上传的密钥对
+打开git bash, 输入以下命令 (“email”替换为自己的邮箱)
+ssh-keygen -t rsa -b 4096 -C &quot;email&quot;
+
+然后按三下回车键, 即均保持默认不设置密码. 也可根据自己需要修改
+
+
+
+第一次是保存位置
+第二次是密码
+第三次是重复密码
+
+创建完成后, 打开保存的目录. 默认在C:\Users\用户名\.ssh
+
+
+第一个是私钥, 自己一定要保存好, 不能给别人.
+将第二个pub结尾的用记事本打开, 将里面的内容复制出来.
+
+
+复制好后, 返回Github
+
+
+
+
+
+
+
+
+密钥添加完成
+5. 安装上传插件打开上文初始话的hexo目录, 右键选择open git bash here
+
+或者 直接打开git bash 输入cd f:\web. 路径替换为自己的路径. 
+
+然后输入下面的命令安装插件到目录下
+npm install hexo-deployer-git --save
+
+
+
+安装完成
+6. 更改配置打开网站文件夹
+
+
+用记事本或VSCode等编辑软件打开_config.yml
+
+
+# 配置说明, 不要复制. 按说明修改# Hexo Configuration## Docs: https://hexo.io/docs/configuration.html## Source: https://github.com/hexojs/hexo/# Sitetitle: Hexo  # 网站的大标题subtitle: &#x27;&#x27;  # 副标题description: &#x27;&#x27; # 描述keywords:  # 网站的关键词author: John Doe # 作者language: en  # 语言 中文 zh-CNtimezone: &#x27;&#x27; # 时区 Asia/Shanghai# URL## Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;url: https://fireflyblog.github.io # 改成自己网址 https://用户名.github.io # 注意是httpspermalink: :year/:month/:day/:title/  # 其他默认转到最后一项permalink_defaults:pretty_urls:  trailing_index: true # Set to false to remove trailing &#x27;index.html&#x27; from permalinks  trailing_html: true # Set to false to remove trailing &#x27;.html&#x27; from permalinks# Directorysource_dir: sourcepublic_dir: publictag_dir: tagsarchive_dir: archivescategory_dir: categoriescode_dir: downloads/codei18n_dir: :langskip_render:# Writingnew_post_name: :title.md # File name of new postsdefault_layout: posttitlecase: false # Transform title into titlecaseexternal_link:  enable: true # Open external links in new tab  field: site # Apply to the whole site  exclude: &#x27;&#x27;filename_case: 0render_drafts: falsepost_asset_folder: falserelative_link: falsefuture: truesyntax_highlighter: highlight.jshighlight:  line_number: true  auto_detect: false  tab_replace: &#x27;&#x27;  wrap: true  hljs: falseprismjs:  preprocess: true  line_number: true  tab_replace: &#x27;&#x27;# Home page setting# path: Root path for your blogs index page. (default = &#x27;&#x27;)# per_page: Posts displayed per page. (0 = disable pagination)# order_by: Posts order. (Order by date descending by default)index_generator:  path: &#x27;&#x27;  per_page: 10  order_by: -date# Category &amp; Tagdefault_category: uncategorizedcategory_map:tag_map:# Metadata elements## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/metameta_generator: true# Date / Time format## Hexo uses Moment.js to parse and display date## You can customize the date format as defined in## http://momentjs.com/docs/#/displaying/format/date_format: YYYY-MM-DDtime_format: HH:mm:ss## updated_option supports &#x27;mtime&#x27;, &#x27;date&#x27;, &#x27;empty&#x27;updated_option: &#x27;mtime&#x27;# Pagination## Set per_page to 0 to disable paginationper_page: 10pagination_dir: page# Include / Exclude file(s)## include:/exclude: options only apply to the &#x27;source/&#x27; folderinclude:exclude:ignore:# Extensions## Plugins: https://hexo.io/plugins/## Themes: https://hexo.io/themes/theme: landscape# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: &#x27;&#x27;
+
+这一部分单拿出来修改(注意缩进为2个空格, 冒号后面一个空格)
+# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository:  branch: main
+
+仓库地址在Github, 打开找到自己的仓库
+
+
+复制好后粘贴到仓库参数后面, 完整的配置修改如下
+# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository: git@github.com:fireflyblog/fireflyblog.github.io.git #替换为自己的链接  branch: main
+
+7. 上传网页一切配置好之后, 打开网站文件夹. 右键选择open git bash here
+输入以下命令生成和上传网页
+hexo ghexo d
+
+
+
+
+
+上传成功之后, 等待一会. 就可以打开自己网页查看了(替换自己的用户名)
+https://fireflyblog.github.io
+
+
+
+至此, 网站已经搭建完成
+
+还有一些其他常使用的命令
+新建文章
+hexo new &quot;title&quot;
+
+本地部署预览
+hexo s
+
+清理生成文件(一般切换主题需要先清理再生成. 新建文章之类的不需要此操作.)
+hexo clean
+
+
+文章保存在
+网站文件夹\source\_posts
+
+
+文章格式说明以及主题美化待更新…
+]]></content>
+      <categories>
+        <category>Github</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Git</tag>
+        <tag>Hexo</tag>
+        <tag>静态网页</tag>
+        <tag>Blog</tag>
+        <tag>博客</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>物质点法--学习笔记(一)</title>
     <url>/2024/07/af38f644/</url>
     <content><![CDATA[1. 物质点法​    物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到计算网格得到, 求解后将计算网格结点的运动量映射回各质点, 从而得到这些质点在下一时刻的运动量(对流计算步). 
@@ -1645,6 +1652,57 @@ $$\begin{equation}\label{eq225}t_i^{(n)} &#x3D; \lim_{\Delta A \rightarrow 0} \f
       <tags>
         <tag>学习笔记</tag>
         <tag>物质点法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>论文研读(一)</title>
+    <url>/2024/12/3e16e77c/</url>
+    <content><![CDATA[原文A depth-averaged two-dimensional sediment transport model for environmental studies in the Scheldt Estuary and tidal river network - ScienceDirect
+附PDF: https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh
+工作内容针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。
+流体力学和盐度模型河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程
+浅水方程(Shallow water equations)$$\frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) &#x3D; 0$$
+$$\frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u &#x3D; -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}$$
+其中 t 是时间, $H&#x3D;h+\eta$ 是水深, h 是水柱参考高度; $f&#x3D;2\omega\sin \phi$为科里奥利参数, 以$\omega$为地球角速度, 以$\phi$为纬度; k为单位向上矢量; G为重力加速度; $\rho$ 是水的密度, 假设水的密度是恒定的, $P_a$ 是水面的大气压力; $\nu$ 为水平涡动粘度; $\tau_s$和$\tau_b$分别为表面和底部应力矢量. 
+深度平均盐度运输方程$$\frac{\partial (HS)}{\partial t} + \nabla\cdot (HuS) &#x3D; \nabla \cdot (Hk\nabla S)$$
+其中k为扩散系数
+水平涡粘性系数根据 Smagorinsky（1963）的工作，水平涡粘性系数 $\nu$ 通常按照以下形式给出：
+$$ν &#x3D; C_s^2 * Δx * |S|$$这里，
+$C_s$ 是 Smagorinsky 常数，一般取值在 0.1 到 0.2 之间；$Δx$ 是网格间距，代表了模型分辨率；$|S|$ 是应变率张量 S 的模，它描述了速度场的空间变化，具体为：$$S &#x3D; (∇u + (∇u)^T) &#x2F; 2$$其中 $∇u$ 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：
+$$|S| &#x3D; sqrt(2 * S_{ij} * S_{ij})$$这里的 $S_ij$ 表示应变率张量的分量。
+曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)$$\tau_b &#x3D; \rho g n^2 \frac{u \begin{Vmatrix} u \end{Vmatrix} }{H^{1&#x2F;3}}$$
+其中 n 是曼宁系数. 在大陆架等于$0.0235\ s\ m^{-1&#x2F;3}$ , 在Antwerp附近, 从河口线性增加到$0.028\ s\ m^{-1&#x2F;3}$
+扩散系数 k (Okubo)$$k &#x3D; c_k \Delta^{1.15}$$
+其中 $c_k$ 为常数, $\Delta$ 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 $c_k &#x3D; 150\ m^{0.85}s^{-1}$. 
+泥沙模型泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即$C_{ss}$, 悬浮沉积物的深度平均浓度[$kg\ m^{−3}$], 以及$C_{sb}$, 新鲜层中底层沉积物的浓度[$kg\ m^{−2}$]。母层是沉积物的无限来源, 只有当$C_{sb}$局部为零时才会被侵蚀。
+悬浮中的沉积物是通过平流和扩散输送的, 而底部的沉积物则不是。在区域的二维部分, 悬浮泥沙浓度和新沉积泥沙浓度服从如下方程:$$\frac{\partial (HC_{ss})}{\partial t} + \nabla \cdot (HuC_{ss}) &#x3D; \nabla \cdot (Hk\nabla C_{ss}) + E_f + E_p - D$$
+$$\frac{\partial C_{sb}}{\partial t} &#x3D; D - E_f$$
+
+
+式中$E_f$为新鲜层沉积物的侵蚀速率, $E_p$为母层沉积物的侵蚀速率, $D$为新鲜层沉积物的沉积速率。
+假设母层从未供应, 并且两个底层之间没有交换。此外, 也没有考虑床质输运。
+侵蚀速率 (Partheniades(1965))$$E_f &#x3D; \begin{cases} \begin{aligned}&amp;M\left( \frac{\tau_b}{\tau_e} -1\right) &amp;     &amp; if\ \tau_b &gt; \tau_e\ and\ C_{sb} &gt; 0 \newline&amp;0 &amp;    &amp;otherwise\end{aligned}\end{cases}$$
+$$E_p &#x3D; \begin{cases} \begin{aligned}&amp;M\left( \frac{\tau_b}{\tau_{e,p}} -1\right) &amp;     &amp; if\ \tau_b &gt; \tau_{e,p}\ and\ C_{sb} &#x3D; 0 \newline&amp;0 &amp;    &amp;otherwise\end{aligned}\end{cases}$$
+当$\tau_b$(底部应力向量的范数$\tau_b$) 高于一个阈值$\tau_e$时, 沉积物从新鲜层被侵蚀, 或者, 如果新鲜层局部是空的, 当$\tau_b$高于另一个阈值$\tau_{e,p}$; M被称为侵蚀速率参数。
+沉积速率(Einstein和Krone (1962))$$D&#x3D;w_sC_{ss}$$
+其中 $w_s$ 为沉降速度.$$w_S &#x3D; w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m$$其中 $C_{ss,0}&#x3D;0.1\ kg m^{-3}$ 是 Scheldt SSC的参考值, $w_{s,0}$ 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999). 
+
+连续方程的推导
+引入自由表面的运动学条件和底部运动学条件$$u_z|_{z&#x3D;z_s} &#x3D; \frac{dz_s}{dt} &#x3D; \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x} u_x + \frac{\partial z_s}{\partial y} u_y$$
+$$u_z|_{z&#x3D;z_b} &#x3D; \frac{dz_b}{dt} &#x3D; \frac{\partial z_b}{\partial t} + \frac{\partial z_b}{\partial x} u_x + \frac{\partial z_b}{\partial y} u_y$$
+对连续性方程沿水深方向进行积分$$\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j} dz &#x3D; 0 \ (j&#x3D;1,2,3)$$
+$$\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j}dz + u_z|{z_s} - u_z|{u_b} &#x3D; 0 \ (j&#x3D;1,2)$$
+由牛顿-莱布尼兹公式$$\frac{\partial}{\partial x_j} \int_a^b f dz &#x3D; \int_a^b \frac{\partial f}{\partial x_j} dz + f|b \frac{\partial b}{\partial x_j} - f|a \frac{\partial a}{\partial x_j}$$将上式第一项展开，可得$$\frac{\partial }{\partial x_j}\int{z_b}^{z_s}u_jdz - u_j|{z_s}\frac{\partial z_s}{\partial x_j} +u_j|{z_b}\frac{\partial z_b}{\partial x_j} + u_z|{z_s} - u_z|{z_b} &#x3D; 0 \ (j&#x3D;1,2)$$代入两个运动学条件，可得$$\frac{\partial }{\partial x_j}\int{z_b}^{z_s}u_jdz - u_j|{z_s}\frac{\partial z_s}{\partial x_j} +u_j|{z_b}\frac{\partial z_b}{\partial x_j} + \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x_j} u_j|{z_s} - \frac{\partial z_b}{\partial t} - \frac{\partial z_b}{\partial x_j} u_j|{z_b} &#x3D; 0 \ (j&#x3D;1,2)$$化简，得$$\frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz + \frac{\partial z_s}{\partial x_j} - \frac{\partial z_b}{\partial x_j} &#x3D; 0 \ (j&#x3D;1,2)$$由 $H&#x3D;z_s-z_b$, 进一步化简为$$\frac{\partial H}{\partial t} + \frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz &#x3D; 0 \ (j&#x3D;1,2)$$又有$$\int_{z_b}^{z_s} u_j dz &#x3D; HU_j \ (j&#x3D;1,2)$$代入上式，得$$\frac{\partial H}{\partial t} + \frac{\partial HU_j}{\partial x_j} &#x3D; 0 \ (j&#x3D;1,2)$$即$$\frac{\partial H}{\partial t} + \frac{\partial HU_x}{\partial x} + \frac{\partial HU_y}{\partial y} &#x3D; 0$$本篇文章中 $H &#x3D; h + \eta$, $H$ 为水深，$h$ 为参考水柱高度（河床到基准面的高度），$\eta$ 为水面相对于基准面的高度，是一个瞬时变化量。
+因此，第一项水深随时间的变化率写为 $\frac{\partial \eta}{\partial t}$，第二三项的为水平方向的水流通量，其通过面积可表示为 $H$, 因此此项应写为 $\frac{\partial Hu_j}{\partial x_j}$. 
+综上$$\frac{\partial \eta}{\partial t} + \frac{\partial Hu_j}{\partial x_j} &#x3D; 0 \ (j&#x3D;1,2)$$使用哈密顿算子可以表示为$$\frac{\partial \eta}{\partial t} + \nabla \cdot (Hu) &#x3D; 0$$
+
+]]></content>
+      <categories>
+        <category>深度平均</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>深度平均</tag>
       </tags>
   </entry>
   <entry>
@@ -2069,57 +2127,6 @@ main(master)分支 Init-update-update2 内容
       </tags>
   </entry>
   <entry>
-    <title>论文研读(一)</title>
-    <url>/2024/12/3e16e77c/</url>
-    <content><![CDATA[原文A depth-averaged two-dimensional sediment transport model for environmental studies in the Scheldt Estuary and tidal river network - ScienceDirect
-附PDF: https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh
-工作内容针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。
-流体力学和盐度模型河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程
-浅水方程(Shallow water equations)$$ {连续方程}\frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) &#x3D; 0$$
-$$\frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u &#x3D; -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}$$
-其中 t 是时间, $H&#x3D;h+\eta$ 是水深, h 是水柱参考高度; $f&#x3D;2\omega\sin \phi$为科里奥利参数, 以$\omega$为地球角速度, 以$\phi$为纬度; k为单位向上矢量; G为重力加速度; $\rho$ 是水的密度, 假设水的密度是恒定的, $P_a$ 是水面的大气压力; $\nu$ 为水平涡动粘度; $\tau_s$和$\tau_b$分别为表面和底部应力矢量. 
-深度平均盐度运输方程$$\frac{\partial (HS)}{\partial t} + \nabla\cdot (HuS) &#x3D; \nabla \cdot (Hk\nabla S)$$
-其中k为扩散系数
-水平涡粘性系数根据 Smagorinsky（1963）的工作，水平涡粘性系数 $\nu$ 通常按照以下形式给出：
-$$ν &#x3D; C_s^2 * Δx * |S|$$这里，
-$C_s$ 是 Smagorinsky 常数，一般取值在 0.1 到 0.2 之间；$Δx$ 是网格间距，代表了模型分辨率；$|S|$ 是应变率张量 S 的模，它描述了速度场的空间变化，具体为：$$S &#x3D; (∇u + (∇u)^T) &#x2F; 2$$其中 $∇u$ 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：
-$$|S| &#x3D; sqrt(2 * S_{ij} * S_{ij})$$这里的 $S_ij$ 表示应变率张量的分量。
-曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)$$\tau_b &#x3D; \rho g n^2 \frac{u \begin{Vmatrix} u \end{Vmatrix} }{H^{1&#x2F;3}}$$
-其中 n 是曼宁系数. 在大陆架等于$0.0235\ s\ m^{-1&#x2F;3}$ , 在Antwerp附近, 从河口线性增加到$0.028\ s\ m^{-1&#x2F;3}$
-扩散系数 k (Okubo)$$k &#x3D; c_k \Delta^{1.15}$$
-其中 $c_k$ 为常数, $\Delta$ 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 $c_k &#x3D; 150\ m^{0.85}s^{-1}$. 
-泥沙模型泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即$C_{ss}$, 悬浮沉积物的深度平均浓度[$kg\ m^{−3}$], 以及$C_{sb}$, 新鲜层中底层沉积物的浓度[$kg\ m^{−2}$]。母层是沉积物的无限来源, 只有当$C_{sb}$局部为零时才会被侵蚀。
-悬浮中的沉积物是通过平流和扩散输送的, 而底部的沉积物则不是。在区域的二维部分, 悬浮泥沙浓度和新沉积泥沙浓度服从如下方程:$$\frac{\partial (HC_{ss})}{\partial t} + \nabla \cdot (HuC_{ss}) &#x3D; \nabla \cdot (Hk\nabla C_{ss}) + E_f + E_p - D$$
-$$\frac{\partial C_{sb}}{\partial t} &#x3D; D - E_f$$
-
-
-式中$E_f$为新鲜层沉积物的侵蚀速率, $E_p$为母层沉积物的侵蚀速率, $D$为新鲜层沉积物的沉积速率。
-假设母层从未供应, 并且两个底层之间没有交换。此外, 也没有考虑床质输运。
-侵蚀速率 (Partheniades(1965))$$E_f &#x3D; \begin{cases} \begin{aligned}&amp;M\left( \frac{\tau_b}{\tau_e} -1\right) &amp;     &amp; if\ \tau_b &gt; \tau_e\ and\ C_{sb} &gt; 0 \newline&amp;0 &amp;    &amp;otherwise\end{aligned}\end{cases}$$
-$$E_p &#x3D; \begin{cases} \begin{aligned}&amp;M\left( \frac{\tau_b}{\tau_{e,p}} -1\right) &amp;     &amp; if\ \tau_b &gt; \tau_{e,p}\ and\ C_{sb} &#x3D; 0 \newline&amp;0 &amp;    &amp;otherwise\end{aligned}\end{cases}$$
-当$\tau_b$(底部应力向量的范数$\tau_b$) 高于一个阈值$\tau_e$时, 沉积物从新鲜层被侵蚀, 或者, 如果新鲜层局部是空的, 当$\tau_b$高于另一个阈值$\tau_{e,p}$; M被称为侵蚀速率参数。
-沉积速率(Einstein和Krone (1962))$$D&#x3D;w_sC_{ss}$$
-其中 $w_s$ 为沉降速度.$$w_S &#x3D; w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m$$其中 $C_{ss,0}&#x3D;0.1\ kg m^{-3}$ 是 Scheldt SSC的参考值, $w_{s,0}$ 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999). 
-
-连续方程的推导
-引入自由表面的运动学条件和底部运动学条件$$u_z|_{z&#x3D;z_s} &#x3D; \frac{dz_s}{dt} &#x3D; \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x} u_x + \frac{\partial z_s}{\partial y} u_y$$
-$$u_z|_{z&#x3D;z_b} &#x3D; \frac{dz_b}{dt} &#x3D; \frac{\partial z_b}{\partial t} + \frac{\partial z_b}{\partial x} u_x + \frac{\partial z_b}{\partial y} u_y$$
-对连续性方程沿水深方向进行积分$$\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j} dz &#x3D; 0 \ (j&#x3D;1,2,3)$$
-$$\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j}dz + u_z|{z_s} - u_z|{u_b} &#x3D; 0 \ (j&#x3D;1,2)$$
-由牛顿-莱布尼兹公式$$\frac{\partial}{\partial x_j} \int_a^b f dz &#x3D; \int_a^b \frac{\partial f}{\partial x_j} dz + f|b \frac{\partial b}{\partial x_j} - f|a \frac{\partial a}{\partial x_j}$$将上式第一项展开，可得$$\frac{\partial }{\partial x_j}\int{z_b}^{z_s}u_jdz - u_j|{z_s}\frac{\partial z_s}{\partial x_j} +u_j|{z_b}\frac{\partial z_b}{\partial x_j} + u_z|{z_s} - u_z|{z_b} &#x3D; 0 \ (j&#x3D;1,2)$$代入两个运动学条件，可得$$\frac{\partial }{\partial x_j}\int{z_b}^{z_s}u_jdz - u_j|{z_s}\frac{\partial z_s}{\partial x_j} +u_j|{z_b}\frac{\partial z_b}{\partial x_j} + \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x_j} u_j|{z_s} - \frac{\partial z_b}{\partial t} - \frac{\partial z_b}{\partial x_j} u_j|{z_b} &#x3D; 0 \ (j&#x3D;1,2)$$化简，得$$\frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz + \frac{\partial z_s}{\partial x_j} - \frac{\partial z_b}{\partial x_j} &#x3D; 0 \ (j&#x3D;1,2)$$由 $H&#x3D;z_s-z_b$, 进一步化简为$$\frac{\partial H}{\partial t} + \frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz &#x3D; 0 \ (j&#x3D;1,2)$$又有$$\int_{z_b}^{z_s} u_j dz &#x3D; HU_j \ (j&#x3D;1,2)$$代入上式，得$$\frac{\partial H}{\partial t} + \frac{\partial HU_j}{\partial x_j} &#x3D; 0 \ (j&#x3D;1,2)$$即$$\frac{\partial H}{\partial t} + \frac{\partial HU_x}{\partial x} + \frac{\partial HU_y}{\partial y} &#x3D; 0$$本篇文章中 $H &#x3D; h + \eta$, $H$ 为水深，$h$ 为参考水柱高度（河床到基准面的高度），$\eta$ 为水面相对于基准面的高度，是一个瞬时变化量。
-因此，第一项水深随时间的变化率写为 $\frac{\partial \eta}{\partial t}$，第二三项的为水平方向的水流通量，其通过面积可表示为 $H$, 因此此项应写为 $\frac{\partial Hu_j}{\partial x_j}$. 
-综上$$\frac{\partial \eta}{\partial t} + \frac{\partial Hu_j}{\partial x_j} &#x3D; 0 \ (j&#x3D;1,2)$$使用哈密顿算子可以表示为$$\frac{\partial \eta}{\partial t} + \nabla \cdot (Hu) &#x3D; 0$$
-
-]]></content>
-      <categories>
-        <category>深度平均</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-        <tag>深度平均</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Hexo博客部署到云服务器教程</title>
     <url>/2025/03/ee12770f/</url>
     <content><![CDATA[准备工作
@@ -2314,6 +2321,56 @@ sudo vim /etc/passwd
       </tags>
   </entry>
   <entry>
+    <title>Nginx反向代理教程</title>
+    <url>/2025/03/4bc19655/</url>
+    <content><![CDATA[准备工作
+Ubuntu系统
+Nginx
+
+配置教程1.备份配置文件sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
+
+2.编辑配置文件sudo vim /etc/nginx/nginx.conf
+
+找到http&#123;&#125;块中的server&#123;&#125;块，注释掉原有的server&#123;&#125;
+
+
+3.按原有配置添加新的server块(1) 默认的错误界面server &#123;    listen 443 ssl default_server;    server_name _;    ssl_certificate /etc/nginx/xxx.crt;    ssl_certificate_key /etc/nginx/xxx.key;    return 404;&#125;
+
+(2) 主域名server &#123;     listen 443 ssl;     server_name fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;         root /home/www/website;         index  index.html index.htm;     &#125;&#125;
+
+其中root改为自己本地的网站目录
+(3) 主域名转发server &#123;        listen 80;        server_name fireflye.top;        return 301 https://$host$request_uri;        &#125;
+
+(4) 二级域名端口转发示例server &#123;     listen 443 ssl;     server_name xxx.fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;       proxy_set_header X-Forwarded-Proto $scheme;       proxy_set_header Host $host;       proxy_set_header X-Real-IP $remote_addr;       proxy_set_header Range $http_range;       proxy_set_header If-Range $http_if_range;       proxy_redirect off;       proxy_pass https://127.0.0.1:xxx;       client_max_body_size 20000m;       &#125;&#125; server &#123;        listen 80;        server_name xxx.fireflye.top;        return 301 https://$host$request_uri;				&#125;
+
+其他均可套此模版
+
+注意http{}需要闭合，最后的大括号容易被误删
+
+(5) 检验配置并重启nginxsudo nginx -t
+
+
+
+证明无错误，重启nginx
+sudo nginx -s reload
+
+4.SSL证书可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器
+
+每个证书有效期三个月
+除www外的二级域名需要单独申请
+总有效证书最多50个(到期会释放个数)
+
+]]></content>
+      <categories>
+        <category>Nginx</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>反向代理</tag>
+        <tag>端口转发</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>分水岭提取教程</title>
     <url>/2025/05/2ef32537/</url>
     <content><![CDATA[准备工具
@@ -2372,56 +2429,6 @@ ArcMap
         <tag>教程及说明</tag>
         <tag>分水岭</tag>
         <tag>栅格</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Nginx反向代理教程</title>
-    <url>/2025/03/4bc19655/</url>
-    <content><![CDATA[准备工作
-Ubuntu系统
-Nginx
-
-配置教程1.备份配置文件sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
-
-2.编辑配置文件sudo vim /etc/nginx/nginx.conf
-
-找到http&#123;&#125;块中的server&#123;&#125;块，注释掉原有的server&#123;&#125;
-
-
-3.按原有配置添加新的server块(1) 默认的错误界面server &#123;    listen 443 ssl default_server;    server_name _;    ssl_certificate /etc/nginx/xxx.crt;    ssl_certificate_key /etc/nginx/xxx.key;    return 404;&#125;
-
-(2) 主域名server &#123;     listen 443 ssl;     server_name fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;         root /home/www/website;         index  index.html index.htm;     &#125;&#125;
-
-其中root改为自己本地的网站目录
-(3) 主域名转发server &#123;        listen 80;        server_name fireflye.top;        return 301 https://$host$request_uri;        &#125;
-
-(4) 二级域名端口转发示例server &#123;     listen 443 ssl;     server_name xxx.fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;       proxy_set_header X-Forwarded-Proto $scheme;       proxy_set_header Host $host;       proxy_set_header X-Real-IP $remote_addr;       proxy_set_header Range $http_range;       proxy_set_header If-Range $http_if_range;       proxy_redirect off;       proxy_pass https://127.0.0.1:xxx;       client_max_body_size 20000m;       &#125;&#125; server &#123;        listen 80;        server_name xxx.fireflye.top;        return 301 https://$host$request_uri;				&#125;
-
-其他均可套此模版
-
-注意http{}需要闭合，最后的大括号容易被误删
-
-(5) 检验配置并重启nginxsudo nginx -t
-
-
-
-证明无错误，重启nginx
-sudo nginx -s reload
-
-4.SSL证书可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器
-
-每个证书有效期三个月
-除www外的二级域名需要单独申请
-总有效证书最多50个(到期会释放个数)
-
-]]></content>
-      <categories>
-        <category>Nginx</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>反向代理</tag>
-        <tag>端口转发</tag>
       </tags>
   </entry>
   <entry>
@@ -2490,7 +2497,7 @@ ArcGis
 创新三：摩擦接触算法
 引入基于库仑摩擦的接触算法，真实反映滑坡体与底床之间的摩擦效应。
 框架理论1. 控制方程固体骨架和液相的质量守恒方程表示为:$$\frac{d(n_s\rho_s)}{dt}&#x3D;-\nabla\cdot(n_s\rho_s\mathbf{v}_s) \tag{1}$$$$\frac{d(n_w\rho_w)}{dt}&#x3D;-\nabla\cdot(n_w\rho_w\mathbf{v}_w) \tag{2}$$
-其中 $\rho_s$ 和 $\rho_w$ 分别为固体骨架和水的密度; $v_s$ 和 $v_w$分别表示固体骨架和水的速度; $n_s$为固体骨架的体积次度; $n_w$为水的体积浓度, 也称为孔隙率。注意 $n_s+n_w&#x3D;1$.
+其中 $\rho_s$ 和 $\rho_w$ 分别为固体骨架和水的密度; $v_s$ 和 $v_w$分别表示固体骨架和水的速度; $n_s$为固体骨架的体积浓度; $n_w$为水的体积浓度, 也称为孔隙率。注意 $n_s+n_w&#x3D;1$.
 固体骨架和液相的动量守恒方程表示为:$$n_s \rho_s \dot{v}_s &#x3D; \nabla \cdot \bar{\sigma}_s + n_s \rho_s b + f^i \tag{3}$$
 $$n_w \rho_w \dot{v}_w &#x3D; \nabla \cdot \bar{\sigma}_w + \nabla \cdot s_w + n_w \rho_w b - f^i \tag{4}$$
 其中$\bar{\sigma}_{s}$和$\bar{\sigma}_w$分别为体积平均的固相和液相应力, 分别表示为$\bar{\sigma}_s&#x3D;\sigma’-(1-n_w)p_wI$和$\bar{\sigma}_w&#x3D;-n_w p_wI$; $\sigma’$为太沙基有效应力; $s_w$为液相的粘性应力; $b$表示体力; $f^i$表示固‐流相互作用力, 表达式见下式：$$f^i&#x3D;\frac{n_w\rho_wg}k(v_w-v_s)+\beta n_w^2\rho_w|v_w-v_s|(v_w-v_s)+\mathbf{\sigma}_w\nabla n \tag{5}$$其中, k是水力传导率(m&#x2F;s)，表示为$k &#x3D; \frac{\kappa \rho_w g}{\mu_w}$, 且$\kappa &#x3D; \frac{d^2 n_w^2}{180(1 - n_w)^2}$其中$\kappa$是绝对渗透率(m³); $ \mu_w $ 表示水的粘度，$ d $ 表示土粒的直径；$\beta$ 是描述拖曳力与速度之间非线性关系的系数。
