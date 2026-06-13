@@ -364,6 +364,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const isChatBtn = typeof chatBtn !== 'undefined'
     const isShowPercent = GLOBAL_CONFIG.percent.rightside
 
+    if ($header.classList.contains('full_page')) {
+      const headerHeight = $header.offsetHeight
+      const fadeStart = headerHeight * 0.75
+      const fadeEnd = headerHeight * 0.2
+      const fadeDistance = fadeStart - fadeEnd
+      let maskTicking = false
+
+      const updateNavMask = () => {
+        const currentTop = window.scrollY || document.documentElement.scrollTop
+        const opacity = Math.min(1, Math.max(0, (currentTop - fadeEnd) / fadeDistance))
+        $header.style.setProperty('--nav-mask-opacity', opacity.toFixed(3))
+        maskTicking = false
+      }
+
+      const requestNavMaskUpdate = () => {
+        if (!maskTicking) {
+          maskTicking = true
+          requestAnimationFrame(updateNavMask)
+        }
+      }
+
+      updateNavMask()
+      btf.addEventListenerPjax(window, 'scroll', requestNavMaskUpdate, { passive: true })
+    }
+
     // 當滾動條小于 56 的時候
     if (document.body.scrollHeight <= innerHeight) {
       $rightside.classList.add('rightside-show')

@@ -40,33 +40,6 @@ elements_3: DO iel=1,nels            bload=zero            phi=prop(1,iel)      
       </tags>
   </entry>
   <entry>
-    <title>非饱和土手动迭代计算程序修改说明</title>
-    <url>/2024/04/863a85e0/</url>
-    <content><![CDATA[修改内容1、输入参数改变t(nl) 每层层底沉积年代(37 行)土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)水位位置（坡顶为 0，y 方向为负值）(58 行)非饱和抗剪强度公式中 κ(59 行)
-2、输入所有节点孔压(53 行)READ(12,*)inpore  !所有节点孔压
-3、输出 prop(nprops,np_types)(98-85 行)nprops=10 !分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率CALL g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)
-首先，求prop1：一列单元的参数(其中重度为干重度)其次，求prop：所有单元参数(其中重度为干重度)之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率最后，利用含水率计算天然重度
-4、输出 surf(2,nosurf) (79 行)根据水位计算水位线上各节点坐标
-call WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)
-5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)CALL water_loads
-7、对于孔压 inpore 的处理首先，单元循环内提取该单元所有节点的孔压(172行)其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)之后，高斯循环中计算高斯点吸应力pore (181行)最后，修正正应力(186-188行)
-8、若收敛，对应力进行恢复(193-195 行)9、奇偶分层下的变形图(224 行)CALL dismsh
-输入说明w1   s1   w2   h1   h2   nl !分层数  用于划分黄土古土壤序列情况8    4     4    14   8    4h(nl) !每层层底距坡顶距离4   12   16   22ny(nl) !每层划分网格数2    4    2   3t(nl) !每层层底沉积年代8   12   18   33nx1    nx2   ny1    ny24       2     7    4!土水特征参数a、m、n随沉积年代模型参数0.044     7.062      -0.0000724      0.3318              -0.000161      1.509224.4397   -113.0186   0.000000176   -0.0000591   0.2077   0.000000331   -0.000128   1.2664!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重0  18.5       0.17    0      0.0        1.25   0.018    0.4623   1.0e5   0.3  2.710  18.5       3.56   500     0.0        1.39   0.0035   0.6489   1.0e5   0.3  2.72!水位位置（坡顶为0，y方向为负值）-100!非饱和抗剪强度公式中κ1.4!收敛准则  计算次数0.0001   500!折减次数9!折减系数0.8  0.9  1.0  1.1  1.2  1.3  1.4  1.5  1.6
-
-非本人原创内容
-]]></content>
-      <categories>
-        <category>边坡</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>边坡稳定性</tag>
-        <tag>Fortran</tag>
-        <tag>有限元</tag>
-        <tag>孔压</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>可靠度分析程序说明文件</title>
     <url>/2024/04/74b4d97f/</url>
     <content><![CDATA[非饱和黄土边坡失效概率计算程序本程序是基于有限元的边坡可靠度分析程序，改进自Griffith教授 的非饱和黄土边坡稳定性计算程序
@@ -157,6 +130,33 @@ xxx_grid.txt的内容复制到xxx.dat文件的以下位置：
         <tag>失效概率</tag>
         <tag>Monte-Carlo</tag>
         <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>非饱和土手动迭代计算程序修改说明</title>
+    <url>/2024/04/863a85e0/</url>
+    <content><![CDATA[修改内容1、输入参数改变t(nl) 每层层底沉积年代(37 行)土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)水位位置（坡顶为 0，y 方向为负值）(58 行)非饱和抗剪强度公式中 κ(59 行)
+2、输入所有节点孔压(53 行)READ(12,*)inpore  !所有节点孔压
+3、输出 prop(nprops,np_types)(98-85 行)nprops=10 !分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率CALL g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)
+首先，求prop1：一列单元的参数(其中重度为干重度)其次，求prop：所有单元参数(其中重度为干重度)之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率最后，利用含水率计算天然重度
+4、输出 surf(2,nosurf) (79 行)根据水位计算水位线上各节点坐标
+call WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)
+5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)CALL water_loads
+7、对于孔压 inpore 的处理首先，单元循环内提取该单元所有节点的孔压(172行)其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)之后，高斯循环中计算高斯点吸应力pore (181行)最后，修正正应力(186-188行)
+8、若收敛，对应力进行恢复(193-195 行)9、奇偶分层下的变形图(224 行)CALL dismsh
+输入说明w1   s1   w2   h1   h2   nl !分层数  用于划分黄土古土壤序列情况8    4     4    14   8    4h(nl) !每层层底距坡顶距离4   12   16   22ny(nl) !每层划分网格数2    4    2   3t(nl) !每层层底沉积年代8   12   18   33nx1    nx2   ny1    ny24       2     7    4!土水特征参数a、m、n随沉积年代模型参数0.044     7.062      -0.0000724      0.3318              -0.000161      1.509224.4397   -113.0186   0.000000176   -0.0000591   0.2077   0.000000331   -0.000128   1.2664!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重0  18.5       0.17    0      0.0        1.25   0.018    0.4623   1.0e5   0.3  2.710  18.5       3.56   500     0.0        1.39   0.0035   0.6489   1.0e5   0.3  2.72!水位位置（坡顶为0，y方向为负值）-100!非饱和抗剪强度公式中κ1.4!收敛准则  计算次数0.0001   500!折减次数9!折减系数0.8  0.9  1.0  1.1  1.2  1.3  1.4  1.5  1.6
+
+非本人原创内容
+]]></content>
+      <categories>
+        <category>边坡</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>边坡稳定性</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
+        <tag>孔压</tag>
       </tags>
   </entry>
   <entry>
@@ -277,151 +277,6 @@ m|_{单位时间}=\rho Sv\cos\theta对控制体边界面积分
         <tag>学习笔记</tag>
         <tag>流体力学</tag>
         <tag>质量守恒方程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ubuntu22.04双系统安装教程</title>
-    <url>/2024/05/deb026e9/</url>
-    <content><![CDATA[准备工作
-良好的网络环境
-一块8g以上的U盘(注意备份数据, 该U盘会被格式化)
-Windows电脑
-
-硬件要求
-
-双核2 GHz处理器或更高
-4 GB系统内存
-25 GB磁盘存储空间
-
-
-装机需谨慎, 做好数据备份1. 系统镜像的下载打开Ubuntu系统下载 | Ubuntu 此页面,点击下载Ubuntu桌面版, 
-或者从网盘中下载: 
-百度云：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
-
-再选择Ubuntu22.04.4 LTS,点击下载22.04.4
-
-将此文件下载保存至易寻找的位置, 以F:/Ubuntu为例, 稍后会使用. 
-其他版本可在官网下载Get Ubuntu | Download | Ubuntu 安装步骤大致相同
-2. 安装写盘工具Rufus打开Rufus - 轻松创建 USB 启动盘 页面, 找到下载,选择Windows x64平台的便携版, 下载打开即用. 
-
-插入U盘,打开软件
-
-点击选择, 设备选择刚刚插入的U盘, 镜像文件点击右侧选择, 选中刚刚下载的镜像文件, 我的是位于F:/Ubuntu, 选项如下图即可, 点击开始, 等待写入完成, 点击关闭, 弹出U盘
-
-3. 关闭Bitlocker或者备份Bitlocker恢复密钥如果硬盘设置了Bitlocker, 一定要提前找到恢复密钥, 可以先保存到手机上, 一般在微软账户里会有备份恢复密钥
-如果找不到了, 开始前一定要关闭Bitlocker. 改动引导顺序和安全启动选项会触发BitLocker, 要求输入恢复密钥. 否则你将无法打开Windows系统或已加密数据
-关闭过程时间可能较长
-4. 压缩硬盘空间(双系统需要,若全新安装不需要)打开Windows的磁盘管理工具, 右键开始菜单图标, 选择磁盘管理
-
-找到需要压缩的分区, 右键点击压缩卷
-
-输入合适的空间, 建议40GB以上, 最低不低于官网要求的25GB, 点击压缩即可
-
-5. 关闭安全启动, 设置U盘启动网络上搜索自己的电脑进入BIOS的方法, surface go系列是按音量加键, 一般电脑是按F2或者F10, 以自己的电脑为准, 进入BIOS,关闭安全启动, 设置启动顺序, 将USB设备设置到最上面, 由于每台设备情况不同, 此处设置请自行搜索自己电脑的教程. 
-
-surface go系列安全启动会有三个选项
-
-微软
-
-微软和第三方
-
-关闭
-
-
-选择微软和第三方即可
-
-6. 插入U盘, 启动电脑在上一步设置完成之后, 若处于开机状态就插入U盘, 重启电脑, 引导位置选择
-
- Try or Install Ubuntu
-
-
-等待进入安装界面, 选择中文
-
-如果出现窗口显示不全, 点击试用Ubuntu,如果像我一样可以看到全部窗口, 就点击安装Ubuntu, 跳转到下面开始安装教程
-
-点击试用之后, 会出现如下界面
-
-点击该图标, 再打开设置, 找到显示器, 缩放比例选择100%, 点击保存(我使用的虚拟机没有该选项, 就在红框的位置. 保存在夜灯右边位置, 修改后会出现)
-
-保存之后再选择安装Ubuntu就可以了
-
-开始安装键盘布局默认即可
-
-
-
-
-双系统手动分区
-
-建议分区
-
-创建交换空间
-
-
-填写大小: 建议与内存大小相同, 4G 8G 16G都可
-分区类型: 逻辑分区
-新分区位置:空间起始分区(下面也都是这个不用改)
-用于: 交换空间
-
-
-创建根目录分区
-
-
-填写大小: 如果空间太小就把剩下的全给根目录, 方便后面扩容, 如果空间充足就给20GB以上均可,主要存放系统文件和安装软件
-分区类型: 主分区
-新分区位置:空间起始分区(下面也都是这个不用改)
-用于: Ext4 日志文件系统
-挂载点: /
-
-可选分区
-
-创建引导分区(双系统同盘可不创建, 放置在Windows系统的引导分区里即可)
-
-
-填写大小: 建议200MB-1024MB根据个人情况来,这里我给了500MB
-分区类型: 主分区
-新分区位置: 空间起始分区(下面也都是这个不用改)
-用于: EFI
-
-
-如果空间充足可给/home分区单独设置, 后面想扩容之类的就上面三个分区就可以了, 后面扩容完可以再分
-
-
-填写大小: 20GB以上均可, 看个人使用情况, 存放用户文件, 类似Windows的Users目录
-分区类型: 主分区
-新分区位置:空间起始分区(下面也都是这个不用改)
-用于: Ext4 日志文件系统
-挂载点: /home
-
-最终效果如下
-
-
- 点击现在安装  —&gt; 继续, 时区选择上海, 点击继续
-
-用户信息按自己的填写即可. 可以勾选自动登录, 每次开机不需要选择用户, 自动登录.
-
-点击继续即可安装, 安装之后选择重启, 根据提示会让你拔掉U盘, 按ENTER(回车键)
-
-至此双系统就安装好了. 每次启动时, 系统会提示选择Ubuntu还是Windows系统一般是4个选项
-
-Ubuntu
-Ubuntu高级设置
-Windows
-EFI
-
-顺序可能不同,名称仅为示例, 很容易识别
-
-若未关闭Bitlocker, 进入Windows系统需要输入一次恢复密钥, 下次进入就不需要了.
-
-如果安装没有什么问题, 之前下载的镜像文件就可以清理了
-]]></content>
-      <categories>
-        <category>Ubuntu</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>Ubuntu</tag>
-        <tag>系统安装</tag>
-        <tag>硬盘分区</tag>
       </tags>
   </entry>
   <entry>
@@ -838,6 +693,151 @@ git push -f
       </tags>
   </entry>
   <entry>
+    <title>Ubuntu22.04双系统安装教程</title>
+    <url>/2024/05/deb026e9/</url>
+    <content><![CDATA[准备工作
+良好的网络环境
+一块8g以上的U盘(注意备份数据, 该U盘会被格式化)
+Windows电脑
+
+硬件要求
+
+双核2 GHz处理器或更高
+4 GB系统内存
+25 GB磁盘存储空间
+
+
+装机需谨慎, 做好数据备份1. 系统镜像的下载打开Ubuntu系统下载 | Ubuntu 此页面,点击下载Ubuntu桌面版, 
+或者从网盘中下载: 
+百度云：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
+
+再选择Ubuntu22.04.4 LTS,点击下载22.04.4
+
+将此文件下载保存至易寻找的位置, 以F:/Ubuntu为例, 稍后会使用. 
+其他版本可在官网下载Get Ubuntu | Download | Ubuntu 安装步骤大致相同
+2. 安装写盘工具Rufus打开Rufus - 轻松创建 USB 启动盘 页面, 找到下载,选择Windows x64平台的便携版, 下载打开即用. 
+
+插入U盘,打开软件
+
+点击选择, 设备选择刚刚插入的U盘, 镜像文件点击右侧选择, 选中刚刚下载的镜像文件, 我的是位于F:/Ubuntu, 选项如下图即可, 点击开始, 等待写入完成, 点击关闭, 弹出U盘
+
+3. 关闭Bitlocker或者备份Bitlocker恢复密钥如果硬盘设置了Bitlocker, 一定要提前找到恢复密钥, 可以先保存到手机上, 一般在微软账户里会有备份恢复密钥
+如果找不到了, 开始前一定要关闭Bitlocker. 改动引导顺序和安全启动选项会触发BitLocker, 要求输入恢复密钥. 否则你将无法打开Windows系统或已加密数据
+关闭过程时间可能较长
+4. 压缩硬盘空间(双系统需要,若全新安装不需要)打开Windows的磁盘管理工具, 右键开始菜单图标, 选择磁盘管理
+
+找到需要压缩的分区, 右键点击压缩卷
+
+输入合适的空间, 建议40GB以上, 最低不低于官网要求的25GB, 点击压缩即可
+
+5. 关闭安全启动, 设置U盘启动网络上搜索自己的电脑进入BIOS的方法, surface go系列是按音量加键, 一般电脑是按F2或者F10, 以自己的电脑为准, 进入BIOS,关闭安全启动, 设置启动顺序, 将USB设备设置到最上面, 由于每台设备情况不同, 此处设置请自行搜索自己电脑的教程. 
+
+surface go系列安全启动会有三个选项
+
+微软
+
+微软和第三方
+
+关闭
+
+
+选择微软和第三方即可
+
+6. 插入U盘, 启动电脑在上一步设置完成之后, 若处于开机状态就插入U盘, 重启电脑, 引导位置选择
+
+ Try or Install Ubuntu
+
+
+等待进入安装界面, 选择中文
+
+如果出现窗口显示不全, 点击试用Ubuntu,如果像我一样可以看到全部窗口, 就点击安装Ubuntu, 跳转到下面开始安装教程
+
+点击试用之后, 会出现如下界面
+
+点击该图标, 再打开设置, 找到显示器, 缩放比例选择100%, 点击保存(我使用的虚拟机没有该选项, 就在红框的位置. 保存在夜灯右边位置, 修改后会出现)
+
+保存之后再选择安装Ubuntu就可以了
+
+开始安装键盘布局默认即可
+
+
+
+
+双系统手动分区
+
+建议分区
+
+创建交换空间
+
+
+填写大小: 建议与内存大小相同, 4G 8G 16G都可
+分区类型: 逻辑分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: 交换空间
+
+
+创建根目录分区
+
+
+填写大小: 如果空间太小就把剩下的全给根目录, 方便后面扩容, 如果空间充足就给20GB以上均可,主要存放系统文件和安装软件
+分区类型: 主分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: Ext4 日志文件系统
+挂载点: /
+
+可选分区
+
+创建引导分区(双系统同盘可不创建, 放置在Windows系统的引导分区里即可)
+
+
+填写大小: 建议200MB-1024MB根据个人情况来,这里我给了500MB
+分区类型: 主分区
+新分区位置: 空间起始分区(下面也都是这个不用改)
+用于: EFI
+
+
+如果空间充足可给/home分区单独设置, 后面想扩容之类的就上面三个分区就可以了, 后面扩容完可以再分
+
+
+填写大小: 20GB以上均可, 看个人使用情况, 存放用户文件, 类似Windows的Users目录
+分区类型: 主分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: Ext4 日志文件系统
+挂载点: /home
+
+最终效果如下
+
+
+ 点击现在安装  —&gt; 继续, 时区选择上海, 点击继续
+
+用户信息按自己的填写即可. 可以勾选自动登录, 每次开机不需要选择用户, 自动登录.
+
+点击继续即可安装, 安装之后选择重启, 根据提示会让你拔掉U盘, 按ENTER(回车键)
+
+至此双系统就安装好了. 每次启动时, 系统会提示选择Ubuntu还是Windows系统一般是4个选项
+
+Ubuntu
+Ubuntu高级设置
+Windows
+EFI
+
+顺序可能不同,名称仅为示例, 很容易识别
+
+若未关闭Bitlocker, 进入Windows系统需要输入一次恢复密钥, 下次进入就不需要了.
+
+如果安装没有什么问题, 之前下载的镜像文件就可以清理了
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Ubuntu</tag>
+        <tag>系统安装</tag>
+        <tag>硬盘分区</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Ubuntu搭建Webdav</title>
     <url>/2024/05/e8755f24/</url>
     <content><![CDATA[参考文章: Linux搭建WebDav服务 - Colzry’s Blog
@@ -883,6 +883,211 @@ systemctl status webdav.service
         <tag>学习笔记</tag>
         <tag>Webdav</tag>
         <tag>云服务</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Fortran转C++的一些注意事项</title>
+    <url>/2024/05/5a883584/</url>
+    <content><![CDATA[一、命名在Fortran中, 所有的字符都是不区分大小写的. 在编译时, 全部使用小写字符. 但是, 在C++中是会区分大小写的. 因此, 在转换时要注意统一大小写. 
+二、数据类型1. 可直接转换的参数类型
+整型: integer  = int
+浮点数: real  = float
+双浮点数: real(8)  = double
+逻辑: logical = bool
+
+
+对于科学计数法, Fortran中d表示双精度浮点数, 如1.2d3. 在C++中并不能直接识别, 但是C++中默认使用双精度浮点数. 因此可直接使用1.2e3来代替.
+
+2. 可代替的参数类型
+字符串character: 可使用std::string代替 (须#indlude &lt;string&gt;)
+
+
+在c++中char只能储存一个字符, 需要使用数组来保存字符串. 因此在使用上character和string更类似
+对于字符串的连接, Fortran中使用//, C++中使用+
+
+
+复数complex: 可使用std::complex代替 (须#include &lt;complex&gt;)
+
+
+C++的std::complex内提供了一些用于复数运算的函数, 
+例如: 
+std::real(获取复数的实部)
+std::imag(获取复数的虚部)
+std::abs(获取复数的模)
+std::arg(获取复数的辐角)
+std::norm(获取复数的模的平方)
+std::conj(获取复数的共轭复数)
+
+
+自定义类型type: 可使用结构体struct代替
+
+
+对于参数的访问, 在Fortran中使用%在c++中使用.
+
+
+动态数组allocatable: 可使用向量vector代替 (须#include &lt;vector&gt;)
+
+
+对于结构体类型的向量, 使用vecname.assign(quantity, vecname());来调整向量的大小. 但是注意这会清除向量中原有的内容
+对于数值类型的向量, 使用vecname.resize()来调整大小
+使用vecname.size()可以得到向量当前的大小
+
+
+动态type数组: 使用std::vector&lt;structname&gt;来定义
+
+
+对于动态type数组这类变量, 在Fortran中的初始化: 
+!在Fortran2003以后的标准中, type可以直接给定默认值type material	real :: mass = 0.0	real :: speed = 0.0	real :: Vx(3) = 0.0, Vy(3) = 0.0, Vz(3)=0.0type(material),allocatable::material_list(:)allocate(material_list(3))!对于之前的标准, 或者没有定义默认值, 再或者需要再次初始化, 可以使用以下方式type material	real mass	real speed	real Vx(3), Vy(3), Vz(3)type(material),allocatable::material_list(:)allocate(material_list(3))do i=1,3	material_list(i)%mass = 0.0	material_list(i)%speed = 0.0	material_list(i)%Vx = (/0.0, 0.0, 0.0/)	material_list(i)%Vy = (/0.0, 0.0, 0.0/)	material_list(i)%Vz = (/0.0, 0.0, 0.0/)end do! 特别的,在Fortran中,不加索引号会对数组内的全部元素赋值type material	real mass	real speed	real Vx(3), Vy(3), Vz(3)type(material),allocatable::material_list(:)allocate(material_list(3))material_list%mass = 0.0material_list%speed = 0.0material_list%Vx = (/0.0, 0.0, 0.0/)material_list%Vy = (/0.0, 0.0, 0.0/)material_list%Vz = (/0.0, 0.0, 0.0/)!与上面带索引号的方式,效果相同, C++中不能这样做
+在c++中: 
+//在C++11以后的标准中可以直接对结构体设置默认值struct material //定义结构体&#123; float mass = 0.0f; //0.0默认是double类型, 浮点数的0.0要加上f float speed = 0.0f; float Vx[3] = &#123;0.0f&#125;, Vy[3] = &#123;0.0f&#125;, Vz[3] = &#123;0.0f&#125;;//此处c++会将数组里的其他值也初始化为0.0f&#125;;std::vector&lt;material&gt; material_list; //创建结构体向量material_list.assign(3,material()); //修改向量大小//对于之前的标准或者没有定义默认值, 再或者想要填充为其他值material temp; temp.mass = 0.0;temp.speed = 0.0;for (int i = 1; i &lt; 3; i++ )&#123; temp.Vx[i] = 0.0; temp.Vy[i] = 0.0; temp.Vz[i] = 0.0;&#125;;material_list.assign(3,temp); //assign函数会将material的大小调整为3, 并将所有值填充为temp
+
+3. 需要注意的参数类型
+数组: 在Fortran中,数组的索引序号默认是从1开始, 而在C++中序号是从0开始. 这要求我们在使用循环操作数组时要注意索引序号. 其次, 在存储数据时, Fortran是使用列主序, 即一个二维数组(3,4)表示的是3列4行. 而在c++中二维数组[3,4]表示的是3行4列
+
+
+Fortran和C++数组主要的区别：
+
+索引起始位置：在Fortran中, 数组的索引默认从1开始, 并且可以自定义索引序号. 而在C++中, 数组的索引始终从0开始. 
+内存布局：Fortran使用列优先(column-major)顺序存储多维数组, 而C++(和大多数其他C风格的语言)使用行优先(row-major)顺序存储多维数组. 
+动态数组：在Fortran中, 可以很容易地创建动态数组, 而在C++中, 创建动态数组需要更多的工作. 不过, C++提供了std::vector这样的容器类, 可以方便地创建和管理动态数组. 
+数组作为函数参数：在Fortran中, 当数组作为函数参数时, 会传递数组的引用, 而不是数组本身. 这意味着, 如果在函数内部修改了数组, 那么在函数外部的数组也会被修改. 在C++中, 如果你直接将数组作为函数参数, 那么实际上传递的是数组的指针, 如果你想要达到和Fortran相同的效果, 你需要显式地使用引用或者指针. 
+数组大小：在Fortran中, 数组本身知道其大小, 而在C++中, 原生数组不知道其大小, 你需要自己保持对数组大小的跟踪. 不过, C++的std::array和std::vector等容器类知道它们的大小. 
+
+
+
+数组的运算: 在Fortran中, 对于数组可以直接使用+ - * / **等运算符号, 其意义为数组中对应位置的元素相加, 减, 赋值. 
+
+例如:
+integer:: i(3),j(3)i = 1i = i + 1j = ii = i - j
+在这段代码中, 定义了两个长度为3的一维数组. 
+
+第2行, 将i中的元素全部赋值为1. 
+第3行, 将i中的每一个元素都加1, i中所有元素变为2.  
+第4行, 将i中元素的值,对应赋值给j数组, j中元素也都变为了2.  
+第5行, 将i中的元素对应减去j中的元素并赋值给i,  这时, i中的元素全部变为了1.  
+
+这些在C++中是无法直接做到的, 可以借助一些库或者使用循环或者STL中的一些标准函数来完成这些操作. 
+
+copy从一个数组复制到另一个数组 (std::copy(first,last,dest)前两个参数控制复制到数组的开始和结尾, 第三个为要复制的数组)
+
+fill填充数组,用于数组的初始化 (std::fill(first,last,init)前两个控制范围,最后一个为填充值)
+
+transform转换
+
+transform算法接受一个或两个输入范围, 以及一个输出范围, 并根据提供的一元函数对象或二元函数对象对”输入范围内的元素” 进行转换;
+
+InputIt first1参数: 输入容器的起始迭代器(包含);
+InputIt last1参数: 输入容器的终止迭代器(不包含);
+InputIt2 first2参数: 第二个输入容器的起始迭代器(包含);
+OutputIt d_first参数: 输出容器的开始迭代器, 输出元素个数根据输入元素的范围确定,transform会将变换结果存储到输出容器中;
+UnaryOperation unary_op参数: 一元函数对象, 将输入容器的每个元素输入到该一元函数对象中, 将计算结果输出到输出容器中;
+
+
+
+
+三、运算符号
++ - * / 都可以直接转换, 除了上面提到的应用在数组的计算上时
+
+**幂乘运算在c++中可使用#include &lt;cmath&gt;库中的pow来代替
+
+
+
+用法: std::pow(底数,指数)
+
+
+求余mod()在c++中为%
+在c++中, 还有--和++等自减和自增运算, 注意其在使用时前缀和后缀的区别: 可以理解为前缀既算值又变, 后缀只算值不变. 当然这句话仅对其所在的一个语句生效, 无论是自增还是自减, 在这条语句结束后, 数值都发生了改变. 
+
+
+例如: 
+int a=10;int b;b = ++a; //前缀自增a变为了11, 其参与计算的值也变为11, b=11, a=11b = a++; //后缀自增a从上面的11变为了12, 但在这条语句中a参与计算的值还是11, b=11, a=11, 结束后a=12b = a; //在上面的语句结束后a参与计算的值变为了12, b=12, a=12
+在上面的基础上, b=++a--;中的a b参与计算的值分别为多少? 该语句结束后a b的值又是多少? 
+b=13 a=13;b=13 a=12;
+同时这两个运算符的优先级是要高于其它的
+b = 1 + a--; //先计算a--再计算+1
+三个运算符相连时
+b = a++-1; //等价于b=(a++)-1b = a+++1; //等价于b=(a++)+1, 但不建议这样做
+
+C++中内置了(cmath)一些数学运算函数, 下面是常用的一些函数:
+double cos(double); //返回弧度角的余弦double sin(double); //正弦double tan(double); //正切double log(double); //返回输入参数的自然对数-lndouble pow(double, double); //返回第一个参数的第二个参数次方double hypot(double, double); //返回两个参数平方和的平方根double sqrt(double); //返回参数的平方根int abs(int); //返回整数的绝对值double fabs(double); //返回浮点数的绝对值double floor(double); //返回小于或等于传入的参数的最大整数
+四、控制结构1. 循环结构在Fortran中, 循环结构有两种do和do while. 分别对应着c++中的for和while. 除此之外, c++还有一种结构do ... while. 它与while的区别在于: while是先判断后执行, do ... while是先执行后判断. 
+循环控制语句对应关系:
+
+exit: 在c++中为break
+cycle: 在c++中为continue
+
+
+此外, 在c++中还有一种控制语句goto即跳转到某一被标记的语句执行. 但是, 在程序中不建议使用该语句! 
+
+2. 判断语句在Fortran中, 判断语句有if-then, if-then-else 和if-else if-else. 这与c++中的if, if-else以及if-else if-else是一一对应的. 他们的用法相同.
+需要注意的是, 在Fortran中的select case语句与c++中的switch语句有一些使用上的差别.
+
+select case语句在运行选择的case后会结束select也就是只进行一次选择. 而在c++的switch语句中, 如果不使用break语句, 会一直进行switch. 
+相当于Fortran的选择语句中, 所有的case都带有一个break. 
+如果将do while(.true.)与select case()语句结合, 当某个case中有一个exit语句, 它会结束do while的循环. 而在c++中, while和switch都使用break来打断, 所以case中的break只会结束switch而不会结束while(true). 因此, 在转换时需要增加while结束的条件.  
+例如:
+do while(.true.)    key = Keyord(kw,nbkw)    select case(key)        case(1)        	exit        case(2)        	call GetString(Title)        case(3)        	nb_particle = GetInt()        	write(*,&quot;(a,i12)&quot;) &#x27;Number of particles = &#x27;,nb_particle        	write(iomsg,&quot;(a,i12)&quot;) &#x27;Number of particles = &#x27;,nb_particle       		allocate(particle_list(nb_particle))        	call InitParticle()        case default        	stop &#x27;STOP - Error encountered in reading data&#x27;    end selectend do 
+改为c++
+while (true)&#123;    key = KeyWord(kw, nbkw);    switch (key + 1)    &#123;        case 1:            break;        case 2:            Title = GetString();            break;        case 3:            nb_particle = GetInt();            cout &lt;&lt; &quot;Number of particles = &quot; &lt;&lt; nb_particle &lt;&lt; endl;            outfile &lt;&lt; &quot;Number of particles = &quot; &lt;&lt; nb_particle &lt;&lt; endl;            particle_list.assign(nb_particle, Particle());            break;        default:            cout &lt;&lt; &quot;STOP - Error encountered in reading data&quot; &lt;&lt; endl;            exit(1);    &#125;    if (key == 0) break;&#125;
+或者使用do...while
+do&#123;	key = KeyWord(kw, nbkw);   	switch (key + 1)    &#123;    	//...    &#125;&#125;while(key != 0);
+
+五、子程序和函数子程序对于独立的子程序 (不引用其他的module) 可直接使用void函数替代. 对于function函数子程序可以对应类型的函数替代, 即有返回值的函数. 
+例子:
+subroutine sum100(sum_)	implicit none	integer,intent(out)::sum_	integer :: i	sum_ = 0	do i=1,100		sum_ = sum_ +i	endoend subroutine sum100
+这个程序会计算1~100的和并输出到sum这个量
+call sum100(sum1)
+转换成c++
+int sum = 0;void sum100 (int &amp;sum_)&#123;	for (int i=1; i&lt;=100; i++) //在循环体中Fortran判断结束的条件默认是小于等于	&#123;		sum_ += i	&#125;&#125;sum100(sum);
+
+ 这类子程序的特点: 有明确的输入的输出, 全部工作都在子程序内完成, 不牵扯其他的module或子程序. 
+
+
+关于参数的传递在Fortran的子程序中, 参数的传递默认按照引用来传递. 即, 如果你在子程序内改变了这一变量(未规定为in类型), 外部的变量也会改变. 这与C++中使用&amp;符号传递参数的作用相同.
+有些子程序, 在编写时, 未规定传入参数的类型为输入(in)还是输出(out). 在转换为C++时, 需要注意分辨是否需要改变外部的变量.
+
+在转换时, in类型的变量在子程序中是无法改变的, 因此我们在写c++的函数时, 不需要加&amp;. 而对于out类型的变量, 必须要加上&amp;, 否则不能改变外部的变量.
+对于全局变量而言, 不需要作为传入参数. 可以直接使用并改变该变量的值.
+
+六、模块(Module)对于这类文件, 可以使用头文件+全局变量+源文件的模式
+对于全局常量和结构体, 只需要定义在头文件内即可. 在头文件中, 结构体的定义和常量的定义不使用extern声明. 
+在编写代码时, 可以使用namespace对不同文件的参数作区分, 防止出现命名上的冲突 (可不使用). 在c++中, 还可以使用class来更好的组织和封装数据及函数. 
+如果原模块没有私有变量, 可直接使用namespace.
+
+以下是GPT对两种方式的优缺点的判断:使用namespace的优点：
+
+namespace可以用来避免命名冲突. 你可以在不同的namespace中定义同名的函数或变量, 而不会产生冲突. 
+namespace可以嵌套, 这使得你可以更好地组织你的代码. 
+namespace可以在多个文件中定义, 这使得你可以将相关的代码和数据分散在多个文件中. 
+
+使用namespace的缺点：
+
+namespace不能用来封装数据. 在namespace中定义的所有函数和变量都是公开的, 任何人都可以访问. 
+namespace不能用来实现面向对象编程的特性, 如继承和多态. 
+
+使用class的优点：
+
+class可以用来封装数据和函数. 你可以控制哪些数据和函数是公开的(public), 哪些是私有的(private). 
+class可以用来实现面向对象编程的特性, 如继承和多态. 
+class可以用来创建对象, 这使得你可以在运行时动态地创建和销毁数据和函数. 
+
+使用class的缺点：
+
+class不能像namespace那样用来避免命名冲突. 在同一个namespace中, 不能有两个同名的class. 
+class不能在多个文件中定义. 一个class的所有成员都必须在同一个文件中定义. 
+
+
+
+欢迎补充和指正
+]]></content>
+      <categories>
+        <category>编程语言</category>
+      </categories>
+      <tags>
+        <tag>Fortran</tag>
+        <tag>学习笔记</tag>
+        <tag>语言转换</tag>
+        <tag>Cpp</tag>
       </tags>
   </entry>
   <entry>
@@ -1225,211 +1430,6 @@ c_{ij} = \delta_{ij} + \Omega_{ij} dt \qquad (2.31)在动坐标系内定义应�
       <tags>
         <tag>学习笔记</tag>
         <tag>物质点法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Fortran转C++的一些注意事项</title>
-    <url>/2024/05/5a883584/</url>
-    <content><![CDATA[一、命名在Fortran中, 所有的字符都是不区分大小写的. 在编译时, 全部使用小写字符. 但是, 在C++中是会区分大小写的. 因此, 在转换时要注意统一大小写. 
-二、数据类型1. 可直接转换的参数类型
-整型: integer  = int
-浮点数: real  = float
-双浮点数: real(8)  = double
-逻辑: logical = bool
-
-
-对于科学计数法, Fortran中d表示双精度浮点数, 如1.2d3. 在C++中并不能直接识别, 但是C++中默认使用双精度浮点数. 因此可直接使用1.2e3来代替.
-
-2. 可代替的参数类型
-字符串character: 可使用std::string代替 (须#indlude &lt;string&gt;)
-
-
-在c++中char只能储存一个字符, 需要使用数组来保存字符串. 因此在使用上character和string更类似
-对于字符串的连接, Fortran中使用//, C++中使用+
-
-
-复数complex: 可使用std::complex代替 (须#include &lt;complex&gt;)
-
-
-C++的std::complex内提供了一些用于复数运算的函数, 
-例如: 
-std::real(获取复数的实部)
-std::imag(获取复数的虚部)
-std::abs(获取复数的模)
-std::arg(获取复数的辐角)
-std::norm(获取复数的模的平方)
-std::conj(获取复数的共轭复数)
-
-
-自定义类型type: 可使用结构体struct代替
-
-
-对于参数的访问, 在Fortran中使用%在c++中使用.
-
-
-动态数组allocatable: 可使用向量vector代替 (须#include &lt;vector&gt;)
-
-
-对于结构体类型的向量, 使用vecname.assign(quantity, vecname());来调整向量的大小. 但是注意这会清除向量中原有的内容
-对于数值类型的向量, 使用vecname.resize()来调整大小
-使用vecname.size()可以得到向量当前的大小
-
-
-动态type数组: 使用std::vector&lt;structname&gt;来定义
-
-
-对于动态type数组这类变量, 在Fortran中的初始化: 
-!在Fortran2003以后的标准中, type可以直接给定默认值type material	real :: mass = 0.0	real :: speed = 0.0	real :: Vx(3) = 0.0, Vy(3) = 0.0, Vz(3)=0.0type(material),allocatable::material_list(:)allocate(material_list(3))!对于之前的标准, 或者没有定义默认值, 再或者需要再次初始化, 可以使用以下方式type material	real mass	real speed	real Vx(3), Vy(3), Vz(3)type(material),allocatable::material_list(:)allocate(material_list(3))do i=1,3	material_list(i)%mass = 0.0	material_list(i)%speed = 0.0	material_list(i)%Vx = (/0.0, 0.0, 0.0/)	material_list(i)%Vy = (/0.0, 0.0, 0.0/)	material_list(i)%Vz = (/0.0, 0.0, 0.0/)end do! 特别的,在Fortran中,不加索引号会对数组内的全部元素赋值type material	real mass	real speed	real Vx(3), Vy(3), Vz(3)type(material),allocatable::material_list(:)allocate(material_list(3))material_list%mass = 0.0material_list%speed = 0.0material_list%Vx = (/0.0, 0.0, 0.0/)material_list%Vy = (/0.0, 0.0, 0.0/)material_list%Vz = (/0.0, 0.0, 0.0/)!与上面带索引号的方式,效果相同, C++中不能这样做
-在c++中: 
-//在C++11以后的标准中可以直接对结构体设置默认值struct material //定义结构体&#123; float mass = 0.0f; //0.0默认是double类型, 浮点数的0.0要加上f float speed = 0.0f; float Vx[3] = &#123;0.0f&#125;, Vy[3] = &#123;0.0f&#125;, Vz[3] = &#123;0.0f&#125;;//此处c++会将数组里的其他值也初始化为0.0f&#125;;std::vector&lt;material&gt; material_list; //创建结构体向量material_list.assign(3,material()); //修改向量大小//对于之前的标准或者没有定义默认值, 再或者想要填充为其他值material temp; temp.mass = 0.0;temp.speed = 0.0;for (int i = 1; i &lt; 3; i++ )&#123; temp.Vx[i] = 0.0; temp.Vy[i] = 0.0; temp.Vz[i] = 0.0;&#125;;material_list.assign(3,temp); //assign函数会将material的大小调整为3, 并将所有值填充为temp
-
-3. 需要注意的参数类型
-数组: 在Fortran中,数组的索引序号默认是从1开始, 而在C++中序号是从0开始. 这要求我们在使用循环操作数组时要注意索引序号. 其次, 在存储数据时, Fortran是使用列主序, 即一个二维数组(3,4)表示的是3列4行. 而在c++中二维数组[3,4]表示的是3行4列
-
-
-Fortran和C++数组主要的区别：
-
-索引起始位置：在Fortran中, 数组的索引默认从1开始, 并且可以自定义索引序号. 而在C++中, 数组的索引始终从0开始. 
-内存布局：Fortran使用列优先(column-major)顺序存储多维数组, 而C++(和大多数其他C风格的语言)使用行优先(row-major)顺序存储多维数组. 
-动态数组：在Fortran中, 可以很容易地创建动态数组, 而在C++中, 创建动态数组需要更多的工作. 不过, C++提供了std::vector这样的容器类, 可以方便地创建和管理动态数组. 
-数组作为函数参数：在Fortran中, 当数组作为函数参数时, 会传递数组的引用, 而不是数组本身. 这意味着, 如果在函数内部修改了数组, 那么在函数外部的数组也会被修改. 在C++中, 如果你直接将数组作为函数参数, 那么实际上传递的是数组的指针, 如果你想要达到和Fortran相同的效果, 你需要显式地使用引用或者指针. 
-数组大小：在Fortran中, 数组本身知道其大小, 而在C++中, 原生数组不知道其大小, 你需要自己保持对数组大小的跟踪. 不过, C++的std::array和std::vector等容器类知道它们的大小. 
-
-
-
-数组的运算: 在Fortran中, 对于数组可以直接使用+ - * / **等运算符号, 其意义为数组中对应位置的元素相加, 减, 赋值. 
-
-例如:
-integer:: i(3),j(3)i = 1i = i + 1j = ii = i - j
-在这段代码中, 定义了两个长度为3的一维数组. 
-
-第2行, 将i中的元素全部赋值为1. 
-第3行, 将i中的每一个元素都加1, i中所有元素变为2.  
-第4行, 将i中元素的值,对应赋值给j数组, j中元素也都变为了2.  
-第5行, 将i中的元素对应减去j中的元素并赋值给i,  这时, i中的元素全部变为了1.  
-
-这些在C++中是无法直接做到的, 可以借助一些库或者使用循环或者STL中的一些标准函数来完成这些操作. 
-
-copy从一个数组复制到另一个数组 (std::copy(first,last,dest)前两个参数控制复制到数组的开始和结尾, 第三个为要复制的数组)
-
-fill填充数组,用于数组的初始化 (std::fill(first,last,init)前两个控制范围,最后一个为填充值)
-
-transform转换
-
-transform算法接受一个或两个输入范围, 以及一个输出范围, 并根据提供的一元函数对象或二元函数对象对”输入范围内的元素” 进行转换;
-
-InputIt first1参数: 输入容器的起始迭代器(包含);
-InputIt last1参数: 输入容器的终止迭代器(不包含);
-InputIt2 first2参数: 第二个输入容器的起始迭代器(包含);
-OutputIt d_first参数: 输出容器的开始迭代器, 输出元素个数根据输入元素的范围确定,transform会将变换结果存储到输出容器中;
-UnaryOperation unary_op参数: 一元函数对象, 将输入容器的每个元素输入到该一元函数对象中, 将计算结果输出到输出容器中;
-
-
-
-
-三、运算符号
-+ - * / 都可以直接转换, 除了上面提到的应用在数组的计算上时
-
-**幂乘运算在c++中可使用#include &lt;cmath&gt;库中的pow来代替
-
-
-
-用法: std::pow(底数,指数)
-
-
-求余mod()在c++中为%
-在c++中, 还有--和++等自减和自增运算, 注意其在使用时前缀和后缀的区别: 可以理解为前缀既算值又变, 后缀只算值不变. 当然这句话仅对其所在的一个语句生效, 无论是自增还是自减, 在这条语句结束后, 数值都发生了改变. 
-
-
-例如: 
-int a=10;int b;b = ++a; //前缀自增a变为了11, 其参与计算的值也变为11, b=11, a=11b = a++; //后缀自增a从上面的11变为了12, 但在这条语句中a参与计算的值还是11, b=11, a=11, 结束后a=12b = a; //在上面的语句结束后a参与计算的值变为了12, b=12, a=12
-在上面的基础上, b=++a--;中的a b参与计算的值分别为多少? 该语句结束后a b的值又是多少? 
-b=13 a=13;b=13 a=12;
-同时这两个运算符的优先级是要高于其它的
-b = 1 + a--; //先计算a--再计算+1
-三个运算符相连时
-b = a++-1; //等价于b=(a++)-1b = a+++1; //等价于b=(a++)+1, 但不建议这样做
-
-C++中内置了(cmath)一些数学运算函数, 下面是常用的一些函数:
-double cos(double); //返回弧度角的余弦double sin(double); //正弦double tan(double); //正切double log(double); //返回输入参数的自然对数-lndouble pow(double, double); //返回第一个参数的第二个参数次方double hypot(double, double); //返回两个参数平方和的平方根double sqrt(double); //返回参数的平方根int abs(int); //返回整数的绝对值double fabs(double); //返回浮点数的绝对值double floor(double); //返回小于或等于传入的参数的最大整数
-四、控制结构1. 循环结构在Fortran中, 循环结构有两种do和do while. 分别对应着c++中的for和while. 除此之外, c++还有一种结构do ... while. 它与while的区别在于: while是先判断后执行, do ... while是先执行后判断. 
-循环控制语句对应关系:
-
-exit: 在c++中为break
-cycle: 在c++中为continue
-
-
-此外, 在c++中还有一种控制语句goto即跳转到某一被标记的语句执行. 但是, 在程序中不建议使用该语句! 
-
-2. 判断语句在Fortran中, 判断语句有if-then, if-then-else 和if-else if-else. 这与c++中的if, if-else以及if-else if-else是一一对应的. 他们的用法相同.
-需要注意的是, 在Fortran中的select case语句与c++中的switch语句有一些使用上的差别.
-
-select case语句在运行选择的case后会结束select也就是只进行一次选择. 而在c++的switch语句中, 如果不使用break语句, 会一直进行switch. 
-相当于Fortran的选择语句中, 所有的case都带有一个break. 
-如果将do while(.true.)与select case()语句结合, 当某个case中有一个exit语句, 它会结束do while的循环. 而在c++中, while和switch都使用break来打断, 所以case中的break只会结束switch而不会结束while(true). 因此, 在转换时需要增加while结束的条件.  
-例如:
-do while(.true.)    key = Keyord(kw,nbkw)    select case(key)        case(1)        	exit        case(2)        	call GetString(Title)        case(3)        	nb_particle = GetInt()        	write(*,&quot;(a,i12)&quot;) &#x27;Number of particles = &#x27;,nb_particle        	write(iomsg,&quot;(a,i12)&quot;) &#x27;Number of particles = &#x27;,nb_particle       		allocate(particle_list(nb_particle))        	call InitParticle()        case default        	stop &#x27;STOP - Error encountered in reading data&#x27;    end selectend do 
-改为c++
-while (true)&#123;    key = KeyWord(kw, nbkw);    switch (key + 1)    &#123;        case 1:            break;        case 2:            Title = GetString();            break;        case 3:            nb_particle = GetInt();            cout &lt;&lt; &quot;Number of particles = &quot; &lt;&lt; nb_particle &lt;&lt; endl;            outfile &lt;&lt; &quot;Number of particles = &quot; &lt;&lt; nb_particle &lt;&lt; endl;            particle_list.assign(nb_particle, Particle());            break;        default:            cout &lt;&lt; &quot;STOP - Error encountered in reading data&quot; &lt;&lt; endl;            exit(1);    &#125;    if (key == 0) break;&#125;
-或者使用do...while
-do&#123;	key = KeyWord(kw, nbkw);   	switch (key + 1)    &#123;    	//...    &#125;&#125;while(key != 0);
-
-五、子程序和函数子程序对于独立的子程序 (不引用其他的module) 可直接使用void函数替代. 对于function函数子程序可以对应类型的函数替代, 即有返回值的函数. 
-例子:
-subroutine sum100(sum_)	implicit none	integer,intent(out)::sum_	integer :: i	sum_ = 0	do i=1,100		sum_ = sum_ +i	endoend subroutine sum100
-这个程序会计算1~100的和并输出到sum这个量
-call sum100(sum1)
-转换成c++
-int sum = 0;void sum100 (int &amp;sum_)&#123;	for (int i=1; i&lt;=100; i++) //在循环体中Fortran判断结束的条件默认是小于等于	&#123;		sum_ += i	&#125;&#125;sum100(sum);
-
- 这类子程序的特点: 有明确的输入的输出, 全部工作都在子程序内完成, 不牵扯其他的module或子程序. 
-
-
-关于参数的传递在Fortran的子程序中, 参数的传递默认按照引用来传递. 即, 如果你在子程序内改变了这一变量(未规定为in类型), 外部的变量也会改变. 这与C++中使用&amp;符号传递参数的作用相同.
-有些子程序, 在编写时, 未规定传入参数的类型为输入(in)还是输出(out). 在转换为C++时, 需要注意分辨是否需要改变外部的变量.
-
-在转换时, in类型的变量在子程序中是无法改变的, 因此我们在写c++的函数时, 不需要加&amp;. 而对于out类型的变量, 必须要加上&amp;, 否则不能改变外部的变量.
-对于全局变量而言, 不需要作为传入参数. 可以直接使用并改变该变量的值.
-
-六、模块(Module)对于这类文件, 可以使用头文件+全局变量+源文件的模式
-对于全局常量和结构体, 只需要定义在头文件内即可. 在头文件中, 结构体的定义和常量的定义不使用extern声明. 
-在编写代码时, 可以使用namespace对不同文件的参数作区分, 防止出现命名上的冲突 (可不使用). 在c++中, 还可以使用class来更好的组织和封装数据及函数. 
-如果原模块没有私有变量, 可直接使用namespace.
-
-以下是GPT对两种方式的优缺点的判断:使用namespace的优点：
-
-namespace可以用来避免命名冲突. 你可以在不同的namespace中定义同名的函数或变量, 而不会产生冲突. 
-namespace可以嵌套, 这使得你可以更好地组织你的代码. 
-namespace可以在多个文件中定义, 这使得你可以将相关的代码和数据分散在多个文件中. 
-
-使用namespace的缺点：
-
-namespace不能用来封装数据. 在namespace中定义的所有函数和变量都是公开的, 任何人都可以访问. 
-namespace不能用来实现面向对象编程的特性, 如继承和多态. 
-
-使用class的优点：
-
-class可以用来封装数据和函数. 你可以控制哪些数据和函数是公开的(public), 哪些是私有的(private). 
-class可以用来实现面向对象编程的特性, 如继承和多态. 
-class可以用来创建对象, 这使得你可以在运行时动态地创建和销毁数据和函数. 
-
-使用class的缺点：
-
-class不能像namespace那样用来避免命名冲突. 在同一个namespace中, 不能有两个同名的class. 
-class不能在多个文件中定义. 一个class的所有成员都必须在同一个文件中定义. 
-
-
-
-欢迎补充和指正
-]]></content>
-      <categories>
-        <category>编程语言</category>
-      </categories>
-      <tags>
-        <tag>Fortran</tag>
-        <tag>学习笔记</tag>
-        <tag>语言转换</tag>
-        <tag>Cpp</tag>
       </tags>
   </entry>
   <entry>
