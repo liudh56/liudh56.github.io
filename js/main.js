@@ -561,7 +561,9 @@ document.addEventListener('DOMContentLoaded', function () {
       newEle.addEventListener('click', clickFn)
     },
     darkmode: () => { // switch between light and dark mode
-      const willChangeMode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+      const $html = document.documentElement
+      const willChangeMode = $html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+      $html.classList.add('theme-switching')
       if (willChangeMode === 'dark') {
         activateDarkMode()
         GLOBAL_CONFIG.Snackbar !== undefined && btf.snackbarShow(GLOBAL_CONFIG.Snackbar.day_to_night)
@@ -571,6 +573,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       saveToLocal.set('theme', willChangeMode, 2)
       handleThemeChange(willChangeMode)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => $html.classList.remove('theme-switching'))
+      })
     },
     'rightside-config': item => { // Show or hide rightside-hide-btn
       const hideLayout = item.firstElementChild
