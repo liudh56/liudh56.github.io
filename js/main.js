@@ -364,10 +364,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const isChatBtn = typeof chatBtn !== 'undefined'
     const isShowPercent = GLOBAL_CONFIG.percent.rightside
 
-    if ($header.classList.contains('full_page')) {
+    const hasScrollMask = $header.classList.contains('full_page') || $header.classList.contains('post-bg')
+    if (hasScrollMask) {
       const headerHeight = $header.offsetHeight
-      const fadeStart = headerHeight * 0.75
-      const fadeEnd = headerHeight * 0.2
+      const isPostHeader = $header.classList.contains('post-bg')
+      const fadeStart = headerHeight * (isPostHeader ? 0.7 : 0.75)
+      const fadeEnd = headerHeight * (isPostHeader ? 0.25 : 0.2)
       const fadeDistance = fadeStart - fadeEnd
       let maskTicking = false
 
@@ -375,6 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const currentTop = window.scrollY || document.documentElement.scrollTop
         const opacity = Math.min(1, Math.max(0, (currentTop - fadeEnd) / fadeDistance))
         $header.style.setProperty('--nav-mask-opacity', opacity.toFixed(3))
+        $header.classList.toggle('nav-mask-text-dark', opacity > 0.4)
         maskTicking = false
       }
 

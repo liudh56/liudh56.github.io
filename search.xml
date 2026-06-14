@@ -40,99 +40,6 @@ elements_3: DO iel=1,nels            bload=zero            phi=prop(1,iel)      
       </tags>
   </entry>
   <entry>
-    <title>可靠度分析程序说明文件</title>
-    <url>/2024/04/74b4d97f/</url>
-    <content><![CDATA[非饱和黄土边坡失效概率计算程序本程序是基于有限元的边坡可靠度分析程序，改进自Griffith教授 的非饱和黄土边坡稳定性计算程序
-本程序使用强度折减法计算稳定系数，使用Monte-Carlo法计算失效概率；
-将计算作业量，分成线程数量的段数，将作业量平均分配给每一个线程；
-本程序使用MPI实现并行运算
-程序文件
-slope_new/Subroutine.pyslope_new/slope2.f90
-示例数据文件
-exmaple/1.datexmaple/1_c.txtexmaple/1_phi.txtexample/1_gamma.txt !未给出exmaple/1_mstd.txtexmaple/1_grid.txt
-结果文件 未给出
-1_fs.res1_fail.res
-前置安装教程
-Fortran程序前置安装：OpenCoarrays
-
-以Ubuntu22.04安装Open-coarrays 2.9.2为例：
-sudo apt-get updatesudo apt-get install cmake gfortranwget https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gztar xf 2.9.2.tar.gzcd OpenCoarrays-2.9.2makedir buildcd buildcmake ..makesudo make install
-！若OpenCoarrays2.9.2 下载失败可手动下载并上传到/home/username/再解压编译安装
-
-可选安装—后台运行Screen
-
-安装：sudo apt-get install screen列出全部会话：screen -ls新建：screenscreen -S name删除：screen -S name -X quit ! 或在窗口内使用快捷键ctrl + D放置后台：使用快捷键ctrl+A再ctrl+D 返回窗口：screen -Rscreen -r name 
-
-Python程序须安装Python3.x ！无须安装在服务器中，仅做数据处理工作，在本地使用即可
-
-程序运行依赖numpy库，可使用pip安装：
-pip install numpy
-程序使用教程
-运行Subroutine.py
-
-cd 代码所在目录python ./Subroutine.py
- 根据提示操作即可使用教程
-
-将生成文件与slope2.f90放在同一文件夹内（本文件夹即要上传的文件夹）
-
-文件包括：
-xxx.datxxx_c.txt xxx_phi.txt xxx_gamma.txt #具体文件数量与设为随机的参数有关
-dat文件详细 
-其他python程序使用文件（无需上传）：
-xxx_mstd.txtxxx_grid.txt
-Fortran程序—在服务器中运行
-将上文中的文件夹上传至服务器并打开目录
-
-编译命令：
-
-
-caf slope2.f90 -o slope
-
-运行：
-
-cafrun -n 4 slope！ 4代表线程数，可更改，若线程数报错改用下面的命令
- 或者：使用下面命令适用于多主机的情况，根据主机实际情况分配线程数。
-mpirun --host host1:40 host2:40 -n 80 filenamempirun --host hostfile -n 80 filename !使用该命令须先创建hostfile文件
-
-保存结果文件到本地与Subroutine.py文件放置在同一文件内
-
-运行Subroutine.py程序并选择功能3计算失效概率，结果保存在xxx_fail.res文件内。
-Subroutine.py程序使用方式1. 输入项目名称xxx。2. 选择功能（输入序号）。1. （首次使用）引导填写并重新生成xxx.dat和xxx_mstd.txt文件   2. 根据xxx_mstd.txt生成phi、c和gamma的值   3. 计算失效概率,并生成xxx_fail.res文件,储存失效概率   4. 生成xxx_grid.txt文件,储存网格点的序号(多层土的情况使用)   5. 根据xxx_mstd.txt重新生成某参数值0. 退出程序(默认)
-功能使用教程
-第一次使用选择1填写xxx.dat和xxx_mstd.txt文件（也可直接修改示例文件来使用）
-
-建议先查看示例文件
-若填写过程中出现填写错误，可继续填写，等待填写完成再从生成文件内修改错误
-功能4，可协助填写xxx.dat文件，后文介绍
-
-再选择2根据提示进行选择（以内摩擦角和粘聚力为随机参数为例）
-
-请输入模拟次数:10000请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 10请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布) 1已生成xxx_c.txt文件!请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 20请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布): 1已生成xxx_phi.txt文件!
-
-文件上传计算
-
-计算完成后，将结果文件xxx_fs.res放置与本程序在同一文件夹内，运行程序选择3，结果保存在xxx_fail.res文件
-
-
-功能4介绍（单层土不需要使用）
-！根据自己划分的每层土的单元格数（不是高度）填写即可，注意与ny1和ny2区分请输入第1层土的厚度(竖向单元格数): 16请输入第2层土的厚度(竖向单元格数): 5已生成xxx_grid.txt文件!
-xxx_grid.txt的内容复制到xxx.dat文件的以下位置：
-&quot;Choose whether to set it as a random variable (the order is: phi c gamma,1 is random)&quot;1 1 0&quot;Property group assigned to each element (etype, data not needed if np_types=1)&quot;（--------此位置--------）&quot;Pseudo-static analysis: Horizontal acceleration factor (k_h)&quot;0.0
-]]></content>
-      <categories>
-        <category>边坡</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>边坡稳定性</tag>
-        <tag>Fortran</tag>
-        <tag>有限元</tag>
-        <tag>失效概率</tag>
-        <tag>Monte-Carlo</tag>
-        <tag>Python</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>非饱和土手动迭代计算程序修改说明</title>
     <url>/2024/04/863a85e0/</url>
     <content><![CDATA[修改内容1、输入参数改变t(nl) 每层层底沉积年代(37 行)土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)水位位置（坡顶为 0，y 方向为负值）(58 行)非饱和抗剪强度公式中 κ(59 行)
@@ -277,6 +184,99 @@ m|_{单位时间}=\rho Sv\cos\theta对控制体边界面积分
         <tag>学习笔记</tag>
         <tag>流体力学</tag>
         <tag>质量守恒方程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>可靠度分析程序说明文件</title>
+    <url>/2024/04/74b4d97f/</url>
+    <content><![CDATA[非饱和黄土边坡失效概率计算程序本程序是基于有限元的边坡可靠度分析程序，改进自Griffith教授 的非饱和黄土边坡稳定性计算程序
+本程序使用强度折减法计算稳定系数，使用Monte-Carlo法计算失效概率；
+将计算作业量，分成线程数量的段数，将作业量平均分配给每一个线程；
+本程序使用MPI实现并行运算
+程序文件
+slope_new/Subroutine.pyslope_new/slope2.f90
+示例数据文件
+exmaple/1.datexmaple/1_c.txtexmaple/1_phi.txtexample/1_gamma.txt !未给出exmaple/1_mstd.txtexmaple/1_grid.txt
+结果文件 未给出
+1_fs.res1_fail.res
+前置安装教程
+Fortran程序前置安装：OpenCoarrays
+
+以Ubuntu22.04安装Open-coarrays 2.9.2为例：
+sudo apt-get updatesudo apt-get install cmake gfortranwget https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gztar xf 2.9.2.tar.gzcd OpenCoarrays-2.9.2makedir buildcd buildcmake ..makesudo make install
+！若OpenCoarrays2.9.2 下载失败可手动下载并上传到/home/username/再解压编译安装
+
+可选安装—后台运行Screen
+
+安装：sudo apt-get install screen列出全部会话：screen -ls新建：screenscreen -S name删除：screen -S name -X quit ! 或在窗口内使用快捷键ctrl + D放置后台：使用快捷键ctrl+A再ctrl+D 返回窗口：screen -Rscreen -r name 
+
+Python程序须安装Python3.x ！无须安装在服务器中，仅做数据处理工作，在本地使用即可
+
+程序运行依赖numpy库，可使用pip安装：
+pip install numpy
+程序使用教程
+运行Subroutine.py
+
+cd 代码所在目录python ./Subroutine.py
+ 根据提示操作即可使用教程
+
+将生成文件与slope2.f90放在同一文件夹内（本文件夹即要上传的文件夹）
+
+文件包括：
+xxx.datxxx_c.txt xxx_phi.txt xxx_gamma.txt #具体文件数量与设为随机的参数有关
+dat文件详细 
+其他python程序使用文件（无需上传）：
+xxx_mstd.txtxxx_grid.txt
+Fortran程序—在服务器中运行
+将上文中的文件夹上传至服务器并打开目录
+
+编译命令：
+
+
+caf slope2.f90 -o slope
+
+运行：
+
+cafrun -n 4 slope！ 4代表线程数，可更改，若线程数报错改用下面的命令
+ 或者：使用下面命令适用于多主机的情况，根据主机实际情况分配线程数。
+mpirun --host host1:40 host2:40 -n 80 filenamempirun --host hostfile -n 80 filename !使用该命令须先创建hostfile文件
+
+保存结果文件到本地与Subroutine.py文件放置在同一文件内
+
+运行Subroutine.py程序并选择功能3计算失效概率，结果保存在xxx_fail.res文件内。
+Subroutine.py程序使用方式1. 输入项目名称xxx。2. 选择功能（输入序号）。1. （首次使用）引导填写并重新生成xxx.dat和xxx_mstd.txt文件   2. 根据xxx_mstd.txt生成phi、c和gamma的值   3. 计算失效概率,并生成xxx_fail.res文件,储存失效概率   4. 生成xxx_grid.txt文件,储存网格点的序号(多层土的情况使用)   5. 根据xxx_mstd.txt重新生成某参数值0. 退出程序(默认)
+功能使用教程
+第一次使用选择1填写xxx.dat和xxx_mstd.txt文件（也可直接修改示例文件来使用）
+
+建议先查看示例文件
+若填写过程中出现填写错误，可继续填写，等待填写完成再从生成文件内修改错误
+功能4，可协助填写xxx.dat文件，后文介绍
+
+再选择2根据提示进行选择（以内摩擦角和粘聚力为随机参数为例）
+
+请输入模拟次数:10000请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 10请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布) 1已生成xxx_c.txt文件!请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 20请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布): 1已生成xxx_phi.txt文件!
+
+文件上传计算
+
+计算完成后，将结果文件xxx_fs.res放置与本程序在同一文件夹内，运行程序选择3，结果保存在xxx_fail.res文件
+
+
+功能4介绍（单层土不需要使用）
+！根据自己划分的每层土的单元格数（不是高度）填写即可，注意与ny1和ny2区分请输入第1层土的厚度(竖向单元格数): 16请输入第2层土的厚度(竖向单元格数): 5已生成xxx_grid.txt文件!
+xxx_grid.txt的内容复制到xxx.dat文件的以下位置：
+&quot;Choose whether to set it as a random variable (the order is: phi c gamma,1 is random)&quot;1 1 0&quot;Property group assigned to each element (etype, data not needed if np_types=1)&quot;（--------此位置--------）&quot;Pseudo-static analysis: Horizontal acceleration factor (k_h)&quot;0.0
+]]></content>
+      <categories>
+        <category>边坡</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>边坡稳定性</tag>
+        <tag>Fortran</tag>
+        <tag>有限元</tag>
+        <tag>失效概率</tag>
+        <tag>Monte-Carlo</tag>
+        <tag>Python</tag>
       </tags>
   </entry>
   <entry>
@@ -693,151 +693,6 @@ git push -f
       </tags>
   </entry>
   <entry>
-    <title>Ubuntu22.04双系统安装教程</title>
-    <url>/2024/05/deb026e9/</url>
-    <content><![CDATA[准备工作
-良好的网络环境
-一块8g以上的U盘(注意备份数据, 该U盘会被格式化)
-Windows电脑
-
-硬件要求
-
-双核2 GHz处理器或更高
-4 GB系统内存
-25 GB磁盘存储空间
-
-
-装机需谨慎, 做好数据备份1. 系统镜像的下载打开Ubuntu系统下载 | Ubuntu 此页面,点击下载Ubuntu桌面版, 
-或者从网盘中下载: 
-百度云：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
-
-再选择Ubuntu22.04.4 LTS,点击下载22.04.4
-
-将此文件下载保存至易寻找的位置, 以F:/Ubuntu为例, 稍后会使用. 
-其他版本可在官网下载Get Ubuntu | Download | Ubuntu 安装步骤大致相同
-2. 安装写盘工具Rufus打开Rufus - 轻松创建 USB 启动盘 页面, 找到下载,选择Windows x64平台的便携版, 下载打开即用. 
-
-插入U盘,打开软件
-
-点击选择, 设备选择刚刚插入的U盘, 镜像文件点击右侧选择, 选中刚刚下载的镜像文件, 我的是位于F:/Ubuntu, 选项如下图即可, 点击开始, 等待写入完成, 点击关闭, 弹出U盘
-
-3. 关闭Bitlocker或者备份Bitlocker恢复密钥如果硬盘设置了Bitlocker, 一定要提前找到恢复密钥, 可以先保存到手机上, 一般在微软账户里会有备份恢复密钥
-如果找不到了, 开始前一定要关闭Bitlocker. 改动引导顺序和安全启动选项会触发BitLocker, 要求输入恢复密钥. 否则你将无法打开Windows系统或已加密数据
-关闭过程时间可能较长
-4. 压缩硬盘空间(双系统需要,若全新安装不需要)打开Windows的磁盘管理工具, 右键开始菜单图标, 选择磁盘管理
-
-找到需要压缩的分区, 右键点击压缩卷
-
-输入合适的空间, 建议40GB以上, 最低不低于官网要求的25GB, 点击压缩即可
-
-5. 关闭安全启动, 设置U盘启动网络上搜索自己的电脑进入BIOS的方法, surface go系列是按音量加键, 一般电脑是按F2或者F10, 以自己的电脑为准, 进入BIOS,关闭安全启动, 设置启动顺序, 将USB设备设置到最上面, 由于每台设备情况不同, 此处设置请自行搜索自己电脑的教程. 
-
-surface go系列安全启动会有三个选项
-
-微软
-
-微软和第三方
-
-关闭
-
-
-选择微软和第三方即可
-
-6. 插入U盘, 启动电脑在上一步设置完成之后, 若处于开机状态就插入U盘, 重启电脑, 引导位置选择
-
- Try or Install Ubuntu
-
-
-等待进入安装界面, 选择中文
-
-如果出现窗口显示不全, 点击试用Ubuntu,如果像我一样可以看到全部窗口, 就点击安装Ubuntu, 跳转到下面开始安装教程
-
-点击试用之后, 会出现如下界面
-
-点击该图标, 再打开设置, 找到显示器, 缩放比例选择100%, 点击保存(我使用的虚拟机没有该选项, 就在红框的位置. 保存在夜灯右边位置, 修改后会出现)
-
-保存之后再选择安装Ubuntu就可以了
-
-开始安装键盘布局默认即可
-
-
-
-
-双系统手动分区
-
-建议分区
-
-创建交换空间
-
-
-填写大小: 建议与内存大小相同, 4G 8G 16G都可
-分区类型: 逻辑分区
-新分区位置:空间起始分区(下面也都是这个不用改)
-用于: 交换空间
-
-
-创建根目录分区
-
-
-填写大小: 如果空间太小就把剩下的全给根目录, 方便后面扩容, 如果空间充足就给20GB以上均可,主要存放系统文件和安装软件
-分区类型: 主分区
-新分区位置:空间起始分区(下面也都是这个不用改)
-用于: Ext4 日志文件系统
-挂载点: /
-
-可选分区
-
-创建引导分区(双系统同盘可不创建, 放置在Windows系统的引导分区里即可)
-
-
-填写大小: 建议200MB-1024MB根据个人情况来,这里我给了500MB
-分区类型: 主分区
-新分区位置: 空间起始分区(下面也都是这个不用改)
-用于: EFI
-
-
-如果空间充足可给/home分区单独设置, 后面想扩容之类的就上面三个分区就可以了, 后面扩容完可以再分
-
-
-填写大小: 20GB以上均可, 看个人使用情况, 存放用户文件, 类似Windows的Users目录
-分区类型: 主分区
-新分区位置:空间起始分区(下面也都是这个不用改)
-用于: Ext4 日志文件系统
-挂载点: /home
-
-最终效果如下
-
-
- 点击现在安装  —&gt; 继续, 时区选择上海, 点击继续
-
-用户信息按自己的填写即可. 可以勾选自动登录, 每次开机不需要选择用户, 自动登录.
-
-点击继续即可安装, 安装之后选择重启, 根据提示会让你拔掉U盘, 按ENTER(回车键)
-
-至此双系统就安装好了. 每次启动时, 系统会提示选择Ubuntu还是Windows系统一般是4个选项
-
-Ubuntu
-Ubuntu高级设置
-Windows
-EFI
-
-顺序可能不同,名称仅为示例, 很容易识别
-
-若未关闭Bitlocker, 进入Windows系统需要输入一次恢复密钥, 下次进入就不需要了.
-
-如果安装没有什么问题, 之前下载的镜像文件就可以清理了
-]]></content>
-      <categories>
-        <category>Ubuntu</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>Ubuntu</tag>
-        <tag>系统安装</tag>
-        <tag>硬盘分区</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Ubuntu搭建Webdav</title>
     <url>/2024/05/e8755f24/</url>
     <content><![CDATA[参考文章: Linux搭建WebDav服务 - Colzry’s Blog
@@ -883,6 +738,61 @@ systemctl status webdav.service
         <tag>学习笔记</tag>
         <tag>Webdav</tag>
         <tag>云服务</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git 安装及配置教程</title>
+    <url>/2024/05/cbf708ce/</url>
+    <content><![CDATA[1. 下载安装包打开Git官网下载安装包, 嫌速度慢可以使用下面的链接下载
+蓝奏云(不限速)：https://wwt.lanzoul.com/b00rn0x92b 密码:gdo1
+百度云(会员)：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
+
+
+下载完成后，双击打开安装包
+2. 开始安装
+
+
+
+
+
+
+
+
+
+
+
+
+
+点击安装, 等待安装完成
+
+3. 配置Git(1). 配置用户信息输入以下命令配置用户信息, 修改成自己的信息
+git config --global user.name &quot;liudh&quot;git config --global user.email &quot;xxxxxxx@xx.com&quot;
+
+可以使用以下命令查看配置信息
+git config user.namegit config user.email
+(2). 设置代理(需自备代理)在向Github推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理
+使用以下命令查看代理配置
+git config --global --get http.proxygit config --global --get https.proxy
+如果没有内容说明没有代理
+下面使用以下命令配置代理
+git config --global http.proxy 127.0.0.1:7890git config --global https.proxy 127.0.0.1:7890
+
+具体地址和端口在系统代理的位置查看
+
+
+如果不想使用代理, 使用以下命令取消
+git config --global --unset http.proxygit config --global --unset https.proxy
+
+至此, 就可以愉快地开始使用Git了
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Git</tag>
+        <tag>安装教程</tag>
+        <tag>Windows</tag>
       </tags>
   </entry>
   <entry>
@@ -1091,61 +1001,6 @@ class不能在多个文件中定义. 一个class的所有成员都必须在同�
       </tags>
   </entry>
   <entry>
-    <title>Git 安装及配置教程</title>
-    <url>/2024/05/cbf708ce/</url>
-    <content><![CDATA[1. 下载安装包打开Git官网下载安装包, 嫌速度慢可以使用下面的链接下载
-蓝奏云(不限速)：https://wwt.lanzoul.com/b00rn0x92b 密码:gdo1
-百度云(会员)：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
-
-
-下载完成后，双击打开安装包
-2. 开始安装
-
-
-
-
-
-
-
-
-
-
-
-
-
-点击安装, 等待安装完成
-
-3. 配置Git(1). 配置用户信息输入以下命令配置用户信息, 修改成自己的信息
-git config --global user.name &quot;liudh&quot;git config --global user.email &quot;xxxxxxx@xx.com&quot;
-
-可以使用以下命令查看配置信息
-git config user.namegit config user.email
-(2). 设置代理(需自备代理)在向Github推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理
-使用以下命令查看代理配置
-git config --global --get http.proxygit config --global --get https.proxy
-如果没有内容说明没有代理
-下面使用以下命令配置代理
-git config --global http.proxy 127.0.0.1:7890git config --global https.proxy 127.0.0.1:7890
-
-具体地址和端口在系统代理的位置查看
-
-
-如果不想使用代理, 使用以下命令取消
-git config --global --unset http.proxygit config --global --unset https.proxy
-
-至此, 就可以愉快地开始使用Git了
-]]></content>
-      <categories>
-        <category>Git</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>Git</tag>
-        <tag>安装教程</tag>
-        <tag>Windows</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>基于Hexo和Github部署个人博客完整教程</title>
     <url>/2024/06/4a79202d/</url>
     <content><![CDATA[安装流程
@@ -1300,6 +1155,151 @@ hexo clean
       </tags>
   </entry>
   <entry>
+    <title>Ubuntu22.04双系统安装教程</title>
+    <url>/2024/05/deb026e9/</url>
+    <content><![CDATA[准备工作
+良好的网络环境
+一块8g以上的U盘(注意备份数据, 该U盘会被格式化)
+Windows电脑
+
+硬件要求
+
+双核2 GHz处理器或更高
+4 GB系统内存
+25 GB磁盘存储空间
+
+
+装机需谨慎, 做好数据备份1. 系统镜像的下载打开Ubuntu系统下载 | Ubuntu 此页面,点击下载Ubuntu桌面版, 
+或者从网盘中下载: 
+百度云：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
+
+再选择Ubuntu22.04.4 LTS,点击下载22.04.4
+
+将此文件下载保存至易寻找的位置, 以F:/Ubuntu为例, 稍后会使用. 
+其他版本可在官网下载Get Ubuntu | Download | Ubuntu 安装步骤大致相同
+2. 安装写盘工具Rufus打开Rufus - 轻松创建 USB 启动盘 页面, 找到下载,选择Windows x64平台的便携版, 下载打开即用. 
+
+插入U盘,打开软件
+
+点击选择, 设备选择刚刚插入的U盘, 镜像文件点击右侧选择, 选中刚刚下载的镜像文件, 我的是位于F:/Ubuntu, 选项如下图即可, 点击开始, 等待写入完成, 点击关闭, 弹出U盘
+
+3. 关闭Bitlocker或者备份Bitlocker恢复密钥如果硬盘设置了Bitlocker, 一定要提前找到恢复密钥, 可以先保存到手机上, 一般在微软账户里会有备份恢复密钥
+如果找不到了, 开始前一定要关闭Bitlocker. 改动引导顺序和安全启动选项会触发BitLocker, 要求输入恢复密钥. 否则你将无法打开Windows系统或已加密数据
+关闭过程时间可能较长
+4. 压缩硬盘空间(双系统需要,若全新安装不需要)打开Windows的磁盘管理工具, 右键开始菜单图标, 选择磁盘管理
+
+找到需要压缩的分区, 右键点击压缩卷
+
+输入合适的空间, 建议40GB以上, 最低不低于官网要求的25GB, 点击压缩即可
+
+5. 关闭安全启动, 设置U盘启动网络上搜索自己的电脑进入BIOS的方法, surface go系列是按音量加键, 一般电脑是按F2或者F10, 以自己的电脑为准, 进入BIOS,关闭安全启动, 设置启动顺序, 将USB设备设置到最上面, 由于每台设备情况不同, 此处设置请自行搜索自己电脑的教程. 
+
+surface go系列安全启动会有三个选项
+
+微软
+
+微软和第三方
+
+关闭
+
+
+选择微软和第三方即可
+
+6. 插入U盘, 启动电脑在上一步设置完成之后, 若处于开机状态就插入U盘, 重启电脑, 引导位置选择
+
+ Try or Install Ubuntu
+
+
+等待进入安装界面, 选择中文
+
+如果出现窗口显示不全, 点击试用Ubuntu,如果像我一样可以看到全部窗口, 就点击安装Ubuntu, 跳转到下面开始安装教程
+
+点击试用之后, 会出现如下界面
+
+点击该图标, 再打开设置, 找到显示器, 缩放比例选择100%, 点击保存(我使用的虚拟机没有该选项, 就在红框的位置. 保存在夜灯右边位置, 修改后会出现)
+
+保存之后再选择安装Ubuntu就可以了
+
+开始安装键盘布局默认即可
+
+
+
+
+双系统手动分区
+
+建议分区
+
+创建交换空间
+
+
+填写大小: 建议与内存大小相同, 4G 8G 16G都可
+分区类型: 逻辑分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: 交换空间
+
+
+创建根目录分区
+
+
+填写大小: 如果空间太小就把剩下的全给根目录, 方便后面扩容, 如果空间充足就给20GB以上均可,主要存放系统文件和安装软件
+分区类型: 主分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: Ext4 日志文件系统
+挂载点: /
+
+可选分区
+
+创建引导分区(双系统同盘可不创建, 放置在Windows系统的引导分区里即可)
+
+
+填写大小: 建议200MB-1024MB根据个人情况来,这里我给了500MB
+分区类型: 主分区
+新分区位置: 空间起始分区(下面也都是这个不用改)
+用于: EFI
+
+
+如果空间充足可给/home分区单独设置, 后面想扩容之类的就上面三个分区就可以了, 后面扩容完可以再分
+
+
+填写大小: 20GB以上均可, 看个人使用情况, 存放用户文件, 类似Windows的Users目录
+分区类型: 主分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: Ext4 日志文件系统
+挂载点: /home
+
+最终效果如下
+
+
+ 点击现在安装  —&gt; 继续, 时区选择上海, 点击继续
+
+用户信息按自己的填写即可. 可以勾选自动登录, 每次开机不需要选择用户, 自动登录.
+
+点击继续即可安装, 安装之后选择重启, 根据提示会让你拔掉U盘, 按ENTER(回车键)
+
+至此双系统就安装好了. 每次启动时, 系统会提示选择Ubuntu还是Windows系统一般是4个选项
+
+Ubuntu
+Ubuntu高级设置
+Windows
+EFI
+
+顺序可能不同,名称仅为示例, 很容易识别
+
+若未关闭Bitlocker, 进入Windows系统需要输入一次恢复密钥, 下次进入就不需要了.
+
+如果安装没有什么问题, 之前下载的镜像文件就可以清理了
+]]></content>
+      <categories>
+        <category>Ubuntu</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>Ubuntu</tag>
+        <tag>系统安装</tag>
+        <tag>硬盘分区</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>物质点法--学习笔记(一)</title>
     <url>/2024/07/af38f644/</url>
     <content><![CDATA[1. 物质点法物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到计算网格得到, 求解后将计算网格结点的运动量映射回各质点, 从而得到这些质点在下一时刻的运动量(对流计算步). 
@@ -1430,56 +1430,6 @@ c_{ij} = \delta_{ij} + \Omega_{ij} dt \qquad (2.31)在动坐标系内定义应�
       <tags>
         <tag>学习笔记</tag>
         <tag>物质点法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Mavic 3 classic屏控航线(航点)飞行教程</title>
-    <url>/2024/08/78788d45/</url>
-    <content><![CDATA[准备工作遥控手柄(带屏)
-航线规划软件(网页) - Rainbow Cloud
-SD卡, 读卡器, 电脑
-1. 创建航线首先, 打开Rainbow Cloud网站. 
-网页界面如下: 
-
-点击左侧新建任务. 
-
-选择正射
-
-输入任务名称
-
-确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围. 
-
-然后, 调整这个范围至合适位置. 可以移动和添加顶点
-
-然后, 调整右侧参数栏的参数. 
-
-
-其余设置与上图保持一致, 保存任务
-
-点击右上角任务导出
-
-选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.
-
-点击下载, 将文件下载并导入到SD卡中.
-2. 导入航线根据导入教程导入文件Mavic3系列屏控手动导入Kmz航点任务
-2.1 创建并备份航线创建任意数量的航点, 保存. 
-航点文件保存位置如下
-
-一串英文字符的文件夹内存放的就是航线文件(kmz格式)
-将整个waypoint文件夹复制至SD卡中
-2.2 替换kmz文件将已经下载好的Kmz文件同样导入到SD卡的该文件夹内
-注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).
-将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)
-最后将替换好的waypoint文件夹替换回去 
-]]></content>
-      <categories>
-        <category>无人机</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>DJI</tag>
-        <tag>Mavic-3-classic</tag>
-        <tag>正射航线</tag>
       </tags>
   </entry>
   <entry>
@@ -1910,6 +1860,56 @@ main(master)分支 Init-update-update2 内容
       </tags>
   </entry>
   <entry>
+    <title>Mavic 3 classic屏控航线(航点)飞行教程</title>
+    <url>/2024/08/78788d45/</url>
+    <content><![CDATA[准备工作遥控手柄(带屏)
+航线规划软件(网页) - Rainbow Cloud
+SD卡, 读卡器, 电脑
+1. 创建航线首先, 打开Rainbow Cloud网站. 
+网页界面如下: 
+
+点击左侧新建任务. 
+
+选择正射
+
+输入任务名称
+
+确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围. 
+
+然后, 调整这个范围至合适位置. 可以移动和添加顶点
+
+然后, 调整右侧参数栏的参数. 
+
+
+其余设置与上图保持一致, 保存任务
+
+点击右上角任务导出
+
+选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.
+
+点击下载, 将文件下载并导入到SD卡中.
+2. 导入航线根据导入教程导入文件Mavic3系列屏控手动导入Kmz航点任务
+2.1 创建并备份航线创建任意数量的航点, 保存. 
+航点文件保存位置如下
+
+一串英文字符的文件夹内存放的就是航线文件(kmz格式)
+将整个waypoint文件夹复制至SD卡中
+2.2 替换kmz文件将已经下载好的Kmz文件同样导入到SD卡的该文件夹内
+注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).
+将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)
+最后将替换好的waypoint文件夹替换回去 
+]]></content>
+      <categories>
+        <category>无人机</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>DJI</tag>
+        <tag>Mavic-3-classic</tag>
+        <tag>正射航线</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hexo博客部署到云服务器教程</title>
     <url>/2025/03/ee12770f/</url>
     <content><![CDATA[准备工作
@@ -2055,46 +2055,6 @@ sudo vim /etc/passwd
       </tags>
   </entry>
   <entry>
-    <title>Nginx反向代理教程</title>
-    <url>/2025/03/4bc19655/</url>
-    <content><![CDATA[准备工作
-Ubuntu系统
-Nginx
-
-配置教程1.备份配置文件sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
-2.编辑配置文件sudo vim /etc/nginx/nginx.conf
-找到http&#123;&#125;块中的server&#123;&#125;块，注释掉原有的server&#123;&#125;
-
-3.按原有配置添加新的server块(1) 默认的错误界面server &#123;    listen 443 ssl default_server;    server_name _;    ssl_certificate /etc/nginx/xxx.crt;    ssl_certificate_key /etc/nginx/xxx.key;    return 404;&#125;
-(2) 主域名server &#123;     listen 443 ssl;     server_name fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;         root /home/www/website;         index  index.html index.htm;     &#125;&#125;
-其中root改为自己本地的网站目录
-(3) 主域名转发server &#123;        listen 80;        server_name fireflye.top;        return 301 https://$host$request_uri;        &#125;
-(4) 二级域名端口转发示例server &#123;     listen 443 ssl;     server_name xxx.fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;       proxy_set_header X-Forwarded-Proto $scheme;       proxy_set_header Host $host;       proxy_set_header X-Real-IP $remote_addr;       proxy_set_header Range $http_range;       proxy_set_header If-Range $http_if_range;       proxy_redirect off;       proxy_pass https://127.0.0.1:xxx;       client_max_body_size 20000m;       &#125;&#125; server &#123;        listen 80;        server_name xxx.fireflye.top;        return 301 https://$host$request_uri;				&#125;
-其他均可套此模版
-
-注意http{}需要闭合，最后的大括号容易被误删
-
-(5) 检验配置并重启nginxsudo nginx -t
-
-证明无错误，重启nginx
-sudo nginx -s reload
-4.SSL证书可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器
-
-每个证书有效期三个月
-除www外的二级域名需要单独申请
-总有效证书最多50个(到期会释放个数)
-
-]]></content>
-      <categories>
-        <category>Nginx</category>
-      </categories>
-      <tags>
-        <tag>教程及说明</tag>
-        <tag>反向代理</tag>
-        <tag>端口转发</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>分水岭提取教程</title>
     <url>/2025/05/2ef32537/</url>
     <content><![CDATA[准备工具
@@ -2148,6 +2108,46 @@ ArcMap
         <tag>教程及说明</tag>
         <tag>分水岭</tag>
         <tag>栅格</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Nginx反向代理教程</title>
+    <url>/2025/03/4bc19655/</url>
+    <content><![CDATA[准备工作
+Ubuntu系统
+Nginx
+
+配置教程1.备份配置文件sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
+2.编辑配置文件sudo vim /etc/nginx/nginx.conf
+找到http&#123;&#125;块中的server&#123;&#125;块，注释掉原有的server&#123;&#125;
+
+3.按原有配置添加新的server块(1) 默认的错误界面server &#123;    listen 443 ssl default_server;    server_name _;    ssl_certificate /etc/nginx/xxx.crt;    ssl_certificate_key /etc/nginx/xxx.key;    return 404;&#125;
+(2) 主域名server &#123;     listen 443 ssl;     server_name fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;         root /home/www/website;         index  index.html index.htm;     &#125;&#125;
+其中root改为自己本地的网站目录
+(3) 主域名转发server &#123;        listen 80;        server_name fireflye.top;        return 301 https://$host$request_uri;        &#125;
+(4) 二级域名端口转发示例server &#123;     listen 443 ssl;     server_name xxx.fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;       proxy_set_header X-Forwarded-Proto $scheme;       proxy_set_header Host $host;       proxy_set_header X-Real-IP $remote_addr;       proxy_set_header Range $http_range;       proxy_set_header If-Range $http_if_range;       proxy_redirect off;       proxy_pass https://127.0.0.1:xxx;       client_max_body_size 20000m;       &#125;&#125; server &#123;        listen 80;        server_name xxx.fireflye.top;        return 301 https://$host$request_uri;				&#125;
+其他均可套此模版
+
+注意http{}需要闭合，最后的大括号容易被误删
+
+(5) 检验配置并重启nginxsudo nginx -t
+
+证明无错误，重启nginx
+sudo nginx -s reload
+4.SSL证书可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器
+
+每个证书有效期三个月
+除www外的二级域名需要单独申请
+总有效证书最多50个(到期会释放个数)
+
+]]></content>
+      <categories>
+        <category>Nginx</category>
+      </categories>
+      <tags>
+        <tag>教程及说明</tag>
+        <tag>反向代理</tag>
+        <tag>端口转发</tag>
       </tags>
   </entry>
   <entry>
