@@ -1,0 +1,318 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>非饱和土有限元渗流计算：控制方程、离散与非线性迭代 | Firefly Blog | 萤火虫博客</title><meta name="author" content="Liudh"><meta name="copyright" content="Liudh"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="从 Richards 方程出发，推导二维瞬态非饱和渗流有限元方程，并说明高斯点本构更新、收敛判据与程序实现。"><meta property="og:type" content="article"><meta property="og:title" content="非饱和土有限元渗流计算：控制方程、离散与非线性迭代"><meta property="og:url" content="https://fireflye.top/2024/05/80807990/"><meta property="og:site_name" content="Firefly Blog | 萤火虫博客"><meta property="og:description" content="从 Richards 方程出发，推导二维瞬态非饱和渗流有限元方程，并说明高斯点本构更新、收敛判据与程序实现。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://fireflye.top/img/cover/2024-05-08-22-23-32.jpg"><meta property="article:published_time" content="2024-05-09T07:43:58.000Z"><meta property="article:modified_time" content="2026-07-19T06:51:09.360Z"><meta property="article:author" content="Liudh"><meta property="article:tag" content="非饱和土"><meta property="article:tag" content="孔隙水压力"><meta property="article:tag" content="渗流"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://fireflye.top/img/cover/2024-05-08-22-23-32.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://fireflye.top/2024/05/80807990/"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//hm.baidu.com"><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media=&quot;all&quot;"><script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="https://hm.baidu.com/hm.js?317136679115f8c00b2042f2137bc84f";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE={title:"非饱和土有限元渗流计算：控制方程、离散与非线性迭代",isPost:!0,isHome:!1,isHighlightShrink:!1,isToc:!0,postUpdate:"2026-07-19 14:51:09"}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/modify.css"><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+document.addEventListener('pjax:send', () => {
+  Pace.restart()
+})</script><link rel="stylesheet" href="/css/barber-shop.css"><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/miku.png" onerror="onerror=null,src=&quot;/img/friend_404.gif&quot;" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><hr class="custom-hr"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i> <span>主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i> <span>时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i> <span>标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i> <span>分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image:url(/img/cover/2024-05-08-22-23-32.jpg)"><nav id="nav"><span id="blog-info"><a href="/" title="Firefly Blog | 萤火虫博客"><span class="site-name">Firefly Blog | 萤火虫博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i> <span>搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i> <span>主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i> <span>时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i> <span>标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i> <span>分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">非饱和土有限元渗流计算：控制方程、离散与非线性迭代</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-05-09T07:43:58.000Z" title="发表于 2024-05-09 15:43:58">2024-05-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-19T06:51:09.360Z" title="更新于 2026-07-19 14:51:09">2026-07-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%80%BC%E6%A8%A1%E6%8B%9F/">数值模拟</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%80%BC%E6%A8%A1%E6%8B%9F/%E6%9C%89%E9%99%90%E5%85%83%E6%B3%95%EF%BC%88FEM%EF%BC%89/">有限元法（FEM）</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">750</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>2分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" data-flag-title="非饱和土有限元渗流计算：控制方程、离散与非线性迭代"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image:url(/img/cover/2024-05-08-22-23-32.jpg)"></div><article class="post-content" id="article-container"><p>饱和渗流中，渗透系数通常可以视为常数；非饱和土却不同，含水率与渗透系数都会随压力水头变化。降雨入渗时，某个高斯点的压力水头只要略有改变，就可能使该点的渗透系数跨越数个数量级，进而改变单元渗透矩阵。<strong>非饱和渗流计算的核心困难不是线性方程求解，而是本构参数与未知压力场之间的强非线性耦合。</strong></p><p>本文以二维瞬态渗流为对象，采用压力水头<span class="math inline"><script type="math/tex">\psi</script></span>作为基本未知量，依次说明质量守恒、Richards 方程、土水特征曲线、有限元弱式、时间离散和高斯点迭代。最后给出适合程序实现的收敛判据与排错清单。</p><p>开始前需要统一约定：<span class="math inline"><script type="math/tex">x</script></span>水平向右，<span class="math inline"><script type="math/tex">z</script></span>竖直向上；压力水头<span class="math inline"><script type="math/tex">\psi=u_w/\gamma_w</script></span>，非饱和区内通常有<span class="math inline"><script type="math/tex">\psi<0</script></span>；总水头为<span class="math inline"><script type="math/tex">H=\psi+z</script></span>；源项<span class="math inline"><script type="math/tex">Q>0</script></span>表示向土体内补水。</p><img src="/2024/05/80807990/unsaturated-seepage-domain.png" alt="降雨入渗条件下的非饱和区、地下水位、有限元网格与渗流路径" style="zoom:33%"><h2 id="一、从微元水量平衡到-Richards-方程">一、从微元水量平衡到 Richards 方程</h2><h3 id="1-质量守恒">1. 质量守恒</h3><p>取尺寸为<span class="math inline"><script type="math/tex">dx\times dz</script></span>、单位厚度的二维微元。令达西通量<span class="math inline"><script type="math/tex">\boldsymbol{q}=(q_x,q_z)^T</script></span>，通量方向按坐标正方向取正。微元内储水量的增加等于净流入量与源项之和，因此有</p><div class="math block"><script type="math/tex;mode=display">\frac{\partial \theta}{\partial t}
++\boldsymbol{\nabla}\cdot\boldsymbol{q}=Q
+\tag{1}\label{eq:mass}</script></div><p>其中，<span class="math inline"><script type="math/tex">\theta</script></span>为体积含水率，<span class="math inline"><script type="math/tex">Q</script></span>的量纲为<span class="math inline"><script type="math/tex">\mathrm{s^{-1}}</script></span>。若程序使用节点流量而不是体积源强度，需要先根据单元面积和厚度完成量纲换算。</p><img src="/2024/05/80807990/20240509173611.png" alt="二维微元的水平与竖向水量收支" style="zoom:50%"><h3 id="2-达西定律与符号检查">2. 达西定律与符号检查</h3><p>各向异性介质中的达西定律写为</p><div class="math block"><script type="math/tex;mode=display">\boldsymbol{q}
+=-\boldsymbol{K}(\psi)\boldsymbol{\nabla}H
+=-\boldsymbol{K}(\psi)
+\left(\boldsymbol{\nabla}\psi+\boldsymbol{e}_z\right)
+\tag{2}\label{eq:darcy}</script></div><p>若材料主轴与坐标轴重合，则</p><div class="math block"><script type="math/tex;mode=display">\boldsymbol{K}=
+\begin{bmatrix}
+K_x(\psi) & 0\\
+0 & K_z(\psi)
+\end{bmatrix}</script></div><p>负号表示水从高总水头流向低总水头。实现时最容易出错的是重力项：当<span class="math inline"><script type="math/tex">z</script></span>轴向上时，<span class="math inline"><script type="math/tex">\boldsymbol{\nabla}z=\boldsymbol{e}_z</script></span>；若程序把竖直坐标向下定义，重力项必须同步改变符号。</p><p>将式<span class="math inline"><script type="math/tex">\eqref{eq:darcy}</script></span>代入式<span class="math inline"><script type="math/tex">\eqref{eq:mass}</script></span>，得到混合形式的 Richards 方程：</p><div class="math block"><script type="math/tex;mode=display">\boxed{
+\frac{\partial\theta(\psi)}{\partial t}
+=\boldsymbol{\nabla}\cdot
+\left[
+\boldsymbol{K}(\psi)
+\left(\boldsymbol{\nabla}\psi+\boldsymbol{e}_z\right)
+\right]+Q
+}
+\tag{3}\label{eq:richards}</script></div><p>它同时适用于非饱和区和饱和区。非线性来自两个位置：储水关系<span class="math inline"><script type="math/tex">\theta(\psi)</script></span>和渗透关系<span class="math inline"><script type="math/tex">\boldsymbol{K}(\psi)</script></span>。COMSOL 的 Richards 方程接口同样把压力作为未知量，并允许水力性质随饱和状态改变；这也是此类问题需要非线性迭代的根本原因。</p><h2 id="二、土水特征曲线与非饱和渗透系数">二、土水特征曲线与非饱和渗透系数</h2><h3 id="1-有效饱和度">1. 有效饱和度</h3><p>定义有效饱和度</p><div class="math block"><script type="math/tex;mode=display">S_e=\frac{\theta-\theta_r}{\theta_s-\theta_r}
+\tag{4}\label{eq:se}</script></div><p>其中，<span class="math inline"><script type="math/tex">\theta_s</script></span>和<span class="math inline"><script type="math/tex">\theta_r</script></span>分别为饱和与残余体积含水率。采用 van Genuchten 模型时，常写为</p><div class="math block"><script type="math/tex;mode=display">S_e(\psi)=
+\begin{cases}
+\left[1+(\alpha|\psi|)^n\right]^{-m}, & \psi<0\\
+1, & \psi\ge 0
+\end{cases},
+\qquad m=1-\frac{1}{n}
+\tag{5}\label{eq:vg}</script></div><p>于是</p><div class="math block"><script type="math/tex;mode=display">\theta(\psi)=\theta_r+(\theta_s-\theta_r)S_e(\psi)
+\tag{6}\label{eq:theta}</script></div><p><span class="math inline"><script type="math/tex">\alpha</script></span>控制进气吸力的尺度，<span class="math inline"><script type="math/tex">n</script></span>控制曲线陡峭程度。van Genuchten 模型的连续形式不仅便于拟合试验数据，也能避免不连续斜率给数值迭代带来的额外困难。</p><h3 id="2-容水度">2. 容水度</h3><p>压力水头形式的容水度定义为</p><div class="math block"><script type="math/tex;mode=display">C(\psi)=\frac{d\theta}{d\psi}
+\tag{7}\label{eq:capacity}</script></div><p>当<span class="math inline"><script type="math/tex">\psi<0</script></span>时，式<span class="math inline"><script type="math/tex">\eqref{eq:vg}</script></span>对应</p><div class="math block"><script type="math/tex;mode=display">C(\psi)=
+(\theta_s-\theta_r)mn\alpha^n|\psi|^{n-1}
+\left[1+(\alpha|\psi|)^n\right]^{-m-1}
+\tag{8}\label{eq:cvg}</script></div><p>若程序以孔隙水压力<span class="math inline"><script type="math/tex">u_w</script></span>为未知量，则</p><div class="math block"><script type="math/tex;mode=display">\frac{d\theta}{du_w}
+=\frac{1}{\gamma_w}\frac{d\theta}{d\psi}
+=\frac{C(\psi)}{\gamma_w}
+\tag{9}\label{eq:pressure-capacity}</script></div><p>因此不能把针对压力水头标定的容水度直接用于孔压方程，否则会遗漏<span class="math inline"><script type="math/tex">\gamma_w</script></span>，导致储水项出现数量级错误。</p><h3 id="3-Mualem–van-Genuchten-渗透关系">3. Mualem–van Genuchten 渗透关系</h3><p>各向同性时，非饱和渗透系数可写成</p><div class="math block"><script type="math/tex;mode=display">K(\psi)=K_sK_r(S_e)
+\tag{10}\label{eq:k}</script></div><p>其中<span class="math inline"><script type="math/tex">K_s</script></span>为饱和渗透系数。常用的 Mualem–van Genuchten 相对渗透系数为</p><div class="math block"><script type="math/tex;mode=display">K_r(S_e)=
+S_e^{\ell}
+\left[
+1-\left(1-S_e^{1/m}\right)^m
+\right]^2
+\tag{11}\label{eq:kr}</script></div><p><span class="math inline"><script type="math/tex">\ell</script></span>为孔隙连通参数，常用初值为<span class="math inline"><script type="math/tex">0.5</script></span>，但最终应由试验或可靠资料确定。原始研究表明，低含水率段的土水特征曲线会显著影响非饱和渗透系数预测，因此不能只关注接近饱和区的拟合效果。</p><h2 id="三、有限元弱式">三、有限元弱式</h2><p>在区域<span class="math inline"><script type="math/tex">\Omega</script></span>内取试函数<span class="math inline"><script type="math/tex">N_i</script></span>。把式<span class="math inline"><script type="math/tex">\eqref{eq:richards}</script></span>乘以<span class="math inline"><script type="math/tex">N_i</script></span>并分部积分，若边界入流通量<span class="math inline"><script type="math/tex">\bar q_{\mathrm{in}}>0</script></span>定义为流入区域，可得</p><div class="math block"><script type="math/tex;mode=display">\int_{\Omega}N_i\frac{\partial\theta}{\partial t}\,d\Omega
++\int_{\Omega}\boldsymbol{\nabla}N_i^T
+\boldsymbol{K}(\psi)
+\left(\boldsymbol{\nabla}\psi+\boldsymbol{e}_z\right)d\Omega
+=\int_{\Omega}N_iQ\,d\Omega
++\int_{\Gamma_q}N_i\bar q_{\mathrm{in}}\,d\Gamma
+\tag{12}\label{eq:weak}</script></div><p>采用单元形函数插值</p><div class="math block"><script type="math/tex;mode=display">\psi\approx\boldsymbol{N}\boldsymbol{\psi}_e,
+\qquad
+\boldsymbol{\nabla}\psi
+=\boldsymbol{B}\boldsymbol{\psi}_e
+\tag{13}\label{eq:interp}</script></div><p>在一次线性化迭代中，单元容量矩阵和渗透矩阵分别为</p><div class="math block"><script type="math/tex;mode=display">\boldsymbol{C}_e
+=\int_{\Omega_e}\boldsymbol{N}^T
+C(\psi)\boldsymbol{N}\,d\Omega
+\tag{14}\label{eq:capacity-matrix}</script></div><div class="math block"><script type="math/tex;mode=display">\boldsymbol{K}_e
+=\int_{\Omega_e}\boldsymbol{B}^T
+\boldsymbol{K}(\psi)\boldsymbol{B}\,d\Omega
+\tag{15}\label{eq:conductivity-matrix}</script></div><p>重力项为</p><div class="math block"><script type="math/tex;mode=display">\boldsymbol{g}_e
+=\int_{\Omega_e}\boldsymbol{B}^T
+\boldsymbol{K}(\psi)\boldsymbol{e}_z\,d\Omega
+\tag{16}\label{eq:gravity-vector}</script></div><p>这些积分通常在高斯点计算。对四节点四边形单元，<span class="math inline"><script type="math/tex">2\times2</script></span>积分对应四个高斯点；每个点都要根据当前压力水头重新计算<span class="math inline"><script type="math/tex">S_e</script></span>、<span class="math inline"><script type="math/tex">\theta</script></span>、<span class="math inline"><script type="math/tex">C</script></span>与<span class="math inline"><script type="math/tex">K</script></span>，再组装到单元矩阵中。</p><h2 id="四、时间离散与非线性残量">四、时间离散与非线性残量</h2><p>使用后向欧拉格式，从时刻<span class="math inline"><script type="math/tex">t_n</script></span>前进到<span class="math inline"><script type="math/tex">t_{n+1}=t_n+\Delta t</script></span>。相比直接把<span class="math inline"><script type="math/tex">C\,\partial\psi/\partial t</script></span>离散，混合形式保留含水率增量：</p><div class="math block"><script type="math/tex;mode=display">\frac{\partial\theta}{\partial t}
+\approx
+\frac{\theta(\psi^{n+1})-\theta(\psi^n)}{\Delta t}
+\tag{17}\label{eq:time}</script></div><p>离散残量可以写为</p><div class="math block"><script type="math/tex;mode=display">\begin{aligned}
+\boldsymbol{R}(\boldsymbol{\psi}^{n+1})
+=&\sum_e\int_{\Omega_e}\boldsymbol{N}^T
+\frac{\theta(\psi^{n+1})-\theta(\psi^n)}{\Delta t}\,d\Omega\\
+&+\sum_e\int_{\Omega_e}\boldsymbol{B}^T
+\boldsymbol{K}(\psi^{n+1})
+\left(\boldsymbol{B}\boldsymbol{\psi}^{n+1}
++\boldsymbol{e}_z\right)d\Omega
+-\boldsymbol{f}^{n+1}
+\end{aligned}
+\tag{18}\label{eq:residual}</script></div><p>目标是求得<span class="math inline"><script type="math/tex">\boldsymbol{R}=\boldsymbol{0}</script></span>。Celia 等人的研究指出，混合形式比单纯的压力水头形式更有利于保持质量守恒；时间项采用合适的集中处理还可减小非物理振荡。</p><h2 id="五、高斯点本构更新与收敛">五、高斯点本构更新与收敛</h2><img src="/2024/05/80807990/gauss-point-iteration.png" alt="单元高斯点上的含水率和渗透系数更新，以及迭代误差收敛过程" style="zoom:33%"><h3 id="1-Picard-迭代框架">1. Picard 迭代框架</h3><p>在时间步<span class="math inline"><script type="math/tex">n+1</script></span>的第<span class="math inline"><script type="math/tex">m</script></span>次迭代中，以<span class="math inline"><script type="math/tex">\boldsymbol{\psi}^{(m)}</script></span>计算所有高斯点本构量，组装近似切线矩阵，然后求解增量：</p><div class="math block"><script type="math/tex;mode=display">\boldsymbol{A}^{(m)}\Delta\boldsymbol{\psi}^{(m)}
+=-\boldsymbol{R}^{(m)}
+\tag{19}\label{eq:increment}</script></div><div class="math block"><script type="math/tex;mode=display">\boldsymbol{\psi}^{(m+1)}
+=\boldsymbol{\psi}^{(m)}
++\omega\Delta\boldsymbol{\psi}^{(m)},
+\qquad 0<\omega\le1
+\tag{20}\label{eq:relaxation}</script></div><p><span class="math inline"><script type="math/tex">\omega</script></span>为松弛系数。普通时间步可取<span class="math inline"><script type="math/tex">\omega=1</script></span>；干湿交界面移动剧烈或迭代振荡时，可暂时减小到<span class="math inline"><script type="math/tex">0.3\sim0.8</script></span>。完整 Newton 法还会把<span class="math inline"><script type="math/tex">dK/d\psi</script></span>对残量的贡献放入雅可比矩阵，局部收敛更快，但实现和调试成本也更高。</p><h3 id="2-为什么不能只检查节点压力">2. 为什么不能只检查节点压力</h3><p>当土体很干时，<span class="math inline"><script type="math/tex">K(\psi)</script></span>曲线可能非常陡。节点压力增量已经很小，不代表高斯点渗透系数已经稳定；反过来，绝对渗透系数极小时，单纯计算相对误差又容易被浮点噪声放大。因此建议同时监控三类指标。</p><p>压力水头增量：</p><div class="math block"><script type="math/tex;mode=display">\eta_{\psi}
+=\frac{\|\Delta\boldsymbol{\psi}\|_{\infty}}
+{\max(\|\boldsymbol{\psi}^{(m+1)}\|_{\infty},\psi_{\mathrm{ref}})}
+\tag{21}\label{eq:head-error}</script></div><p>高斯点渗透系数变化：</p><div class="math block"><script type="math/tex;mode=display">\eta_K
+=\max_g
+\frac{|K_g^{(m+1)}-K_g^{(m)}|}
+{\max(K_g^{(m+1)},K_{\mathrm{floor}})}
+\tag{22}\label{eq:k-error}</script></div><p>平衡残量：</p><div class="math block"><script type="math/tex;mode=display">\eta_R
+=\frac{\|\boldsymbol{R}^{(m+1)}\|_2}
+{\max(\|\boldsymbol{f}^{n+1}\|_2,R_{\mathrm{ref}})}
+\tag{23}\label{eq:residual-error}</script></div><p>只有三项同时满足</p><div class="math block"><script type="math/tex;mode=display">\eta_{\psi}<\varepsilon_{\psi},
+\qquad
+\eta_K<\varepsilon_K,
+\qquad
+\eta_R<\varepsilon_R
+\tag{24}\label{eq:convergence}</script></div><p>才接受当前时间步。容差必须结合单位、网格与材料曲线确定；调试初期可从<span class="math inline"><script type="math/tex">10^{-5}\sim10^{-4}</script></span>的相对容差开始，再通过时间步和网格收敛试验收紧。<span class="math inline"><script type="math/tex">K_{\mathrm{floor}}</script></span>只用于误差归一化，不应偷偷改变物理本构值。</p><h3 id="3-质量平衡复核">3. 质量平衡复核</h3><p>非线性迭代收敛后还应检查整个区域的水量平衡：</p><div class="math block"><script type="math/tex;mode=display">E_m=
+\Delta W
+-\Delta t\left(Q_{\mathrm{in}}-Q_{\mathrm{out}}+Q_{\mathrm{source}}\right)
+\tag{25}\label{eq:mass-error}</script></div><p>其中</p><div class="math block"><script type="math/tex;mode=display">\Delta W
+=\int_{\Omega}
+\left[\theta^{n+1}-\theta^n\right]d\Omega
+\tag{26}\label{eq:storage-change}</script></div><p>若残量已经很小而<span class="math inline"><script type="math/tex">E_m</script></span>仍持续累积，应优先检查时间项是否使用了含水率增量、边界通量符号、积分权重、单元厚度和节点流量分配，而不是盲目增加迭代次数。</p><h2 id="六、边界条件的程序表达">六、边界条件的程序表达</h2><h3 id="1-定水头边界">1. 定水头边界</h3><p>给定<span class="math inline"><script type="math/tex">\psi=\bar\psi</script></span>或<span class="math inline"><script type="math/tex">H=\bar H</script></span>。必须确认输入量究竟是孔压、压力水头还是总水头，三者不能混用。施加本质边界后，应同步修改矩阵与右端项，避免只覆盖解向量而破坏平衡方程。</p><h3 id="2-流量边界">2. 流量边界</h3><p>给定法向入流<span class="math inline"><script type="math/tex">\bar q_{\mathrm{in}}</script></span>。降雨强度并不总能全部转化为入渗通量：当表面达到饱和或所需入渗能力不足时，边界可能需要从给定通量切换为给定压力，并把剩余水量计为地表径流。</p><h3 id="3-无流边界">3. 无流边界</h3><p>有<span class="math inline"><script type="math/tex">\boldsymbol{q}\cdot\boldsymbol{n}=0</script></span>。在弱式中它属于自然边界，不需要额外装配边界向量，但仍要确认模型底部是否真的可以视为不透水层。</p><h3 id="4-渗出面">4. 渗出面</h3><p>渗出面通常同时包含压力约束与单向出流条件，边界范围会随解变化。若直接把整个潜在渗出边界固定为零压力，往往会高估排水范围；更稳妥的做法是在每次非线性迭代后更新活动边界集合。</p><h2 id="七、建议的程序流程">七、建议的程序流程</h2><figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">读取网格、材料、初始条件和边界条件</span><br><span class="line">计算初始高斯点 θ、C、K</span><br><span class="line"></span><br><span class="line">for n = 0 ... nstep - 1</span><br><span class="line">    取 ψ^(0) = ψ^n</span><br><span class="line"></span><br><span class="line">    for m = 0 ... iter_max - 1</span><br><span class="line">        for 每个单元</span><br><span class="line">            for 每个高斯点</span><br><span class="line">                插值得到 ψ_g</span><br><span class="line">                更新 Se_g、θ_g、C_g、K_g</span><br><span class="line">                计算容量、渗透、重力和源项贡献</span><br><span class="line">            end for</span><br><span class="line">            组装全局残量 R 和切线矩阵 A</span><br><span class="line">        end for</span><br><span class="line"></span><br><span class="line">        施加本质边界</span><br><span class="line">        求解 A Δψ = -R</span><br><span class="line">        更新 ψ^(m+1) = ψ^(m) + ω Δψ</span><br><span class="line">        重新计算 η_ψ、η_K、η_R</span><br><span class="line"></span><br><span class="line">        if 三项均收敛</span><br><span class="line">            接受 ψ^(m+1)</span><br><span class="line">            exit</span><br><span class="line">        end if</span><br><span class="line">    end for</span><br><span class="line"></span><br><span class="line">    if 未收敛</span><br><span class="line">        减小 Δt，回滚到 ψ^n 后重算</span><br><span class="line">    else</span><br><span class="line">        检查全局水量平衡</span><br><span class="line">        输出节点压力、高斯点饱和度与通量</span><br><span class="line">        根据迭代次数调整下一步 Δt</span><br><span class="line">    end if</span><br><span class="line">end for</span><br></pre></td></tr></tbody></table></figure><p>时间步自适应通常比单纯提高最大迭代次数更有效：若连续几个时间步只需少量迭代，可以适度放大<span class="math inline"><script type="math/tex">\Delta t</script></span>；若迭代超过上限、误差振荡或边界状态频繁切换，则应回滚并减小<span class="math inline"><script type="math/tex">\Delta t</script></span>。</p><h2 id="八、常见不收敛原因">八、常见不收敛原因</h2><table><thead><tr><th>现象</th><th>常见原因</th><th>优先处理方法</th></tr></thead><tbody><tr><td>第一个时间步立即发散</td><td>初始场与边界条件不协调</td><td>先求稳态初始场，或缓慢加载边界</td></tr><tr><td>压力振荡、渗透系数来回跳变</td><td>时间步过大，<span class="math inline"><script type="math/tex">K(\psi)</script></span>过陡</td><td>减小时间步并使用松弛更新</td></tr><tr><td>节点压力收敛但流量不稳定</td><td>只检查了<span class="math inline"><script type="math/tex">\Delta\psi</script></span></td><td>增加高斯点<span class="math inline"><script type="math/tex">K</script></span>与残量判据</td></tr><tr><td>水量误差持续累积</td><td>时间项、边界通量或单位错误</td><td>用式<span class="math inline"><script type="math/tex">\eqref{eq:mass-error}</script></span>分项核对</td></tr><tr><td>饱和线附近难以收敛</td><td>本构关系在<span class="math inline"><script type="math/tex">\psi=0</script></span>附近不光滑</td><td>检查分段函数及一阶导数连续性</td></tr><tr><td>干燥区矩阵病态</td><td><span class="math inline"><script type="math/tex">K</script></span>过小、网格质量差</td><td>改善网格，使用缩放和稳健预条件</td></tr><tr><td>降雨通量导致正压力异常增长</td><td>未实现通量—压力边界切换</td><td>加入积水与径流判定</td></tr></tbody></table><h2 id="九、验证顺序">九、验证顺序</h2><p>程序完成后，不应直接用复杂边坡算例判断正确性。建议按以下顺序验证：</p><ol><li><strong>静水压力场</strong>：无源、无流边界下，总水头应保持常数；</li><li><strong>饱和稳态渗流</strong>：令<span class="math inline"><script type="math/tex">K=K_s</script></span>，与线性达西渗流结果比较；</li><li><strong>一维入渗</strong>：检查湿润锋位置、含水率分布和累计入渗量；</li><li><strong>时间步收敛</strong>：逐次减半<span class="math inline"><script type="math/tex">\Delta t</script></span>，比较关键点压力与总入渗量；</li><li><strong>网格收敛</strong>：加密网格后，结果应趋于稳定；</li><li><strong>全局质量守恒</strong>：每个时间步及整个计算时段都应记录水量误差。</li></ol><p>验证通过后，再引入分层土、各向异性、降雨切换边界和渗出面。这样可以把“控制方程错误”“材料参数错误”和“边界算法错误”分开定位。</p><h2 id="十、总结">十、总结</h2><p>二维非饱和瞬态渗流有限元程序可以归纳为一条清晰主线：</p><div class="math block"><script type="math/tex;mode=display">\boxed{
+\text{质量守恒}
++\text{达西定律}
++\text{土水本构}
++\text{有限元离散}
++\text{高斯点迭代}
+}</script></div><p>其中最关键的实现细节有三点：使用含水率增量表达时间项；在每次迭代中更新高斯点的<span class="math inline"><script type="math/tex">\theta</script></span>、<span class="math inline"><script type="math/tex">C</script></span>和<span class="math inline"><script type="math/tex">K</script></span>；同时检查压力增量、渗透系数变化、残量与全局水量平衡。只要这四层检查能够闭合，程序的稳定性和可解释性都会明显提高。</p><h2 id="参考资料">参考资料</h2><ol><li>van Genuchten, M. Th. (1980). <a target="_blank" rel="noopener" href="https://doi.org/10.2136/sssaj1980.03615995004400050002x">A Closed-form Equation for Predicting the Hydraulic Conductivity of Unsaturated Soils</a>.</li><li>Celia, M. A., Bouloutas, E. T., &amp; Zarba, R. L. (1990). <a target="_blank" rel="noopener" href="https://doi.org/10.1029/WR026i007p01483">A General Mass-Conservative Numerical Solution for the Unsaturated Flow Equation</a>.</li><li>COMSOL. <a target="_blank" rel="noopener" href="https://doc.comsol.com/6.4/doc/com.comsol.help.ssf/ssf_ug_fluidflow_porous.07.050.html">About Richards’ Equation</a>.</li><li>MOOSE PorousFlow. <a target="_blank" rel="noopener" href="https://mooseframework.inl.gov/releases/moose/2022-06-10/modules/porous_flow/capillary_pressure.html">Capillary Pressure and the van Genuchten Relationship</a>.</li></ol><div class="ai-content-label" role="note" aria-label="AI 生成内容标识"><span class="ai-content-label__icon" aria-hidden="true"><i class="fas fa-wand-magic-sparkles"></i></span> <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span></div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%9D%9E%E9%A5%B1%E5%92%8C%E5%9C%9F/">非饱和土</a><a class="post-meta__tags" href="/tags/%E5%AD%94%E9%9A%99%E6%B0%B4%E5%8E%8B%E5%8A%9B/">孔隙水压力</a><a class="post-meta__tags" href="/tags/%E6%B8%97%E6%B5%81/">渗流</a></div><div class="post_share"><div class="social-share" data-image="/img/cover/2024-05-08-22-23-32.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media=&quot;all&quot;"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer=""></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="wechat"></a><div class="post-qr-code-desc">wechat</div></li><li class="reward-item"><a href="/img/zanshang.jpg" target="_blank"><img class="post-qr-code-img" src="/img/zanshang.jpg" alt="zanshang"></a><div class="post-qr-code-desc">zanshang</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="alipay"></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/05/5a883584/" title="Fortran 转 C++：语法差异与迁移要点"><img class="cover" src="/img/cover/2024-05-13-16-37-32.jpg" onerror="onerror=null,src=&quot;/img/404.jpg&quot;" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Fortran 转 C++：语法差异与迁移要点</div></div></a></div><div class="next-post pull-right"><a href="/2024/05/cbf708ce/" title="Windows Git 安装与基础配置指南"><img class="cover" src="/img/cover/2024-05-07-git-install.jpg" onerror="onerror=null,src=&quot;/img/404.jpg&quot;" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Windows Git 安装与基础配置指南</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/04/71e392b0/" title="有限元非饱和土边坡稳定性计算程序说明"><img class="cover" src="/img/cover/2024-04-20-p64-load-pore.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-20</div><div class="title">有限元非饱和土边坡稳定性计算程序说明</div></div></a></div><div><a href="/2024/04/863a85e0/" title="有限元非饱和土孔压迭代程序修改说明"><img class="cover" src="/img/cover/2024-04-21-post-head-pore-stress.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-21</div><div class="title">有限元非饱和土孔压迭代程序修改说明</div></div></a></div></div></div><hr class="custom-hr"><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i> <span>评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/miku.png" onerror="this.onerror=null,this.src=&quot;/img/friend_404.gif&quot;" alt="avatar"></div><div class="author-info__name">Liudh</div><div class="author-info__description">世界那么大，多玩玩多看看。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/liudh56"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content"><p>本站使用静态网页，如有加载错误或未加载内容，请刷新重试!</p><p>如有侵权，请联系我，立即删除!</p><p>备用网址:<br><a herf="https://fireflye.top">https://fireflye.top</a><br><a herf="https://liudh56.github.io">https://liudh56.github.io</a></p></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%8E%E5%BE%AE%E5%85%83%E6%B0%B4%E9%87%8F%E5%B9%B3%E8%A1%A1%E5%88%B0-Richards-%E6%96%B9%E7%A8%8B"><span class="toc-text">一、从微元水量平衡到 Richards 方程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%B4%A8%E9%87%8F%E5%AE%88%E6%81%92"><span class="toc-text">1. 质量守恒</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E8%BE%BE%E8%A5%BF%E5%AE%9A%E5%BE%8B%E4%B8%8E%E7%AC%A6%E5%8F%B7%E6%A3%80%E6%9F%A5"><span class="toc-text">2. 达西定律与符号检查</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%9C%9F%E6%B0%B4%E7%89%B9%E5%BE%81%E6%9B%B2%E7%BA%BF%E4%B8%8E%E9%9D%9E%E9%A5%B1%E5%92%8C%E6%B8%97%E9%80%8F%E7%B3%BB%E6%95%B0"><span class="toc-text">二、土水特征曲线与非饱和渗透系数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9C%89%E6%95%88%E9%A5%B1%E5%92%8C%E5%BA%A6"><span class="toc-text">1. 有效饱和度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%AE%B9%E6%B0%B4%E5%BA%A6"><span class="toc-text">2. 容水度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Mualem%E2%80%93van-Genuchten-%E6%B8%97%E9%80%8F%E5%85%B3%E7%B3%BB"><span class="toc-text">3. Mualem–van Genuchten 渗透关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%9C%89%E9%99%90%E5%85%83%E5%BC%B1%E5%BC%8F"><span class="toc-text">三、有限元弱式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%97%B6%E9%97%B4%E7%A6%BB%E6%95%A3%E4%B8%8E%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%AE%8B%E9%87%8F"><span class="toc-text">四、时间离散与非线性残量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%AB%98%E6%96%AF%E7%82%B9%E6%9C%AC%E6%9E%84%E6%9B%B4%E6%96%B0%E4%B8%8E%E6%94%B6%E6%95%9B"><span class="toc-text">五、高斯点本构更新与收敛</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Picard-%E8%BF%AD%E4%BB%A3%E6%A1%86%E6%9E%B6"><span class="toc-text">1. Picard 迭代框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%8F%AA%E6%A3%80%E6%9F%A5%E8%8A%82%E7%82%B9%E5%8E%8B%E5%8A%9B"><span class="toc-text">2. 为什么不能只检查节点压力</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%B4%A8%E9%87%8F%E5%B9%B3%E8%A1%A1%E5%A4%8D%E6%A0%B8"><span class="toc-text">3. 质量平衡复核</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6%E7%9A%84%E7%A8%8B%E5%BA%8F%E8%A1%A8%E8%BE%BE"><span class="toc-text">六、边界条件的程序表达</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%AE%9A%E6%B0%B4%E5%A4%B4%E8%BE%B9%E7%95%8C"><span class="toc-text">1. 定水头边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%B5%81%E9%87%8F%E8%BE%B9%E7%95%8C"><span class="toc-text">2. 流量边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%97%A0%E6%B5%81%E8%BE%B9%E7%95%8C"><span class="toc-text">3. 无流边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%B8%97%E5%87%BA%E9%9D%A2"><span class="toc-text">4. 渗出面</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%BB%BA%E8%AE%AE%E7%9A%84%E7%A8%8B%E5%BA%8F%E6%B5%81%E7%A8%8B"><span class="toc-text">七、建议的程序流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%B8%B8%E8%A7%81%E4%B8%8D%E6%94%B6%E6%95%9B%E5%8E%9F%E5%9B%A0"><span class="toc-text">八、常见不收敛原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E9%AA%8C%E8%AF%81%E9%A1%BA%E5%BA%8F"><span class="toc-text">九、验证顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">十、总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">参考资料</span></a></li></ol></div></div></div></div></main><footer id="footer" style="background:0 0"><div id="footer-wrap"><div class="copyright">©2020 - 2026 By Liudh</div><div class="framework-info"><span>框架</span> <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题</span> <a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'Ov23li0goVev8xP2JO1a',
+      clientSecret: '98b26fc900fbefcb0e6a29235774e45fb91554d6',
+      repo: 'liudh56.github.io',
+      owner: 'liudh56',
+      admin: ['liudh56'],
+      id: '07586b3b88f93a44e59af2f18e02246a',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><script src="/js/tag-cloud.js"></script><script id="canvas_nest" defer="" color="126,97,255" opacity="0.8" zindex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful=!0,POWERMODE.shake=!1,POWERMODE.mobile=!1,document.body.addEventListener("input",POWERMODE)</script><script async="" data-pjax="" src="//cn.vercount.one/js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i> <span>数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
