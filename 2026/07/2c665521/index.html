@@ -1,0 +1,255 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>两相两点物质点法一维固结验证：饱和与非饱和响应 | Firefly Blog | 萤火虫博客</title><meta name="author" content="Liudh"><meta name="copyright" content="Liudh"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="以 Terzaghi 单向排水解和变形一致非饱和解验证两相两点 MPM 的孔压消散、沉降演化与压力剖面"><meta property="og:type" content="article"><meta property="og:title" content="两相两点物质点法一维固结验证：饱和与非饱和响应"><meta property="og:url" content="https://fireflye.top/2026/07/2c665521/"><meta property="og:site_name" content="Firefly Blog | 萤火虫博客"><meta property="og:description" content="以 Terzaghi 单向排水解和变形一致非饱和解验证两相两点 MPM 的孔压消散、沉降演化与压力剖面"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://fireflye.top/img/cover/2026-07-24-two-phase-mpm-1d-consolidation.jpg"><meta property="article:published_time" content="2026-07-24T05:31:54.000Z"><meta property="article:modified_time" content="2026-07-26T03:07:08.597Z"><meta property="article:author" content="Liudh"><meta property="article:tag" content="孔隙水压力"><meta property="article:tag" content="固结"><meta property="article:tag" content="流固耦合"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://fireflye.top/img/cover/2026-07-24-two-phase-mpm-1d-consolidation.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://fireflye.top/2026/07/2c665521/"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//hm.baidu.com"><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media=&quot;all&quot;"><script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="https://hm.baidu.com/hm.js?317136679115f8c00b2042f2137bc84f";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE={title:"两相两点物质点法一维固结验证：饱和与非饱和响应",isPost:!0,isHome:!1,isHighlightShrink:!1,isToc:!0,postUpdate:"2026-07-26 11:07:08"}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/modify.css"><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+document.addEventListener('pjax:send', () => {
+  Pace.restart()
+})</script><link rel="stylesheet" href="/css/barber-shop.css"><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/miku.png" onerror="onerror=null,src=&quot;/img/friend_404.gif&quot;" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">22</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">38</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><hr class="custom-hr"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i> <span>主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i> <span>时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i> <span>标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i> <span>分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image:url(/img/cover/2026-07-24-two-phase-mpm-1d-consolidation.jpg)"><nav id="nav"><span id="blog-info"><a href="/" title="Firefly Blog | 萤火虫博客"><span class="site-name">Firefly Blog | 萤火虫博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i> <span>搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i> <span>主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i> <span>时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i> <span>标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i> <span>分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">两相两点物质点法一维固结验证：饱和与非饱和响应</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-24T05:31:54.000Z" title="发表于 2026-07-24 13:31:54">2026-07-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-26T03:07:08.597Z" title="更新于 2026-07-26 11:07:08">2026-07-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%80%BC%E6%A8%A1%E6%8B%9F/">数值模拟</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%80%BC%E6%A8%A1%E6%8B%9F/%E7%89%A9%E8%B4%A8%E7%82%B9%E6%B3%95%EF%BC%88MPM%EF%BC%89/">物质点法（MPM）</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>9分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" data-flag-title="两相两点物质点法一维固结验证：饱和与非饱和响应"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image:url(/img/cover/2026-07-24-two-phase-mpm-1d-consolidation.jpg)"></div><article class="post-content" id="article-container"><p>一维固结是检验流固耦合算法是否同时满足水力扩散和骨架变形规律的基础算例。只比较孔隙水压力并不足以证明模型正确：压力可能看似符合解析解，而沉降量仍会因为耦合系数、积分体积或基准应力处理不一致而偏离。</p><p>本文采用两相两点物质点法（two-phase two-point MPM），分别以饱和 L8 和非饱和 L08U 工况验证平均孔压固结度、沉降固结度及沿深度的压力剖面。新版 L08U 结果使用变形一致解析解，替代了早期仅适用于压力子问题的冻结孔隙率参考；因此，本文只将新版结果作为非饱和固结通过的依据。</p><h2 id="一、物理问题与验证目标">一、物理问题与验证目标</h2><p>模型为高<span class="math inline"><script type="math/tex">H=10\ \mathrm{m}</script></span>、截面<span class="math inline"><script type="math/tex">1\ \mathrm{m}\times1\ \mathrm{m}</script></span>的土柱，取<span class="math inline"><script type="math/tex">z=0</script></span>为不透水底面、<span class="math inline"><script type="math/tex">z=H</script></span>为排水顶面。侧面限制法向位移且不透水，底面限制竖向位移且不透水，顶面施加相对于初始平衡状态的<span class="math inline"><script type="math/tex">1\ \mathrm{kPa}</script></span>压缩荷载。</p><p>两相两点离散使用两套独立物质点：固相点携带骨架质量、应力和运动状态，液相点携带孔压、饱和度和液相状态。两相在背景网格上交换动量并求解水力—力学耦合。算例采用 10 层均匀网格，每层每相布置 8 个点，共 80 个固相点和 80 个液相点。</p><p>本文检查三个互相独立的量：</p><ol><li>平均超静孔压定义的固结度<span class="math inline"><script type="math/tex">U_p</script></span>；</li><li>顶面沉降定义的固结度<span class="math inline"><script type="math/tex">U_s</script></span>；</li><li>不同无量纲时间下的归一化超静孔压剖面<span class="math inline"><script type="math/tex">u/u_0</script></span>。</li></ol><p>只有三者同时满足误差门限，才能认为压力扩散与变形耦合均得到验证。</p><h2 id="二、控制方程与变形一致耦合">二、控制方程与变形一致耦合</h2><p>在忽略惯性的一维小应变固结极限下，两相模型可归结为骨架平衡、液相质量守恒和 Darcy 渗流。三维形式下的固相与液相动量方程可写为</p><div class="math block"><script type="math/tex;mode=display">(1-n)\rho_s\boldsymbol{a}_s
+=\nabla\cdot\boldsymbol{\sigma}
++(1-n)\rho_s\boldsymbol{g}
++\boldsymbol{f}^{\mathrm{drag}},
+\tag{1}\label{eq:solid-momentum}</script></div><div class="math block"><script type="math/tex;mode=display">nS_r\rho_w\boldsymbol{a}_w
+=-\nabla(nS_rp_w)
++nS_r\rho_w\boldsymbol{g}
+-\boldsymbol{f}^{\mathrm{drag}},
+\tag{2}\label{eq:water-momentum}</script></div><p>其中，<span class="math inline"><script type="math/tex">n</script></span>为孔隙率，<span class="math inline"><script type="math/tex">S_r</script></span>为饱和度，<span class="math inline"><script type="math/tex">\rho_s</script></span>和<span class="math inline"><script type="math/tex">\rho_w</script></span>分别为固相与液相真实密度，<span class="math inline"><script type="math/tex">p_w</script></span>为孔隙水压力，<span class="math inline"><script type="math/tex">\boldsymbol{f}^{\mathrm{drag}}</script></span>为两相拖曳力。低速渗流时，拖曳关系退化为 Darcy 定律。</p><p>采用 Bishop 有效应力表示总应力：</p><div class="math block"><script type="math/tex;mode=display">\boldsymbol{\sigma}
+=\boldsymbol{\sigma}'
+-\alpha p_w\boldsymbol{I},
+\tag{3}\label{eq:bishop-stress}</script></div><p>其中<span class="math inline"><script type="math/tex">\alpha</script></span>由饱和度和孔隙率决定。饱和极限下<span class="math inline"><script type="math/tex">S_r=1</script></span>、<span class="math inline"><script type="math/tex">\alpha=1</script></span>，式 \eqref{eq:bishop-stress} 退化为经典有效应力关系。</p><h3 id="非饱和状态的变形一致线性化">非饱和状态的变形一致线性化</h3><p>早期 L08U 对照把土—水特征曲线视为只依赖压力，即冻结孔隙率后仅保留<span class="math inline"><script type="math/tex">\partial S_r/\partial p_w</script></span>。这种处理可以近似描述压力扩散，却遗漏了变形引起的孔隙率变化，因而不能作为沉降验证的解析参考。</p><p>新版参考同时保留</p><div class="math block"><script type="math/tex;mode=display">S_{r,p}=\left.\frac{\partial S_r}{\partial p_w}\right|_n,
+\qquad
+S_{r,n}=\left.\frac{\partial S_r}{\partial n}\right|_{p_w}.
+\tag{4}\label{eq:saturation-tangents}</script></div><p>由此得到压力耦合系数<span class="math inline"><script type="math/tex">\beta</script></span>、质量—体应变耦合系数<span class="math inline"><script type="math/tex">\gamma</script></span>和 Bishop 应力的体应变切线<span class="math inline"><script type="math/tex">\alpha_\varepsilon</script></span>：</p><div class="math block"><script type="math/tex;mode=display">\beta
+=\frac{\partial(\alpha p_w)}{\partial p_w}
+=\alpha+p_w(1-n)S_{r,p},
+\tag{5}\label{eq:beta}</script></div><div class="math block"><script type="math/tex;mode=display">\gamma
+=1+\frac{n(1-n)}{S_r}S_{r,n},
+\tag{6}\label{eq:gamma}</script></div><div class="math block"><script type="math/tex;mode=display">\alpha_\varepsilon
+=(1-n)\left[1-S_r+(1-n)S_{r,n}\right].
+\tag{7}\label{eq:alpha-epsilon}</script></div><p>在基准吸力<span class="math inline"><script type="math/tex">p_0</script></span>附近，侧限有效模量相应修正为</p><div class="math block"><script type="math/tex;mode=display">M_{\mathrm{eff}}=M-p_0\alpha_\varepsilon.
+\tag{8}\label{eq:effective-modulus}</script></div><p>压力增量与体积应变增量必须在同一线性化状态下求解。相应的增量形式为</p><div class="math block"><script type="math/tex;mode=display">C_p\Delta p_w+\gamma\Delta\varepsilon_v
++\Delta t\,\mathcal{H}(\Delta p_w)=R_p,
+\tag{9}\label{eq:mass-balance}</script></div><div class="math block"><script type="math/tex;mode=display">\Delta\boldsymbol{\sigma}
+=\mathbb{C}:\Delta\boldsymbol{\varepsilon}
+-\beta\Delta p_w\boldsymbol{I}
+-p_0\alpha_\varepsilon\Delta\varepsilon_v\boldsymbol{I}.
+\tag{10}\label{eq:stress-increment}</script></div><p>其中，<span class="math inline"><script type="math/tex">C_p</script></span>为储水系数，<span class="math inline"><script type="math/tex">\mathcal{H}</script></span>为离散渗流算子，<span class="math inline"><script type="math/tex">R_p</script></span>为质量平衡残差。饱和极限满足<span class="math inline"><script type="math/tex">S_{r,n}=0</script></span>、<span class="math inline"><script type="math/tex">\beta=\gamma=1</script></span>、<span class="math inline"><script type="math/tex">\alpha_\varepsilon=0</script></span>，可严格恢复经典饱和固结方程。</p><p>本算例采用小应变参考构形。固相与液相积分权重均固定在参考构形，避免基准吸力应力随当前体积被重复缩放。该处理是新版沉降曲线能够与解析解一致的关键物理契约，不应直接外推到大变形更新拉格朗日问题。</p><h2 id="三、算例参数与解析基准">三、算例参数与解析基准</h2><p>饱和 L8 与非饱和 L08U 保持几何、网格、弹性参数、初始孔隙率、饱和渗透系数和附加荷载一致。两者仅在初始水力状态及其相应的非饱和耦合系数上不同。</p><table><thead><tr><th>参数</th><th style="text-align:right">符号</th><th style="text-align:right">数值</th></tr></thead><tbody><tr><td>土柱高度</td><td style="text-align:right"><span class="math inline"><script type="math/tex">H</script></span></td><td style="text-align:right"><span class="math inline"><script type="math/tex">10\ \mathrm{m}</script></span></td></tr><tr><td>弹性模量</td><td style="text-align:right"><span class="math inline"><script type="math/tex">E</script></span></td><td style="text-align:right"><span class="math inline"><script type="math/tex">50\ \mathrm{MPa}</script></span></td></tr><tr><td>泊松比</td><td style="text-align:right"><span class="math inline"><script type="math/tex">\nu</script></span></td><td style="text-align:right"><span class="math inline"><script type="math/tex">0.3</script></span></td></tr><tr><td>初始孔隙率</td><td style="text-align:right"><span class="math inline"><script type="math/tex">n_0</script></span></td><td style="text-align:right"><span class="math inline"><script type="math/tex">0.3</script></span></td></tr><tr><td>水的体积模量</td><td style="text-align:right"><span class="math inline"><script type="math/tex">K_w</script></span></td><td style="text-align:right"><span class="math inline"><script type="math/tex">500\ \mathrm{MPa}</script></span></td></tr><tr><td>饱和渗透系数</td><td style="text-align:right"><span class="math inline"><script type="math/tex">k_s</script></span></td><td style="text-align:right"><span class="math inline"><script type="math/tex">1.0\times10^{-3}\ \mathrm{m/s}</script></span></td></tr><tr><td>固相真实密度</td><td style="text-align:right"><span class="math inline"><script type="math/tex">\rho_s</script></span></td><td style="text-align:right"><span class="math inline"><script type="math/tex">2600\ \mathrm{kg/m^3}</script></span></td></tr><tr><td>液相真实密度</td><td style="text-align:right"><span class="math inline"><script type="math/tex">\rho_w</script></span></td><td style="text-align:right"><span class="math inline"><script type="math/tex">1000\ \mathrm{kg/m^3}</script></span></td></tr><tr><td>附加压缩荷载</td><td style="text-align:right"><span class="math inline"><script type="math/tex">q</script></span></td><td style="text-align:right"><span class="math inline"><script type="math/tex">1\ \mathrm{kPa}</script></span></td></tr></tbody></table><h3 id="饱和-L8">饱和 L8</h3><p>线弹性材料的侧限压缩模量为</p><div class="math block"><script type="math/tex;mode=display">M
+=\frac{E(1-\nu)}{(1+\nu)(1-2\nu)}
+=67.307692\ \mathrm{MPa}.
+\tag{11}\label{eq:constrained-modulus}</script></div><p>考虑水的可压缩性后，固结系数为</p><div class="math block"><script type="math/tex;mode=display">c_v
+=\frac{k_s}
+{\rho_wg\left(M^{-1}+n_0K_w^{-1}\right)}
+=6.594802\ \mathrm{m^2/s}.
+\tag{12}\label{eq:saturated-cv}</script></div><p>最终沉降量为</p><div class="math block"><script type="math/tex;mode=display">s_\infty=\frac{qH}{M}
+=1.485714\times10^{-4}\ \mathrm{m}.
+\tag{13}\label{eq:saturated-settlement}</script></div><p>无量纲时间因子定义为</p><div class="math block"><script type="math/tex;mode=display">T_v=\frac{c_vt}{H^2}.
+\tag{14}\label{eq:time-factor}</script></div><p>对于顶面排水、底面不透水的土柱，超静孔压和平均固结度采用 Terzaghi 单向排水 Fourier 级数作为解析基准。</p><h3 id="非饱和-L08U">非饱和 L08U</h3><p>L08U 在<span class="math inline"><script type="math/tex">p_0=-400\ \mathrm{kPa}</script></span>的基准吸力状态激活同一土—水特征曲线。初始饱和度为<span class="math inline"><script type="math/tex">S_{r0}=0.931035</script></span>，相对渗透率为<span class="math inline"><script type="math/tex">k_{r0}=0.550073</script></span>。为了满足 Bishop 牵引平衡，加载后的初始孔压为<span class="math inline"><script type="math/tex">-398.799828\ \mathrm{kPa}</script></span>，对应初始超静孔压<span class="math inline"><script type="math/tex">u_0=1.200172\ \mathrm{kPa}</script></span>，并非直接复制饱和算例的<span class="math inline"><script type="math/tex">1\ \mathrm{kPa}</script></span>。</p><p>基准状态下</p><div class="math block"><script type="math/tex;mode=display">\beta_0=0.832637,\qquad
+\gamma_0=0.892770,\qquad
+\alpha_\varepsilon=-0.184672.
+\tag{15}\label{eq:unsaturated-couplings}</script></div><p>由式 \eqref{eq:effective-modulus} 得<span class="math inline"><script type="math/tex">M_{\mathrm{eff}}=67.233823\ \mathrm{MPa}</script></span>，变形一致固结系数为<span class="math inline"><script type="math/tex">c_u=0.377083\ \mathrm{m^2/s}</script></span>，最终沉降量为<span class="math inline"><script type="math/tex">1.487347\times10^{-4}\ \mathrm{m}</script></span>。非饱和工况的固结速度明显低于饱和工况，主要原因是基质吸力降低了相对渗透率并改变了储水与应变耦合。</p><h2 id="四、饱和固结结果">四、饱和固结结果</h2><p>饱和 L8 在<span class="math inline"><script type="math/tex">T_v=0.05</script></span>、<span class="math inline"><script type="math/tex">0.20</script></span>、<span class="math inline"><script type="math/tex">0.50</script></span>和<span class="math inline"><script type="math/tex">0.80</script></span>四个目标时刻的结果如下。<span class="math inline"><script type="math/tex">U_p</script></span>由平均超静孔压计算，<span class="math inline"><script type="math/tex">U_s=s/s_\infty</script></span>。</p><table><thead><tr><th style="text-align:right"><span class="math inline"><script type="math/tex">T_v</script></span></th><th style="text-align:right"><span class="math inline"><script type="math/tex">t</script></span>（s）</th><th style="text-align:right"><span class="math inline"><script type="math/tex">U_p</script></span>数值解</th><th style="text-align:right"><span class="math inline"><script type="math/tex">U_p</script></span>解析解</th><th style="text-align:right"><span class="math inline"><script type="math/tex">U_s</script></span>数值解</th><th style="text-align:right"><span class="math inline"><script type="math/tex">U_s</script></span>解析解</th></tr></thead><tbody><tr><td style="text-align:right">0.05</td><td style="text-align:right">0.7885</td><td style="text-align:right">0.25637</td><td style="text-align:right">0.25231</td><td style="text-align:right">0.25642</td><td style="text-align:right">0.25231</td></tr><tr><td style="text-align:right">0.20</td><td style="text-align:right">3.0327</td><td style="text-align:right">0.50322</td><td style="text-align:right">0.50409</td><td style="text-align:right">0.50321</td><td style="text-align:right">0.50409</td></tr><tr><td style="text-align:right">0.50</td><td style="text-align:right">7.5817</td><td style="text-align:right">0.76285</td><td style="text-align:right">0.76395</td><td style="text-align:right">0.76281</td><td style="text-align:right">0.76395</td></tr><tr><td style="text-align:right">0.80</td><td style="text-align:right">12.1308</td><td style="text-align:right">0.88645</td><td style="text-align:right">0.88740</td><td style="text-align:right">0.88648</td><td style="text-align:right">0.88740</td></tr></tbody></table><p>除最早时刻受 10 层离散和输出采样影响较明显外，孔压与沉降两条曲线几乎重合。四个目标时刻的归一化孔压剖面均保持单调，并满足顶面排水、底面零通量的边界特征。</p><img src="/2026/07/2c665521/consolidation_curves.png" alt="饱和一维固结的平均孔压固结度和沉降固结度与 Terzaghi 解析解对比" style="zoom:25%"> <img src="/2026/07/2c665521/pressure_profiles.png" alt="饱和一维固结在四个时间因子下的归一化超静孔压剖面" style="zoom:25%"><h2 id="五、非饱和固结的新验证结果">五、非饱和固结的新验证结果</h2><p>旧 L08U 结果只使用冻结孔隙率的压力参考，且液相积分体积会随密度和饱和度变化而错误缩放基准吸力应力。因此，旧结果即使压力趋势合理，也不能证明沉降通过。新版结果同时修正了变形一致解析基准和小应变参考构形积分权重，未采用压力裁剪、人工阻尼或沉降回写。</p><p>新版 10 层算例在时间步尺度系数为<span class="math inline"><script type="math/tex">0.2</script></span>时得到：</p><table><thead><tr><th style="text-align:right"><span class="math inline"><script type="math/tex">T_v</script></span></th><th style="text-align:right"><span class="math inline"><script type="math/tex">U_p</script></span>数值解</th><th style="text-align:right"><span class="math inline"><script type="math/tex">U_p</script></span>解析解</th><th style="text-align:right"><span class="math inline"><script type="math/tex">U_s</script></span>数值解</th><th style="text-align:right"><span class="math inline"><script type="math/tex">U_s</script></span>解析解</th><th style="text-align:right">压力剖面 RMS 误差</th><th style="text-align:right">压力剖面最大误差</th></tr></thead><tbody><tr><td style="text-align:right">0.05</td><td style="text-align:right">0.25310</td><td style="text-align:right">0.25183</td><td style="text-align:right">0.25188</td><td style="text-align:right">0.25183</td><td style="text-align:right">0.00344</td><td style="text-align:right">0.00624</td></tr><tr><td style="text-align:right">0.20</td><td style="text-align:right">0.50553</td><td style="text-align:right">0.50412</td><td style="text-align:right">0.50485</td><td style="text-align:right">0.50412</td><td style="text-align:right">0.00210</td><td style="text-align:right">0.00270</td></tr><tr><td style="text-align:right">0.50</td><td style="text-align:right">0.76535</td><td style="text-align:right">0.76399</td><td style="text-align:right">0.76525</td><td style="text-align:right">0.76399</td><td style="text-align:right">0.00180</td><td style="text-align:right">0.00259</td></tr><tr><td style="text-align:right">0.80</td><td style="text-align:right">0.88833</td><td style="text-align:right">0.88743</td><td style="text-align:right">0.88828</td><td style="text-align:right">0.88743</td><td style="text-align:right">0.00113</td><td style="text-align:right">0.00160</td></tr></tbody></table><p>四个目标时刻的最大<span class="math inline"><script type="math/tex">U_p</script></span>绝对误差为<span class="math inline"><script type="math/tex">0.00141</script></span>，最大<span class="math inline"><script type="math/tex">U_s</script></span>绝对误差为<span class="math inline"><script type="math/tex">0.00126</script></span>；压力剖面的 RMS 与最大误差均低于<span class="math inline"><script type="math/tex">0.01</script></span>和<span class="math inline"><script type="math/tex">0.025</script></span>的门限。时间步尺度从<span class="math inline"><script type="math/tex">0.2</script></span>依次减小至<span class="math inline"><script type="math/tex">0.1</script></span>、<span class="math inline"><script type="math/tex">0.05</script></span>，以及网格从 10 层加密至 20 层时，结果均满足预设收敛门限。</p><p>下图上排分别比较饱和 L8 和非饱和 L08U 的<span class="math inline"><script type="math/tex">U_p</script></span>、<span class="math inline"><script type="math/tex">U_s</script></span>时间历程，下排比较四个目标时刻的压力剖面。空心点为 MPM 结果，连续线为各自的解析解。非饱和算例中，孔压与沉降均与变形一致解析解重合，说明新版结果已经从“压力子问题可用”提升为完整的一维非饱和固结验证通过。</p><img src="/2026/07/2c665521/l08_l08u_comparison.png" alt="饱和 L8 与非饱和 L08U 的孔压、沉降和压力剖面综合验证" style="zoom:50%"><h2 id="六、数值稳定性与适用范围">六、数值稳定性与适用范围</h2><ol><li><strong>压力稳定化</strong>：低阶等阶插值在近不可压缩条件下可能产生体积自锁和棋盘状孔压。算例使用压力投影稳定化与质量加权压力恢复，并检查同一轴向平面上的粒子离散度和交替重构模态。</li><li><strong>时间与空间收敛</strong>：单个时间步或单一网格上的拟合不足以证明方法可靠。至少应同时比较时间步加密、网格加密、平均固结度和完整压力剖面。</li><li><strong>初始平衡</strong>：非饱和工况的附加荷载必须建立在基准吸力应力平衡之上。直接把饱和算例的初始超孔压复制到非饱和状态，会破坏初始牵引平衡。</li><li><strong>参考构形</strong>：本文结论适用于标准 MPM、线弹性、小应变和一维单向排水。大变形问题需要完整的更新构形线性化与独立验证，不能直接沿用本文的固定参考积分权重。</li><li><strong>验证边界</strong>：本文未验证塑性、GIMP、三维排水、受控通量入渗或显式两惯性声学响应。上述能力应分别使用与其物理机制相匹配的基准算例。</li></ol><p>综合孔压、沉降、压力剖面以及时间和网格收敛结果，可以确认两相两点 MPM 在本文限定范围内同时通过饱和与非饱和一维固结验证。</p><div class="ai-content-label" role="note" aria-label="AI 生成内容标识"><span class="ai-content-label__icon" aria-hidden="true"><i class="fas fa-wand-magic-sparkles"></i></span> <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span></div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者:</span> <span class="post-copyright-info"><a href="https://fireflye.top">Liudh</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接:</span> <span class="post-copyright-info"><a href="https://fireflye.top/2026/07/2c665521/">https://fireflye.top/2026/07/2c665521/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明:</span> <span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://fireflye.top" target="_blank">Firefly Blog | 萤火虫博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%94%E9%9A%99%E6%B0%B4%E5%8E%8B%E5%8A%9B/">孔隙水压力</a><a class="post-meta__tags" href="/tags/%E5%9B%BA%E7%BB%93/">固结</a><a class="post-meta__tags" href="/tags/%E6%B5%81%E5%9B%BA%E8%80%A6%E5%90%88/">流固耦合</a></div><div class="post_share"><div class="social-share" data-image="/img/cover/2026-07-24-two-phase-mpm-1d-consolidation.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media=&quot;all&quot;"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer=""></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="wechat"></a><div class="post-qr-code-desc">wechat</div></li><li class="reward-item"><a href="/img/zanshang.jpg" target="_blank"><img class="post-qr-code-img" src="/img/zanshang.jpg" alt="zanshang"></a><div class="post-qr-code-desc">zanshang</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="alipay"></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2025/11/2b57c8fc/" title="两相两点物质点法论文研读：海底颗粒流相变建模"><img class="cover" src="/img/cover/2025-11-10-mpm-bj2.jpg" onerror="onerror=null,src=&quot;/img/404.jpg&quot;" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">两相两点物质点法论文研读：海底颗粒流相变建模</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/04/71e392b0/" title="有限元非饱和土边坡稳定性计算程序说明"><img class="cover" src="/img/cover/2024-04-20-p64-load-pore.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-20</div><div class="title">有限元非饱和土边坡稳定性计算程序说明</div></div></a></div><div><a href="/2024/04/863a85e0/" title="有限元非饱和土孔压迭代程序修改说明"><img class="cover" src="/img/cover/2024-04-21-post-head-pore-stress.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-21</div><div class="title">有限元非饱和土孔压迭代程序修改说明</div></div></a></div><div><a href="/2024/05/80807990/" title="非饱和土有限元渗流计算：控制方程、离散与非线性迭代"><img class="cover" src="/img/cover/2024-05-08-22-23-32.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-05-09</div><div class="title">非饱和土有限元渗流计算：控制方程、离散与非线性迭代</div></div></a></div></div></div><hr class="custom-hr"><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i> <span>评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/miku.png" onerror="this.onerror=null,this.src=&quot;/img/friend_404.gif&quot;" alt="avatar"></div><div class="author-info__name">Liudh</div><div class="author-info__description">世界那么大，多玩玩多看看。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">22</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">38</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/liudh56"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content"><p>本站使用静态网页，如有加载错误或未加载内容，请刷新重试!</p><p>部分文章含有AI生成内容,请注意甄别!</p><p>如有侵权，请联系我，立即删除!</p><p>备用网址:<br><a herf="https://fireflye.top">https://fireflye.top</a><br><a herf="https://liudh56.github.io">https://liudh56.github.io</a></p></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%89%A9%E7%90%86%E9%97%AE%E9%A2%98%E4%B8%8E%E9%AA%8C%E8%AF%81%E7%9B%AE%E6%A0%87"><span class="toc-text">一、物理问题与验证目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%8E%A7%E5%88%B6%E6%96%B9%E7%A8%8B%E4%B8%8E%E5%8F%98%E5%BD%A2%E4%B8%80%E8%87%B4%E8%80%A6%E5%90%88"><span class="toc-text">二、控制方程与变形一致耦合</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E9%A5%B1%E5%92%8C%E7%8A%B6%E6%80%81%E7%9A%84%E5%8F%98%E5%BD%A2%E4%B8%80%E8%87%B4%E7%BA%BF%E6%80%A7%E5%8C%96"><span class="toc-text">非饱和状态的变形一致线性化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%AE%97%E4%BE%8B%E5%8F%82%E6%95%B0%E4%B8%8E%E8%A7%A3%E6%9E%90%E5%9F%BA%E5%87%86"><span class="toc-text">三、算例参数与解析基准</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A5%B1%E5%92%8C-L8"><span class="toc-text">饱和 L8</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E9%A5%B1%E5%92%8C-L08U"><span class="toc-text">非饱和 L08U</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%A5%B1%E5%92%8C%E5%9B%BA%E7%BB%93%E7%BB%93%E6%9E%9C"><span class="toc-text">四、饱和固结结果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%9D%9E%E9%A5%B1%E5%92%8C%E5%9B%BA%E7%BB%93%E7%9A%84%E6%96%B0%E9%AA%8C%E8%AF%81%E7%BB%93%E6%9E%9C"><span class="toc-text">五、非饱和固结的新验证结果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%95%B0%E5%80%BC%E7%A8%B3%E5%AE%9A%E6%80%A7%E4%B8%8E%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4"><span class="toc-text">六、数值稳定性与适用范围</span></a></li></ol></div></div></div></div></main><footer id="footer" style="background:0 0"><div id="footer-wrap"><div class="copyright">©2020 - 2026 By Liudh</div><div class="framework-info"><span>框架</span> <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题</span> <a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'Ov23li0goVev8xP2JO1a',
+      clientSecret: '98b26fc900fbefcb0e6a29235774e45fb91554d6',
+      repo: 'liudh56.github.io',
+      owner: 'liudh56',
+      admin: ['liudh56'],
+      id: 'f6d009b7d353e4a342d127eda1ef9a95',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><script src="/js/tag-cloud.js"></script><script id="canvas_nest" defer="" color="126,97,255" opacity="0.8" zindex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful=!0,POWERMODE.shake=!1,POWERMODE.mobile=!1,document.body.addEventListener("input",POWERMODE)</script><script async="" data-pjax="" src="//cn.vercount.one/js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i> <span>数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
