@@ -420,6 +420,164 @@ m|_{单位时间}=\rho Sv\cos\theta
       </tags>
   </entry>
   <entry>
+    <title>Ubuntu 22.04 双系统安装指南</title>
+    <url>/2024/05/deb026e9/</url>
+    <content><![CDATA[准备工作
+
+良好的网络环境
+一块8g以上的U盘(注意备份数据, 该U盘会被格式化)
+Windows电脑
+
+硬件要求
+
+
+双核2 GHz处理器或更高
+4 GB系统内存
+25 GB磁盘存储空间
+
+
+装机需谨慎, 做好数据备份
+1. 系统镜像的下载
+打开Ubuntu系统下载 | Ubuntu 此页面,点击下载Ubuntu桌面版,
+或者从网盘中下载:
+百度云：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
+
+再选择Ubuntu22.04.4 LTS,点击下载22.04.4
+
+将此文件下载保存至易寻找的位置, 以F:/Ubuntu为例, 稍后会使用.
+其他版本可在官网下载Get Ubuntu | Download | Ubuntu 安装步骤大致相同
+2. 安装写盘工具Rufus
+打开Rufus - 轻松创建 USB 启动盘 页面, 找到下载,选择Windows x64平台的便携版, 下载打开即用.
+
+插入U盘,打开软件
+
+点击选择, 设备选择刚刚插入的U盘, 镜像文件点击右侧选择, 选中刚刚下载的镜像文件, 我的是位于F:/Ubuntu, 选项如下图即可, 点击开始, 等待写入完成, 点击关闭, 弹出U盘
+
+3. 关闭Bitlocker或者备份Bitlocker恢复密钥
+如果硬盘设置了Bitlocker, 一定要提前找到恢复密钥, 可以先保存到手机上, 一般在微软账户里会有备份恢复密钥
+如果找不到了, 开始前一定要关闭Bitlocker. 改动引导顺序和安全启动选项会触发BitLocker, 要求输入恢复密钥. 否则你将无法打开Windows系统或已加密数据
+关闭过程时间可能较长
+4. 压缩硬盘空间(双系统需要,若全新安装不需要)
+打开Windows的磁盘管理工具, 右键开始菜单图标, 选择磁盘管理
+
+找到需要压缩的分区, 右键点击压缩卷
+
+输入合适的空间, 建议40GB以上, 最低不低于官网要求的25GB, 点击压缩即可
+
+5. 关闭安全启动, 设置U盘启动
+网络上搜索自己的电脑进入BIOS的方法, surface go系列是按音量加键, 一般电脑是按F2或者F10, 以自己的电脑为准, 进入BIOS,关闭安全启动, 设置启动顺序, 将USB设备设置到最上面, 由于每台设备情况不同, 此处设置请自行搜索自己电脑的教程.
+
+surface go系列安全启动会有三个选项
+
+
+微软
+
+
+微软和第三方
+
+
+关闭
+
+
+选择微软和第三方即可
+
+6. 插入U盘, 启动电脑
+在上一步设置完成之后, 若处于开机状态就插入U盘, 重启电脑, 引导位置选择
+
+Try or Install Ubuntu
+
+
+等待进入安装界面, 选择中文
+
+如果出现窗口显示不全, 点击试用Ubuntu,如果像我一样可以看到全部窗口, 就点击安装Ubuntu, 跳转到下面开始安装教程
+
+点击试用之后, 会出现如下界面
+
+点击该图标, 再打开设置, 找到显示器, 缩放比例选择100%, 点击保存(我使用的虚拟机没有该选项, 就在红框的位置. 保存在夜灯右边位置, 修改后会出现)
+
+保存之后再选择安装Ubuntu就可以了
+
+开始安装
+键盘布局默认即可
+
+
+
+
+双系统手动分区
+
+建议分区
+
+创建交换空间
+
+
+填写大小: 建议与内存大小相同, 4G 8G 16G都可
+分区类型: 逻辑分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: 交换空间
+
+
+创建根目录分区
+
+
+填写大小: 如果空间太小就把剩下的全给根目录, 方便后面扩容, 如果空间充足就给20GB以上均可,主要存放系统文件和安装软件
+分区类型: 主分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: Ext4 日志文件系统
+挂载点: /
+
+可选分区
+
+创建引导分区(双系统同盘可不创建, 放置在Windows系统的引导分区里即可)
+
+
+填写大小: 建议200MB-1024MB根据个人情况来,这里我给了500MB
+分区类型: 主分区
+新分区位置: 空间起始分区(下面也都是这个不用改)
+用于: EFI
+
+
+如果空间充足可给/home分区单独设置, 后面想扩容之类的就上面三个分区就可以了, 后面扩容完可以再分
+
+
+填写大小: 20GB以上均可, 看个人使用情况, 存放用户文件, 类似Windows的Users目录
+分区类型: 主分区
+新分区位置:空间起始分区(下面也都是这个不用改)
+用于: Ext4 日志文件系统
+挂载点: /home
+
+最终效果如下
+
+
+点击现在安装  --&gt; 继续, 时区选择上海, 点击继续
+
+用户信息按自己的填写即可. 可以勾选自动登录, 每次开机不需要选择用户, 自动登录.
+
+点击继续即可安装, 安装之后选择重启, 根据提示会让你拔掉U盘, 按ENTER(回车键)
+
+至此双系统就安装好了. 每次启动时, 系统会提示选择Ubuntu还是Windows系统一般是4个选项
+
+Ubuntu
+Ubuntu高级设置
+Windows
+EFI
+
+顺序可能不同,名称仅为示例, 很容易识别
+
+若未关闭Bitlocker, 进入Windows系统需要输入一次恢复密钥, 下次进入就不需要了.
+
+如果安装没有什么问题, 之前下载的镜像文件就可以清理了
+]]></content>
+      <categories>
+        <category>计算机技术</category>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>双系统</tag>
+        <tag>硬盘分区</tag>
+        <tag>安装配置</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Git 撤销操作与版本回退指南</title>
     <url>/2024/05/a2778edb/</url>
     <content><![CDATA[Git 撤销操作
@@ -1005,161 +1163,298 @@ git push -f
       </tags>
   </entry>
   <entry>
-    <title>Ubuntu 22.04 双系统安装指南</title>
-    <url>/2024/05/deb026e9/</url>
-    <content><![CDATA[准备工作
-
-良好的网络环境
-一块8g以上的U盘(注意备份数据, 该U盘会被格式化)
-Windows电脑
-
-硬件要求
+    <title>Windows Git 安装与基础配置指南</title>
+    <url>/2024/05/cbf708ce/</url>
+    <content><![CDATA[1. 下载安装包
+打开Git官网下载安装包, 嫌速度慢可以使用下面的链接下载
+蓝奏云(不限速)：https://wwt.lanzoul.com/b00rn0x92b 密码:gdo1
+百度云(会员)：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
 
 
-双核2 GHz处理器或更高
-4 GB系统内存
-25 GB磁盘存储空间
-
-
-装机需谨慎, 做好数据备份
-1. 系统镜像的下载
-打开Ubuntu系统下载 | Ubuntu 此页面,点击下载Ubuntu桌面版,
-或者从网盘中下载:
-百度云：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
-
-再选择Ubuntu22.04.4 LTS,点击下载22.04.4
-
-将此文件下载保存至易寻找的位置, 以F:/Ubuntu为例, 稍后会使用.
-其他版本可在官网下载Get Ubuntu | Download | Ubuntu 安装步骤大致相同
-2. 安装写盘工具Rufus
-打开Rufus - 轻松创建 USB 启动盘 页面, 找到下载,选择Windows x64平台的便携版, 下载打开即用.
-
-插入U盘,打开软件
-
-点击选择, 设备选择刚刚插入的U盘, 镜像文件点击右侧选择, 选中刚刚下载的镜像文件, 我的是位于F:/Ubuntu, 选项如下图即可, 点击开始, 等待写入完成, 点击关闭, 弹出U盘
-
-3. 关闭Bitlocker或者备份Bitlocker恢复密钥
-如果硬盘设置了Bitlocker, 一定要提前找到恢复密钥, 可以先保存到手机上, 一般在微软账户里会有备份恢复密钥
-如果找不到了, 开始前一定要关闭Bitlocker. 改动引导顺序和安全启动选项会触发BitLocker, 要求输入恢复密钥. 否则你将无法打开Windows系统或已加密数据
-关闭过程时间可能较长
-4. 压缩硬盘空间(双系统需要,若全新安装不需要)
-打开Windows的磁盘管理工具, 右键开始菜单图标, 选择磁盘管理
-
-找到需要压缩的分区, 右键点击压缩卷
-
-输入合适的空间, 建议40GB以上, 最低不低于官网要求的25GB, 点击压缩即可
-
-5. 关闭安全启动, 设置U盘启动
-网络上搜索自己的电脑进入BIOS的方法, surface go系列是按音量加键, 一般电脑是按F2或者F10, 以自己的电脑为准, 进入BIOS,关闭安全启动, 设置启动顺序, 将USB设备设置到最上面, 由于每台设备情况不同, 此处设置请自行搜索自己电脑的教程.
-
-surface go系列安全启动会有三个选项
-
-
-微软
-
-
-微软和第三方
-
-
-关闭
-
-
-选择微软和第三方即可
-
-6. 插入U盘, 启动电脑
-在上一步设置完成之后, 若处于开机状态就插入U盘, 重启电脑, 引导位置选择
-
-Try or Install Ubuntu
-
-
-等待进入安装界面, 选择中文
-
-如果出现窗口显示不全, 点击试用Ubuntu,如果像我一样可以看到全部窗口, 就点击安装Ubuntu, 跳转到下面开始安装教程
-
-点击试用之后, 会出现如下界面
-
-点击该图标, 再打开设置, 找到显示器, 缩放比例选择100%, 点击保存(我使用的虚拟机没有该选项, 就在红框的位置. 保存在夜灯右边位置, 修改后会出现)
-
-保存之后再选择安装Ubuntu就可以了
-
-开始安装
-键盘布局默认即可
+下载完成后，双击打开安装包
+2. 开始安装
 
 
 
 
-双系统手动分区
-
-建议分区
-
-创建交换空间
 
 
-填写大小: 建议与内存大小相同, 4G 8G 16G都可
-分区类型: 逻辑分区
-新分区位置:空间起始分区(下面也都是这个不用改)
-用于: 交换空间
 
 
-创建根目录分区
 
 
-填写大小: 如果空间太小就把剩下的全给根目录, 方便后面扩容, 如果空间充足就给20GB以上均可,主要存放系统文件和安装软件
-分区类型: 主分区
-新分区位置:空间起始分区(下面也都是这个不用改)
-用于: Ext4 日志文件系统
-挂载点: /
-
-可选分区
-
-创建引导分区(双系统同盘可不创建, 放置在Windows系统的引导分区里即可)
 
 
-填写大小: 建议200MB-1024MB根据个人情况来,这里我给了500MB
-分区类型: 主分区
-新分区位置: 空间起始分区(下面也都是这个不用改)
-用于: EFI
 
 
-如果空间充足可给/home分区单独设置, 后面想扩容之类的就上面三个分区就可以了, 后面扩容完可以再分
+点击安装, 等待安装完成
+
+3. 配置Git
+(1). 配置用户信息
+输入以下命令配置用户信息, 修改成自己的信息
+git config --global user.name &quot;liudh&quot;git config --global user.email &quot;xxxxxxx@xx.com&quot;
+
+可以使用以下命令查看配置信息
+git config user.namegit config user.email
+(2). 设置代理(需自备代理)
+在向Github推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理
+使用以下命令查看代理配置
+git config --global --get http.proxygit config --global --get https.proxy
+如果没有内容说明没有代理
+下面使用以下命令配置代理
+git config --global http.proxy 127.0.0.1:7890git config --global https.proxy 127.0.0.1:7890
+
+具体地址和端口在系统代理的位置查看
 
 
-填写大小: 20GB以上均可, 看个人使用情况, 存放用户文件, 类似Windows的Users目录
-分区类型: 主分区
-新分区位置:空间起始分区(下面也都是这个不用改)
-用于: Ext4 日志文件系统
-挂载点: /home
+如果不想使用代理, 使用以下命令取消
+git config --global --unset http.proxygit config --global --unset https.proxy
 
-最终效果如下
-
-
-点击现在安装  --&gt; 继续, 时区选择上海, 点击继续
-
-用户信息按自己的填写即可. 可以勾选自动登录, 每次开机不需要选择用户, 自动登录.
-
-点击继续即可安装, 安装之后选择重启, 根据提示会让你拔掉U盘, 按ENTER(回车键)
-
-至此双系统就安装好了. 每次启动时, 系统会提示选择Ubuntu还是Windows系统一般是4个选项
-
-Ubuntu
-Ubuntu高级设置
-Windows
-EFI
-
-顺序可能不同,名称仅为示例, 很容易识别
-
-若未关闭Bitlocker, 进入Windows系统需要输入一次恢复密钥, 下次进入就不需要了.
-
-如果安装没有什么问题, 之前下载的镜像文件就可以清理了
+至此, 就可以愉快地开始使用Git了
 ]]></content>
       <categories>
         <category>计算机技术</category>
-        <category>Linux</category>
+        <category>版本控制</category>
       </categories>
       <tags>
-        <tag>双系统</tag>
-        <tag>硬盘分区</tag>
         <tag>安装配置</tag>
+        <tag>Windows</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>非饱和土有限元渗流计算：控制方程、离散与非线性迭代</title>
+    <url>/2024/05/80807990/</url>
+    <content><![CDATA[饱和渗流中，渗透系数通常可以视为常数；非饱和土却不同，含水率与渗透系数都会随压力水头变化。降雨入渗时，某个高斯点的压力水头只要略有改变，就可能使该点的渗透系数跨越数个数量级，进而改变单元渗透矩阵。非饱和渗流计算的核心困难不是线性方程求解，而是本构参数与未知压力场之间的强非线性耦合。
+本文以二维瞬态渗流为对象，采用压力水头 \psi 作为基本未知量，依次说明质量守恒、Richards 方程、土水特征曲线、有限元弱式、时间离散和高斯点迭代。最后给出适合程序实现的收敛判据与排错清单。
+开始前需要统一约定：x 水平向右，z 竖直向上；压力水头 \psi=u_w/\gamma_w，非饱和区内通常有 \psi0 表示向土体内补水。
+
+一、从微元水量平衡到 Richards 方程
+1. 质量守恒
+取尺寸为 dx\times dz、单位厚度的二维微元。令达西通量 \boldsymbol{q}=(q_x,q_z)^T，通量方向按坐标正方向取正。微元内储水量的增加等于净流入量与源项之和，因此有
+
+\frac{\partial \theta}{\partial t}
++\boldsymbol{\nabla}\cdot\boldsymbol{q}=Q
+\tag{1}\label{eq:mass}
+
+其中，\theta 为体积含水率，Q 的量纲为 \mathrm{s^{-1}}。若程序使用节点流量而不是体积源强度，需要先根据单元面积和厚度完成量纲换算。
+
+2. 达西定律与符号检查
+各向异性介质中的达西定律写为
+
+\boldsymbol{q}
+=-\boldsymbol{K}(\psi)\boldsymbol{\nabla}H
+=-\boldsymbol{K}(\psi)
+\left(\boldsymbol{\nabla}\psi+\boldsymbol{e}_z\right)
+\tag{2}\label{eq:darcy}
+
+若材料主轴与坐标轴重合，则
+
+\boldsymbol{K}=
+\begin{bmatrix}
+K_x(\psi) & 0\\
+0 & K_z(\psi)
+\end{bmatrix}
+
+负号表示水从高总水头流向低总水头。实现时最容易出错的是重力项：当 z 轴向上时，\boldsymbol{\nabla}z=\boldsymbol{e}_z；若程序把竖直坐标向下定义，重力项必须同步改变符号。
+将式 \eqref{eq:darcy} 代入式 \eqref{eq:mass}，得到混合形式的 Richards 方程：
+
+\boxed{
+\frac{\partial\theta(\psi)}{\partial t}
+=\boldsymbol{\nabla}\cdot
+\left[
+\boldsymbol{K}(\psi)
+\left(\boldsymbol{\nabla}\psi+\boldsymbol{e}_z\right)
+\right]+Q
+}
+\tag{3}\label{eq:richards}
+
+它同时适用于非饱和区和饱和区。非线性来自两个位置：储水关系 \theta(\psi) 和渗透关系 \boldsymbol{K}(\psi)。COMSOL 的 Richards 方程接口同样把压力作为未知量，并允许水力性质随饱和状态改变；这也是此类问题需要非线性迭代的根本原因。
+二、土水特征曲线与非饱和渗透系数
+1. 有效饱和度
+定义有效饱和度
+
+S_e=\frac{\theta-\theta_r}{\theta_s-\theta_r}
+\tag{4}\label{eq:se}
+
+其中，\theta_s 和 \theta_r 分别为饱和与残余体积含水率。采用 van Genuchten 模型时，常写为
+
+S_e(\psi)=
+\begin{cases}
+\left[1+(\alpha|\psi|)^n\right]^{-m}, & \psi]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>有限元法（FEM）</category>
+      </categories>
+      <tags>
+        <tag>非饱和土</tag>
+        <tag>孔隙水压力</tag>
+        <tag>渗流</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo 与 GitHub Actions 博客部署指南</title>
+    <url>/2024/06/4a79202d/</url>
+    <content><![CDATA[安装流程
+
+
+安装node.js
+
+
+安装Git
+
+
+安装Hexo
+
+
+创建Github仓库
+
+
+安装上传插件
+
+
+更改配置
+
+
+上传网页
+
+
+1. 安装node.js
+打开node.js官网Node.js — Run JavaScript Everywhere (nodejs.org)点击下载
+
+打开安装至默认位置即可
+
+
+
+
+
+自动安装一些工具, 可以选上, 然后安装. 等待安装完成
+
+点击完成, 会弹出一些窗口
+
+按任意键继续即可, 等待安装完成.
+
+过程较长, 耐心等待安装完成.
+
+2. 安装Git
+查看往期教程Git 安装及配置教程 | Firefly Blog | 萤火虫博客 (fireflye.asia)
+3. 安装Hexo
+完成上面的安装后, 可以使用以下命令检查是否安装成功.
+打开git bash,输入
+node -vnpm -vgit -v
+显示版本信息, 说明安装成功.
+
+如果没有代理, 可用下面的淘宝镜像源:
+npm config set registry https://registry.npmmirror.com/
+之后再输入以下命令安装hexo
+npm install -g hexo-cli
+等待安装完成显示以下信息说明安装完成
+
+还可以使用以下命令来查看安装情况
+hexo -v
+若显示版本信息, 说明已成功安装
+打开一个要存放网站文件的位置, 例如F:\web\. 打开此文件夹, 右键选择open git bash here
+
+或者 直接打开git bash 输入cd f:\web. 路径替换为自己的路径.
+
+打开后会显示(我使用的虚拟机放在了桌面. 不建议这样做. 文件夹需要妥善保存.)
+
+输入以下命令初始化hexo(一定要在刚刚的文件夹内-路径显示)
+hexo init
+保证网络畅通, 耐心等待初始化完成.
+
+到此, hexo初始化完成. 下面配置github仓库.
+4. 创建Github仓库
+打开Github注册一个自己的账号
+
+输入自己的邮箱, 密码等
+
+用户名建议设置简单易记一些, 待会创建的网站域名与自己的用户名有关
+
+总览
+
+点击继续, 通过验证码和邮箱数字验证就可以注册成功.
+
+点击左侧的绿色按钮新建仓库Create repository.
+
+到此, 仓库已经创建完成
+
+接下来还需要配置一下上传的密钥对
+打开git bash, 输入以下命令 (&quot;email&quot;替换为自己的邮箱)
+ssh-keygen -t rsa -b 4096 -C &quot;email&quot;
+然后按三下回车键, 即均保持默认不设置密码. 也可根据自己需要修改
+
+
+第一次是保存位置
+第二次是密码
+第三次是重复密码
+
+创建完成后, 打开保存的目录. 默认在C:\Users\用户名\.ssh
+
+第一个是私钥, 自己一定要保存好, 不能给别人.
+将第二个pub结尾的用记事本打开, 将里面的内容复制出来.
+
+复制好后, 返回Github
+
+
+
+
+密钥添加完成
+5. 安装上传插件
+打开上文初始化的hexo目录, 右键选择open git bash here
+
+或者 直接打开git bash 输入cd f:\web. 路径替换为自己的路径.
+
+然后输入下面的命令安装插件到目录下
+npm install hexo-deployer-git --save
+
+安装完成
+6. 更改配置
+打开网站文件夹
+
+用记事本或VSCode等编辑软件打开_config.yml
+
+# 配置说明, 不要复制. 按说明修改# Hexo Configuration## Docs: https://hexo.io/docs/configuration.html## Source: https://github.com/hexojs/hexo/# Sitetitle: Hexo  # 网站的大标题subtitle: &#x27;&#x27;  # 副标题description: &#x27;&#x27; # 描述keywords:  # 网站的关键词author: John Doe # 作者language: en  # 语言 中文 zh-CNtimezone: &#x27;&#x27; # 时区 Asia/Shanghai# URL## Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;url: https://fireflyblog.github.io # 改成自己网址 https://用户名.github.io # 注意是httpspermalink: :year/:month/:day/:title/  # 其他默认转到最后一项permalink_defaults:pretty_urls:  trailing_index: true # Set to false to remove trailing &#x27;index.html&#x27; from permalinks  trailing_html: true # Set to false to remove trailing &#x27;.html&#x27; from permalinks# Directorysource_dir: sourcepublic_dir: publictag_dir: tagsarchive_dir: archivescategory_dir: categoriescode_dir: downloads/codei18n_dir: :langskip_render:# Writingnew_post_name: :title.md # File name of new postsdefault_layout: posttitlecase: false # Transform title into titlecaseexternal_link:  enable: true # Open external links in new tab  field: site # Apply to the whole site  exclude: &#x27;&#x27;filename_case: 0render_drafts: falsepost_asset_folder: falserelative_link: falsefuture: truesyntax_highlighter: highlight.jshighlight:  line_number: true  auto_detect: false  tab_replace: &#x27;&#x27;  wrap: true  hljs: falseprismjs:  preprocess: true  line_number: true  tab_replace: &#x27;&#x27;# Home page setting# path: Root path for your blogs index page. (default = &#x27;&#x27;)# per_page: Posts displayed per page. (0 = disable pagination)# order_by: Posts order. (Order by date descending by default)index_generator:  path: &#x27;&#x27;  per_page: 10  order_by: -date# Category &amp; Tagdefault_category: uncategorizedcategory_map:tag_map:# Metadata elements## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/metameta_generator: true# Date / Time format## Hexo uses Moment.js to parse and display date## You can customize the date format as defined in## http://momentjs.com/docs/#/displaying/format/date_format: YYYY-MM-DDtime_format: HH:mm:ss## updated_option supports &#x27;mtime&#x27;, &#x27;date&#x27;, &#x27;empty&#x27;updated_option: &#x27;mtime&#x27;# Pagination## Set per_page to 0 to disable paginationper_page: 10pagination_dir: page# Include / Exclude file(s)## include:/exclude: options only apply to the &#x27;source/&#x27; folderinclude:exclude:ignore:# Extensions## Plugins: https://hexo.io/plugins/## Themes: https://hexo.io/themes/theme: landscape# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: &#x27;&#x27;
+这一部分单拿出来修改(注意缩进为2个空格, 冒号后面一个空格)
+# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository:  branch: main
+仓库地址在Github, 打开找到自己的仓库
+
+复制好后粘贴到仓库参数后面, 完整的配置修改如下
+# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository: git@github.com:fireflyblog/fireflyblog.github.io.git #替换为自己的链接  branch: main
+
+如果无法上传或分支报错可以使用以下样式:
+# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repo:    github: git@github.com:fireflyblog/fireflyblog.github.io.git,main #替换为自己的链接
+
+7. 上传网页
+一切配置好之后, 打开网站文件夹. 右键选择open git bash here
+输入以下命令生成和上传网页
+hexo ghexo d
+
+
+上传成功之后, 等待一会. 就可以打开自己网页查看了(替换自己的用户名)
+https://fireflyblog.github.io
+
+至此, 网站已经搭建完成
+
+还有一些其他常使用的命令
+新建文章
+hexo new &quot;title&quot;
+本地部署预览
+hexo s
+清理生成文件(一般切换主题需要先清理再生成. 新建文章之类的不需要此操作.)
+hexo clean
+
+文章保存在
+网站文件夹\source\_posts
+
+文章格式说明以及主题美化待更新…
+]]></content>
+      <categories>
+        <category>计算机技术</category>
+        <category>网站建设</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>GitHub Actions</tag>
       </tags>
   </entry>
   <entry>
@@ -1212,6 +1507,273 @@ systemctl status webdav.service
       <tags>
         <tag>WebDAV</tag>
         <tag>文件共享</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>物质点法基础（一）：基本原理与控制方程</title>
+    <url>/2024/07/af38f644/</url>
+    <content><![CDATA[1. 物质点法
+物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到计算网格得到, 求解后将计算网格结点的运动量映射回各质点, 从而得到这些质点在下一时刻的运动量(对流计算步).
+物质点法是一种完全的拉格朗日质点类方法, 在每步中质点和计算网格没有相对运动, 避免了欧拉法因非线性对流项产生的数值困难. 质点已经携带了连续体的所有物质信息, 因此物质点法在每个时间步结束时抛弃变形后的计算网格, 在新的时间步中仍可以采用未变形的计算网格.
+
+在并行算法方面, 主要基于消息传递模型(MPI)和信息共享模型(OpenMP)实现.
+2. 控制方程
+2.1 物体运动和变形的描述
+物体在 t = 0 时刻所占据的空间区域称为初始构形. 物体在 t 时刻所占据的空间区域成为现时构形. 为了度量物体的运动, 需要选取一个特定的构形作为基准, 称为参考构形.
+
+在参考构形中质点的矢径 X 可以表示为
+
+X = X_i e_i, i = 1,2,3 \qquad (2.1)
+
+其中 e_i 为直角坐标系的基矢量, X_i 为参考构形中质点矢径 X 在 e_i 上的投影. 质点在参考构形中的矢径 X 不随时间 t 变化, X_i 称为物质坐标或拉格朗日坐标, 它可以作为该质点的标记.
+在现时构形中质点 X 的矢径 x 可以表示为
+
+x = x_i e_i , i = 1, 2, 3 \qquad (2.2)
+
+其中 x_i 为矢径 x 在 e_i 上的投影, 坐标 x_i 给出了质点 X 在空间中的位置,称为空间坐标或欧拉坐标. 质点 X 的运动方程可以表示为
+
+x_i = x_i(X,t) \qquad (2.3)
+
+在拉格朗日描述中, 质点 X 的位移为
+
+u_i = x_i (X, t) - X_i \qquad (2.4)
+
+在欧拉描述中, 质点 X 的位移为
+
+u_i = x_i - X_i(x,t) \qquad (2.5)
+
+质点的速度等于其矢径 x 的变化率, 即令 X 保持不变时矢径 x 对时间的偏导数. 令 X 保持不变时物理量对时间的导数称为物质导数, 也称为全导数或拉格朗日导数. 由式 (2.4) 可以得到质点的速度为
+
+v_i = \frac{\partial x_i(X, t)}{\partial t} = \frac{\partial u_i(X, t)}{\partial t} \equiv \frac{\partial u_i}{\partial t} \qquad (2.6)
+
+质点的加速度为其速度的物质导数, 即
+
+\alpha_i = \frac{\partial v_i(X,t)}{\partial t} = \frac{\partial^2 u_i (X, t)}{\partial t^2} \equiv \ddot{u}_i \qquad (2.7)
+
+如果物理量 F 是用空间坐标 x 和时间 t 描述的, 即 F = F(x,t), 可以先利用式 (2.3) 把它变换为复合函数 F = F(x(X, t), t), 它的物质导数为
+
+\begin{aligned}
+\frac{DF(x, t)}{Dt} &= \frac{\partial F(x, t)}{\partial t} + \frac{\partial F(x, t)}{\partial x_i}\frac{\partial x_i(X, t)}{\partial t} \\ 
+&= \frac{\partial F(x, t)}{\partial t} + \frac{\partial F(x, t)}{\partial x_i}v_i 
+\end{aligned} \qquad (2.8)
+
+F(x, t) 描述的是时刻 t 空间点 x 处的物理量, 因此 \partial F(x, t)/\partial t 表示的是物理量在空间固定点 x 处的变化率, 称为空间时间导数, 也称为局部导数或欧拉导数. 它反映了物理量的非定常性.
+2.2 变形梯度
+质点的现时坐标 x_i 相对于物质坐标 X_j 的偏导数 F_{ij} = \partial x_i / \partial X_j 称为变形梯度, 它是一个非对称的二阶张量. 初始构形中由相邻质点 X 和 X+dX 构成的无限小线元 dX 在现时构形中变为
+
+dx_i = x_i(X + dX, t) - x_i(X, t) \qquad (2.9)
+
+对 x_i(X + dX, t) 在 X 处作泰勒展开, 并略去高阶小项得
+
+dx_i = \frac{\partial x_i}{\partial X_j} dX_j \qquad (2.10)
+
+变形梯度的行列式
+
+J =
+\frac{\partial x_i}{\partial X_j} =
+\begin{vmatrix} 
+\frac{\partial x_1}{\partial X_1}  &\frac{\partial x_1}{\partial X_2}  &\frac{\partial x_1}{\partial X_3}\\
+\frac{\partial x_2}{\partial X_1}  &\frac{\partial x_2}{\partial X_2}  &\frac{\partial x_2}{\partial X_3}\\
+\frac{\partial x_3}{\partial X_1}  &\frac{\partial x_3}{\partial X_2}  &\frac{\partial x_3}{\partial X_3}\\
+\end{vmatrix} \qquad (2.11)
+
+称为雅可比行列式.
+引入排列张量 e_{ijk}, 可将式 (2.11) 展开为
+
+J = e_{ijk}\frac{\partial x_i}{\partial X_1} \frac{\partial x_j}{\partial X_2} \frac{\partial x_k}{\partial X_3} \qquad (2.12)
+
+由行列式的性质和 J 的定义式 (2.11)可得
+
+e_{plm}J = e_{ijk}\frac{\partial x_i}{\partial X_p} \frac{\partial x_j}{\partial X_l} \frac{\partial x_k}{\partial X_m} \qquad (2.13)
+
+设初始构形中的平行六面体体元的三个线元分别是 dX, \delta X 和 \Delta X, 它们在现时构形中分别为 dx, \delta x 和 \Delta x, 且
+
+dx_i = \frac{\partial x_i}{\partial X_p}dX_p,\ \delta x_j = \frac{\partial x_j}{\partial X_l}\delta X_l,\ \Delta x_k = \frac{\partial x_k}{\partial X_m} \Delta X_m
+
+
+现时构形中由 dx, \delta x 和 \Delta x 构成的六面体体元的体积为
+
+dV = 
+\begin{vmatrix}
+dx_1  &dx_2  &dx_3\\
+\delta x_1  &\delta x_2  &\delta x_3\\
+\Delta x_1  &\Delta x_2  &\Delta x_3\\
+\end{vmatrix}
+= JdV_0 \qquad (2.14)
+
+因此变形梯度矩阵的行列式 J 可用来表示变形过程中体元的体积变化, 即
+
+J = \frac{dV}{dV_0} \qquad (2.15)
+
+可见 J 表示变形前后体元体积之比.
+2.3 变形率
+考察一个典型的质点 P, 它在时刻 t 的坐标为 x_j, 瞬时速度为 v_i(x_j, t). 与 P 点相邻的质点 P' 的坐标为 x_j+dx_j, 它相对于 P 点的相对速度为
+
+dv_i = v_i(x_j + dx_j, t) - v_i(x_j, t) = \frac{\partial v_i}{\partial x_j} dx_j \qquad (2.16)
+
+式中 \partial v_i/\partial x_j 为速度梯度张量. 它可分解为对称部分和反对称部分之和, 即
+
+\begin{aligned}
+\frac{\partial v_i}{\partial x_j}
+&= \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} - \frac{\partial v_j}{\partial x_i} \right)
++ \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i} \right) \\
+&= \Omega_{ij} + D_{ij}
+\end{aligned} \qquad (2.17)
+
+式中
+
+\Omega_{ij} = \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} - \frac{\partial v_j}{\partial x_i} \right) \qquad (2.18)
+
+
+D_{ij} = \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i} \right) \qquad (2.19)
+
+分别为旋律张量和变形率张量.
+与速度梯度分解相似， 相对速度式 (2.16) 也可分解为
+
+dv_i = dv_i^* + dv_i^{**} \qquad (2.20)
+
+其中
+
+dv_i^* = \Omega_{ij}dx_j, \quad dv_i^{**} = D_{ij}dx_j \qquad (2.21)
+
+旋率张量 \Omega_{ij} 是反对称张量, 它只有 3 个独立的分量, 总存在一个对偶矢量(旋度矢量) \omega, 使得
+
+\Omega_{ij} = -e_{ijk}\omega_k \qquad (2.22)
+
+将上式代入式 (2.21) 的第一式得
+
+dv_i^* = -e_{ijk} \omega_k dx_j = (\omega \times dx)_i \qquad (2.23)
+
+上式表明相对速度 dv_i^* 等于 \omega 和 dx 的矢量积. 在质点 P 的邻域内, 相对速度 dv_i^* 对应于这个邻域绕过 P 点的某轴的一个刚体运动, 矢量 \omega 表示转动的角速度.
+可以证明, 变形张量 D_{ij} 是相对于现时构形定义的柯西应变的速率, 也就是真实应变 \epsilon_{ij} 的速率，即
+
+D_{ij} = \frac{\partial \epsilon_{ij}}{\partial t} \qquad (2.24)
+
+2.4 柯西应力
+
+考虑物体在时刻 t 的现时构形内的一个有向面元 n\Delta A, 其法向单位向量 n 在坐标轴 e_k 上的投影记为  n_k. 面元 n\Delta A 两侧的介质通过面元相互作用以力元 \Delta T, 这个力元除以面元的面积就定义了该面元上的应力矢量 t^{(n)}:
+
+
+t_i^{(n)} = \lim_{\Delta A \rightarrow 0} \frac{\Delta T_i}{\Delta A} = \frac{dT_i}{dA} \qquad (2.25)
+
+面元 n\Delta A 与另外三个垂直于坐标轴的面元 n^{(1)}\Delta A_1, n^{(2)}\Delta A_2 和 n^{(3)}\Delta A_3 构成一个四面体, 且有 \Delta A_k = \Delta An_k. 面元 n^{(k)}\Delta A_k 上的应力矢量记为 t^{(k)}, 由平衡条件可得
+
+\Delta T_i = t_i^{(n)} \Delta A = t_i^{(k)} \Delta A_k = t_i^{(k)} \Delta An_k = \sigma_{ki} n_k \Delta A \qquad (2.26)
+
+其中 \sigma_{ki} = t_i^{(k)} 是垂直于坐标轴 x_k 的面元 n^{(k)} \Delta A_k 上的应力矢量 t^{(k)} 在坐标轴 x_i 上的分量. 由式(2.25)和式(2.26)得
+
+t_i^{(n)} = \sigma_{ki}n_k \qquad (2.27)
+
+
+(箭头朝外)
+由现时构形中垂直于坐标轴的三个面元上的应力矢量的九个分量 \sigma_{ij} 定义了一个张量, 称为柯西应力张量. 由微元体关于力矩的平衡条件可以证明柯西应力张量是对称的, 即
+
+\sigma_{ij} = \sigma_{ji} \qquad (2.28)
+
+柯西应力是定义在现时构形每单位面积上的接触力, 它是与变形相关的真实应力.
+2.5 焦曼应力率
+
+考察一承受单向应力 \sigma 作用并绕 x_3 轴作刚体转动的杆, 如图2.4所示. 在杆平行于 x_1 的瞬时，\sigma_{11} = \sigma, \sigma_{22} = 0, 而当杆转动到平行于 x_2 轴的位置时, \sigma_{11} = 0, \sigma_{22} = \sigma. 相对于在空间固定的坐标系 Px_1x_2 而言, 虽然杆内应力状态并未变化, 但刚体转动改变了柯西应力张量的分量, 导致柯西应力 \sigma_{ij} 的变化率,无论是空间导数 \partial \sigma_{ij}/\partial t 还是物质导数的时间偏导数都不等于零. 因此在本构方程中使用与变形率 D_{ij} 相关联的应力率时, 无论 \partial \sigma_{ij}/\partial t 还是应力的物质导数都不是一个适当的度量. 用于本构方程中的应力率必须不受刚体转动的影响, 即必须是客观张量.
+
+
+
+考虑包含 P 点的一个作瞬时转动的物质元, 动坐标系 P\bar{x}_1\bar{x}_2\bar{x}_3 与物质元固连, 跟随物质元一起作瞬时刚体转动. 虽然柯西应力张量在空间固定坐标系 Px_1x_2x_3 中的变化率不为零, 但它在动坐标系 P\bar{x}_1\bar{x}_2\bar{x}_3 中的变化率为零, 是一个客观张量.
+
+在所考察的时刻 t, 动坐标系与固定坐标系 x_i 重合, 如图 2.5 所示. 在 P 点附近的任一相邻质点 Q, 其在动坐标系中的坐标 d\bar{x}_i 不受刚体转动影响, 而它在固定坐标系中的坐标以速率
+
+dv_i = \Omega_{ij}d\bar{x}_j \qquad (2.29)
+
+变化. 在时刻 t+dt, 有
+
+dx_i = d\bar{x}_i + dv_i dt = (\delta_{ij} + \Omega_{ij}dt) d\bar{x}_j \qquad (2.30)
+
+
+由式(2.30)可知, 动坐标系和固定坐标系之间的坐标变换的变换系数为
+
+c_{ij} = \delta_{ij} + \Omega_{ij} dt \qquad (2.31)
+
+在动坐标系内定义应力率
+
+\sigma_{ij}^{\nabla} (t) = \lim_{dt \rightarrow 0} \frac{1}{dt} \left[\bar{\sigma}_{ij}(t+dt) - \bar{\sigma}_{ij}(t)\right] \qquad (2.32)
+
+显然物质元作刚体运动时, \sigma_{ij}^{\nabla}(t) = 0. 质点 P 在时刻 t+dt 相对于固定坐标系的应力张量是
+
+\sigma_{ij}(t+dt) = \sigma_{ij}(t) + \frac{\partial \sigma_{ij}}{\partial t}(t) dt \qquad (2.33)
+
+利用坐标变换将这个应力张量的分量变换到随体坐标系 P\bar{x}_1\bar{x}_2\bar{x}_3 中, 有
+
+\begin{aligned}
+\bar{\sigma}_{ij}(t + dt) &= c_{pi} c_{qj} \sigma_{pq}(t + dt) \\
+&= (\delta_{pi} + \Omega_{pi} dt)(\delta_{qj} + \Omega_{qj} dt)\left[\sigma_{pq}(t) + \frac{\partial \sigma_{pq}}{\partial t}(t) dt\right] \\
+&= \sigma_{ij}(t) + \left(\frac{\partial \sigma_{ij}}{\partial t} + \sigma_{ip}\Omega_{pj} + \sigma_{pj}\Omega_{ip}\right) dt + O(dt^2)
+\end{aligned} \qquad (2.34)
+
+将上式代入式(2.32), 并利用 \bar{\sigma}_{ij}(t) = \sigma_{ij}(t) 和 \Omega_{ij} 的反对称性, 最后得
+
+\sigma_{ij}^{\nabla} = \frac{\partial \sigma_{ij}}{\partial t} - \sigma_{ip}\Omega_{jp} - \sigma_{pj}\Omega_{ip} \qquad (2.35)
+
+按上式定义的应力率叫焦曼应力率, 它是不受刚体转动影响的客观张量, 可以在本构方程中使用.
+]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>物质点法（MPM）</category>
+      </categories>
+      <tags>
+        <tag>控制方程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>DJI Mavic 3 Classic 航点飞行指南</title>
+    <url>/2024/08/78788d45/</url>
+    <content><![CDATA[准备工作
+遥控手柄(带屏)
+航线规划软件(网页) - Rainbow Cloud
+SD卡, 读卡器, 电脑
+1. 创建航线
+首先, 打开Rainbow Cloud网站.
+网页界面如下:
+
+点击左侧新建任务.
+
+选择正射
+
+输入任务名称
+
+确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围.
+
+然后, 调整这个范围至合适位置. 可以移动和添加顶点
+
+然后, 调整右侧参数栏的参数.
+
+
+其余设置与上图保持一致, 保存任务
+
+点击右上角任务导出
+
+选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.
+
+点击下载, 将文件下载并导入到SD卡中.
+2. 导入航线
+根据导入教程导入文件Mavic3系列屏控手动导入Kmz航点任务
+2.1 创建并备份航线
+创建任意数量的航点, 保存.
+航点文件保存位置如下
+
+一串英文字符的文件夹内存放的就是航线文件(kmz格式)
+将整个waypoint文件夹复制至SD卡中
+2.2 替换kmz文件
+将已经下载好的Kmz文件同样导入到SD卡的该文件夹内
+注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).
+将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)
+最后将替换好的waypoint文件夹替换回去
+]]></content>
+      <categories>
+        <category>地理空间技术</category>
+        <category>无人机测绘</category>
+      </categories>
+      <tags>
+        <tag>DJI Mavic 3 Classic</tag>
+        <tag>航点飞行</tag>
       </tags>
   </entry>
   <entry>
@@ -1437,402 +1999,6 @@ class不能在多个文件中定义. 一个class的所有成员都必须在同�
         <tag>Fortran</tag>
         <tag>C++</tag>
         <tag>代码迁移</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>非饱和土有限元渗流计算：控制方程、离散与非线性迭代</title>
-    <url>/2024/05/80807990/</url>
-    <content><![CDATA[饱和渗流中，渗透系数通常可以视为常数；非饱和土却不同，含水率与渗透系数都会随压力水头变化。降雨入渗时，某个高斯点的压力水头只要略有改变，就可能使该点的渗透系数跨越数个数量级，进而改变单元渗透矩阵。非饱和渗流计算的核心困难不是线性方程求解，而是本构参数与未知压力场之间的强非线性耦合。
-本文以二维瞬态渗流为对象，采用压力水头 \psi 作为基本未知量，依次说明质量守恒、Richards 方程、土水特征曲线、有限元弱式、时间离散和高斯点迭代。最后给出适合程序实现的收敛判据与排错清单。
-开始前需要统一约定：x 水平向右，z 竖直向上；压力水头 \psi=u_w/\gamma_w，非饱和区内通常有 \psi0 表示向土体内补水。
-
-一、从微元水量平衡到 Richards 方程
-1. 质量守恒
-取尺寸为 dx\times dz、单位厚度的二维微元。令达西通量 \boldsymbol{q}=(q_x,q_z)^T，通量方向按坐标正方向取正。微元内储水量的增加等于净流入量与源项之和，因此有
-
-\frac{\partial \theta}{\partial t}
-+\boldsymbol{\nabla}\cdot\boldsymbol{q}=Q
-\tag{1}\label{eq:mass}
-
-其中，\theta 为体积含水率，Q 的量纲为 \mathrm{s^{-1}}。若程序使用节点流量而不是体积源强度，需要先根据单元面积和厚度完成量纲换算。
-
-2. 达西定律与符号检查
-各向异性介质中的达西定律写为
-
-\boldsymbol{q}
-=-\boldsymbol{K}(\psi)\boldsymbol{\nabla}H
-=-\boldsymbol{K}(\psi)
-\left(\boldsymbol{\nabla}\psi+\boldsymbol{e}_z\right)
-\tag{2}\label{eq:darcy}
-
-若材料主轴与坐标轴重合，则
-
-\boldsymbol{K}=
-\begin{bmatrix}
-K_x(\psi) & 0\\
-0 & K_z(\psi)
-\end{bmatrix}
-
-负号表示水从高总水头流向低总水头。实现时最容易出错的是重力项：当 z 轴向上时，\boldsymbol{\nabla}z=\boldsymbol{e}_z；若程序把竖直坐标向下定义，重力项必须同步改变符号。
-将式 \eqref{eq:darcy} 代入式 \eqref{eq:mass}，得到混合形式的 Richards 方程：
-
-\boxed{
-\frac{\partial\theta(\psi)}{\partial t}
-=\boldsymbol{\nabla}\cdot
-\left[
-\boldsymbol{K}(\psi)
-\left(\boldsymbol{\nabla}\psi+\boldsymbol{e}_z\right)
-\right]+Q
-}
-\tag{3}\label{eq:richards}
-
-它同时适用于非饱和区和饱和区。非线性来自两个位置：储水关系 \theta(\psi) 和渗透关系 \boldsymbol{K}(\psi)。COMSOL 的 Richards 方程接口同样把压力作为未知量，并允许水力性质随饱和状态改变；这也是此类问题需要非线性迭代的根本原因。
-二、土水特征曲线与非饱和渗透系数
-1. 有效饱和度
-定义有效饱和度
-
-S_e=\frac{\theta-\theta_r}{\theta_s-\theta_r}
-\tag{4}\label{eq:se}
-
-其中，\theta_s 和 \theta_r 分别为饱和与残余体积含水率。采用 van Genuchten 模型时，常写为
-
-S_e(\psi)=
-\begin{cases}
-\left[1+(\alpha|\psi|)^n\right]^{-m}, & \psi]]></content>
-      <categories>
-        <category>数值模拟</category>
-        <category>有限元法（FEM）</category>
-      </categories>
-      <tags>
-        <tag>非饱和土</tag>
-        <tag>孔隙水压力</tag>
-        <tag>渗流</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>物质点法基础（一）：基本原理与控制方程</title>
-    <url>/2024/07/af38f644/</url>
-    <content><![CDATA[1. 物质点法
-物质点法(MPM)将连续体离散成一组质点. 每个质点代表一块材料区域并携带该区域材料的所有物质信息, 如质量, 速度, 应力和应变等. 计算网格仅用于动量方程的求解和空间导数的计算, 它不携带任何物质信息. 在每一个时间步中, 质点与计算网格完全固连(拉格朗日计算步), 可以用标准的有限元法在计算网格上求解物体的运动方程. 计算网格结点的运动方程可以通过将质点的运动量映射到计算网格得到, 求解后将计算网格结点的运动量映射回各质点, 从而得到这些质点在下一时刻的运动量(对流计算步).
-物质点法是一种完全的拉格朗日质点类方法, 在每步中质点和计算网格没有相对运动, 避免了欧拉法因非线性对流项产生的数值困难. 质点已经携带了连续体的所有物质信息, 因此物质点法在每个时间步结束时抛弃变形后的计算网格, 在新的时间步中仍可以采用未变形的计算网格.
-
-在并行算法方面, 主要基于消息传递模型(MPI)和信息共享模型(OpenMP)实现.
-2. 控制方程
-2.1 物体运动和变形的描述
-物体在 t = 0 时刻所占据的空间区域称为初始构形. 物体在 t 时刻所占据的空间区域成为现时构形. 为了度量物体的运动, 需要选取一个特定的构形作为基准, 称为参考构形.
-
-在参考构形中质点的矢径 X 可以表示为
-
-X = X_i e_i, i = 1,2,3 \qquad (2.1)
-
-其中 e_i 为直角坐标系的基矢量, X_i 为参考构形中质点矢径 X 在 e_i 上的投影. 质点在参考构形中的矢径 X 不随时间 t 变化, X_i 称为物质坐标或拉格朗日坐标, 它可以作为该质点的标记.
-在现时构形中质点 X 的矢径 x 可以表示为
-
-x = x_i e_i , i = 1, 2, 3 \qquad (2.2)
-
-其中 x_i 为矢径 x 在 e_i 上的投影, 坐标 x_i 给出了质点 X 在空间中的位置,称为空间坐标或欧拉坐标. 质点 X 的运动方程可以表示为
-
-x_i = x_i(X,t) \qquad (2.3)
-
-在拉格朗日描述中, 质点 X 的位移为
-
-u_i = x_i (X, t) - X_i \qquad (2.4)
-
-在欧拉描述中, 质点 X 的位移为
-
-u_i = x_i - X_i(x,t) \qquad (2.5)
-
-质点的速度等于其矢径 x 的变化率, 即令 X 保持不变时矢径 x 对时间的偏导数. 令 X 保持不变时物理量对时间的导数称为物质导数, 也称为全导数或拉格朗日导数. 由式 (2.4) 可以得到质点的速度为
-
-v_i = \frac{\partial x_i(X, t)}{\partial t} = \frac{\partial u_i(X, t)}{\partial t} \equiv \frac{\partial u_i}{\partial t} \qquad (2.6)
-
-质点的加速度为其速度的物质导数, 即
-
-\alpha_i = \frac{\partial v_i(X,t)}{\partial t} = \frac{\partial^2 u_i (X, t)}{\partial t^2} \equiv \ddot{u}_i \qquad (2.7)
-
-如果物理量 F 是用空间坐标 x 和时间 t 描述的, 即 F = F(x,t), 可以先利用式 (2.3) 把它变换为复合函数 F = F(x(X, t), t), 它的物质导数为
-
-\begin{aligned}
-\frac{DF(x, t)}{Dt} &= \frac{\partial F(x, t)}{\partial t} + \frac{\partial F(x, t)}{\partial x_i}\frac{\partial x_i(X, t)}{\partial t} \\ 
-&= \frac{\partial F(x, t)}{\partial t} + \frac{\partial F(x, t)}{\partial x_i}v_i 
-\end{aligned} \qquad (2.8)
-
-F(x, t) 描述的是时刻 t 空间点 x 处的物理量, 因此 \partial F(x, t)/\partial t 表示的是物理量在空间固定点 x 处的变化率, 称为空间时间导数, 也称为局部导数或欧拉导数. 它反映了物理量的非定常性.
-2.2 变形梯度
-质点的现时坐标 x_i 相对于物质坐标 X_j 的偏导数 F_{ij} = \partial x_i / \partial X_j 称为变形梯度, 它是一个非对称的二阶张量. 初始构形中由相邻质点 X 和 X+dX 构成的无限小线元 dX 在现时构形中变为
-
-dx_i = x_i(X + dX, t) - x_i(X, t) \qquad (2.9)
-
-对 x_i(X + dX, t) 在 X 处作泰勒展开, 并略去高阶小项得
-
-dx_i = \frac{\partial x_i}{\partial X_j} dX_j \qquad (2.10)
-
-变形梯度的行列式
-
-J =
-\frac{\partial x_i}{\partial X_j} =
-\begin{vmatrix} 
-\frac{\partial x_1}{\partial X_1}  &\frac{\partial x_1}{\partial X_2}  &\frac{\partial x_1}{\partial X_3}\\
-\frac{\partial x_2}{\partial X_1}  &\frac{\partial x_2}{\partial X_2}  &\frac{\partial x_2}{\partial X_3}\\
-\frac{\partial x_3}{\partial X_1}  &\frac{\partial x_3}{\partial X_2}  &\frac{\partial x_3}{\partial X_3}\\
-\end{vmatrix} \qquad (2.11)
-
-称为雅可比行列式.
-引入排列张量 e_{ijk}, 可将式 (2.11) 展开为
-
-J = e_{ijk}\frac{\partial x_i}{\partial X_1} \frac{\partial x_j}{\partial X_2} \frac{\partial x_k}{\partial X_3} \qquad (2.12)
-
-由行列式的性质和 J 的定义式 (2.11)可得
-
-e_{plm}J = e_{ijk}\frac{\partial x_i}{\partial X_p} \frac{\partial x_j}{\partial X_l} \frac{\partial x_k}{\partial X_m} \qquad (2.13)
-
-设初始构形中的平行六面体体元的三个线元分别是 dX, \delta X 和 \Delta X, 它们在现时构形中分别为 dx, \delta x 和 \Delta x, 且
-
-dx_i = \frac{\partial x_i}{\partial X_p}dX_p,\ \delta x_j = \frac{\partial x_j}{\partial X_l}\delta X_l,\ \Delta x_k = \frac{\partial x_k}{\partial X_m} \Delta X_m
-
-
-现时构形中由 dx, \delta x 和 \Delta x 构成的六面体体元的体积为
-
-dV = 
-\begin{vmatrix}
-dx_1  &dx_2  &dx_3\\
-\delta x_1  &\delta x_2  &\delta x_3\\
-\Delta x_1  &\Delta x_2  &\Delta x_3\\
-\end{vmatrix}
-= JdV_0 \qquad (2.14)
-
-因此变形梯度矩阵的行列式 J 可用来表示变形过程中体元的体积变化, 即
-
-J = \frac{dV}{dV_0} \qquad (2.15)
-
-可见 J 表示变形前后体元体积之比.
-2.3 变形率
-考察一个典型的质点 P, 它在时刻 t 的坐标为 x_j, 瞬时速度为 v_i(x_j, t). 与 P 点相邻的质点 P' 的坐标为 x_j+dx_j, 它相对于 P 点的相对速度为
-
-dv_i = v_i(x_j + dx_j, t) - v_i(x_j, t) = \frac{\partial v_i}{\partial x_j} dx_j \qquad (2.16)
-
-式中 \partial v_i/\partial x_j 为速度梯度张量. 它可分解为对称部分和反对称部分之和, 即
-
-\begin{aligned}
-\frac{\partial v_i}{\partial x_j}
-&= \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} - \frac{\partial v_j}{\partial x_i} \right)
-+ \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i} \right) \\
-&= \Omega_{ij} + D_{ij}
-\end{aligned} \qquad (2.17)
-
-式中
-
-\Omega_{ij} = \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} - \frac{\partial v_j}{\partial x_i} \right) \qquad (2.18)
-
-
-D_{ij} = \frac{1}{2}\left( \frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i} \right) \qquad (2.19)
-
-分别为旋律张量和变形率张量.
-与速度梯度分解相似， 相对速度式 (2.16) 也可分解为
-
-dv_i = dv_i^* + dv_i^{**} \qquad (2.20)
-
-其中
-
-dv_i^* = \Omega_{ij}dx_j, \quad dv_i^{**} = D_{ij}dx_j \qquad (2.21)
-
-旋率张量 \Omega_{ij} 是反对称张量, 它只有 3 个独立的分量, 总存在一个对偶矢量(旋度矢量) \omega, 使得
-
-\Omega_{ij} = -e_{ijk}\omega_k \qquad (2.22)
-
-将上式代入式 (2.21) 的第一式得
-
-dv_i^* = -e_{ijk} \omega_k dx_j = (\omega \times dx)_i \qquad (2.23)
-
-上式表明相对速度 dv_i^* 等于 \omega 和 dx 的矢量积. 在质点 P 的邻域内, 相对速度 dv_i^* 对应于这个邻域绕过 P 点的某轴的一个刚体运动, 矢量 \omega 表示转动的角速度.
-可以证明, 变形张量 D_{ij} 是相对于现时构形定义的柯西应变的速率, 也就是真实应变 \epsilon_{ij} 的速率，即
-
-D_{ij} = \frac{\partial \epsilon_{ij}}{\partial t} \qquad (2.24)
-
-2.4 柯西应力
-
-考虑物体在时刻 t 的现时构形内的一个有向面元 n\Delta A, 其法向单位向量 n 在坐标轴 e_k 上的投影记为  n_k. 面元 n\Delta A 两侧的介质通过面元相互作用以力元 \Delta T, 这个力元除以面元的面积就定义了该面元上的应力矢量 t^{(n)}:
-
-
-t_i^{(n)} = \lim_{\Delta A \rightarrow 0} \frac{\Delta T_i}{\Delta A} = \frac{dT_i}{dA} \qquad (2.25)
-
-面元 n\Delta A 与另外三个垂直于坐标轴的面元 n^{(1)}\Delta A_1, n^{(2)}\Delta A_2 和 n^{(3)}\Delta A_3 构成一个四面体, 且有 \Delta A_k = \Delta An_k. 面元 n^{(k)}\Delta A_k 上的应力矢量记为 t^{(k)}, 由平衡条件可得
-
-\Delta T_i = t_i^{(n)} \Delta A = t_i^{(k)} \Delta A_k = t_i^{(k)} \Delta An_k = \sigma_{ki} n_k \Delta A \qquad (2.26)
-
-其中 \sigma_{ki} = t_i^{(k)} 是垂直于坐标轴 x_k 的面元 n^{(k)} \Delta A_k 上的应力矢量 t^{(k)} 在坐标轴 x_i 上的分量. 由式(2.25)和式(2.26)得
-
-t_i^{(n)} = \sigma_{ki}n_k \qquad (2.27)
-
-
-(箭头朝外)
-由现时构形中垂直于坐标轴的三个面元上的应力矢量的九个分量 \sigma_{ij} 定义了一个张量, 称为柯西应力张量. 由微元体关于力矩的平衡条件可以证明柯西应力张量是对称的, 即
-
-\sigma_{ij} = \sigma_{ji} \qquad (2.28)
-
-柯西应力是定义在现时构形每单位面积上的接触力, 它是与变形相关的真实应力.
-2.5 焦曼应力率
-
-考察一承受单向应力 \sigma 作用并绕 x_3 轴作刚体转动的杆, 如图2.4所示. 在杆平行于 x_1 的瞬时，\sigma_{11} = \sigma, \sigma_{22} = 0, 而当杆转动到平行于 x_2 轴的位置时, \sigma_{11} = 0, \sigma_{22} = \sigma. 相对于在空间固定的坐标系 Px_1x_2 而言, 虽然杆内应力状态并未变化, 但刚体转动改变了柯西应力张量的分量, 导致柯西应力 \sigma_{ij} 的变化率,无论是空间导数 \partial \sigma_{ij}/\partial t 还是物质导数的时间偏导数都不等于零. 因此在本构方程中使用与变形率 D_{ij} 相关联的应力率时, 无论 \partial \sigma_{ij}/\partial t 还是应力的物质导数都不是一个适当的度量. 用于本构方程中的应力率必须不受刚体转动的影响, 即必须是客观张量.
-
-
-
-考虑包含 P 点的一个作瞬时转动的物质元, 动坐标系 P\bar{x}_1\bar{x}_2\bar{x}_3 与物质元固连, 跟随物质元一起作瞬时刚体转动. 虽然柯西应力张量在空间固定坐标系 Px_1x_2x_3 中的变化率不为零, 但它在动坐标系 P\bar{x}_1\bar{x}_2\bar{x}_3 中的变化率为零, 是一个客观张量.
-
-在所考察的时刻 t, 动坐标系与固定坐标系 x_i 重合, 如图 2.5 所示. 在 P 点附近的任一相邻质点 Q, 其在动坐标系中的坐标 d\bar{x}_i 不受刚体转动影响, 而它在固定坐标系中的坐标以速率
-
-dv_i = \Omega_{ij}d\bar{x}_j \qquad (2.29)
-
-变化. 在时刻 t+dt, 有
-
-dx_i = d\bar{x}_i + dv_i dt = (\delta_{ij} + \Omega_{ij}dt) d\bar{x}_j \qquad (2.30)
-
-
-由式(2.30)可知, 动坐标系和固定坐标系之间的坐标变换的变换系数为
-
-c_{ij} = \delta_{ij} + \Omega_{ij} dt \qquad (2.31)
-
-在动坐标系内定义应力率
-
-\sigma_{ij}^{\nabla} (t) = \lim_{dt \rightarrow 0} \frac{1}{dt} \left[\bar{\sigma}_{ij}(t+dt) - \bar{\sigma}_{ij}(t)\right] \qquad (2.32)
-
-显然物质元作刚体运动时, \sigma_{ij}^{\nabla}(t) = 0. 质点 P 在时刻 t+dt 相对于固定坐标系的应力张量是
-
-\sigma_{ij}(t+dt) = \sigma_{ij}(t) + \frac{\partial \sigma_{ij}}{\partial t}(t) dt \qquad (2.33)
-
-利用坐标变换将这个应力张量的分量变换到随体坐标系 P\bar{x}_1\bar{x}_2\bar{x}_3 中, 有
-
-\begin{aligned}
-\bar{\sigma}_{ij}(t + dt) &= c_{pi} c_{qj} \sigma_{pq}(t + dt) \\
-&= (\delta_{pi} + \Omega_{pi} dt)(\delta_{qj} + \Omega_{qj} dt)\left[\sigma_{pq}(t) + \frac{\partial \sigma_{pq}}{\partial t}(t) dt\right] \\
-&= \sigma_{ij}(t) + \left(\frac{\partial \sigma_{ij}}{\partial t} + \sigma_{ip}\Omega_{pj} + \sigma_{pj}\Omega_{ip}\right) dt + O(dt^2)
-\end{aligned} \qquad (2.34)
-
-将上式代入式(2.32), 并利用 \bar{\sigma}_{ij}(t) = \sigma_{ij}(t) 和 \Omega_{ij} 的反对称性, 最后得
-
-\sigma_{ij}^{\nabla} = \frac{\partial \sigma_{ij}}{\partial t} - \sigma_{ip}\Omega_{jp} - \sigma_{pj}\Omega_{ip} \qquad (2.35)
-
-按上式定义的应力率叫焦曼应力率, 它是不受刚体转动影响的客观张量, 可以在本构方程中使用.
-]]></content>
-      <categories>
-        <category>数值模拟</category>
-        <category>物质点法（MPM）</category>
-      </categories>
-      <tags>
-        <tag>控制方程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Windows Git 安装与基础配置指南</title>
-    <url>/2024/05/cbf708ce/</url>
-    <content><![CDATA[1. 下载安装包
-打开Git官网下载安装包, 嫌速度慢可以使用下面的链接下载
-蓝奏云(不限速)：https://wwt.lanzoul.com/b00rn0x92b 密码:gdo1
-百度云(会员)：https://pan.baidu.com/s/1QRxu8qYWI0rAOFqX9PT01g?pwd=1111 提取码: 1111
-
-
-下载完成后，双击打开安装包
-2. 开始安装
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-点击安装, 等待安装完成
-
-3. 配置Git
-(1). 配置用户信息
-输入以下命令配置用户信息, 修改成自己的信息
-git config --global user.name &quot;liudh&quot;git config --global user.email &quot;xxxxxxx@xx.com&quot;
-
-可以使用以下命令查看配置信息
-git config user.namegit config user.email
-(2). 设置代理(需自备代理)
-在向Github推送时, 经常会遇到443等连接问题, 即时自己打开了代理软件依旧不能成功上传. 这是因为Git没有配置代理
-使用以下命令查看代理配置
-git config --global --get http.proxygit config --global --get https.proxy
-如果没有内容说明没有代理
-下面使用以下命令配置代理
-git config --global http.proxy 127.0.0.1:7890git config --global https.proxy 127.0.0.1:7890
-
-具体地址和端口在系统代理的位置查看
-
-
-如果不想使用代理, 使用以下命令取消
-git config --global --unset http.proxygit config --global --unset https.proxy
-
-至此, 就可以愉快地开始使用Git了
-]]></content>
-      <categories>
-        <category>计算机技术</category>
-        <category>版本控制</category>
-      </categories>
-      <tags>
-        <tag>安装配置</tag>
-        <tag>Windows</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>DJI Mavic 3 Classic 航点飞行指南</title>
-    <url>/2024/08/78788d45/</url>
-    <content><![CDATA[准备工作
-遥控手柄(带屏)
-航线规划软件(网页) - Rainbow Cloud
-SD卡, 读卡器, 电脑
-1. 创建航线
-首先, 打开Rainbow Cloud网站.
-网页界面如下:
-
-点击左侧新建任务.
-
-选择正射
-
-输入任务名称
-
-确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围.
-
-然后, 调整这个范围至合适位置. 可以移动和添加顶点
-
-然后, 调整右侧参数栏的参数.
-
-
-其余设置与上图保持一致, 保存任务
-
-点击右上角任务导出
-
-选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.
-
-点击下载, 将文件下载并导入到SD卡中.
-2. 导入航线
-根据导入教程导入文件Mavic3系列屏控手动导入Kmz航点任务
-2.1 创建并备份航线
-创建任意数量的航点, 保存.
-航点文件保存位置如下
-
-一串英文字符的文件夹内存放的就是航线文件(kmz格式)
-将整个waypoint文件夹复制至SD卡中
-2.2 替换kmz文件
-将已经下载好的Kmz文件同样导入到SD卡的该文件夹内
-注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).
-将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)
-最后将替换好的waypoint文件夹替换回去
-]]></content>
-      <categories>
-        <category>地理空间技术</category>
-        <category>无人机测绘</category>
-      </categories>
-      <tags>
-        <tag>DJI Mavic 3 Classic</tag>
-        <tag>航点飞行</tag>
       </tags>
   </entry>
   <entry>
@@ -2456,222 +2622,6 @@ main(master)分支 Init-update-update2 内容
       </tags>
   </entry>
   <entry>
-    <title>Hexo 与 GitHub Actions 博客部署指南</title>
-    <url>/2024/06/4a79202d/</url>
-    <content><![CDATA[安装流程
-
-
-安装node.js
-
-
-安装Git
-
-
-安装Hexo
-
-
-创建Github仓库
-
-
-安装上传插件
-
-
-更改配置
-
-
-上传网页
-
-
-1. 安装node.js
-打开node.js官网Node.js — Run JavaScript Everywhere (nodejs.org)点击下载
-
-打开安装至默认位置即可
-
-
-
-
-
-自动安装一些工具, 可以选上, 然后安装. 等待安装完成
-
-点击完成, 会弹出一些窗口
-
-按任意键继续即可, 等待安装完成.
-
-过程较长, 耐心等待安装完成.
-
-2. 安装Git
-查看往期教程Git 安装及配置教程 | Firefly Blog | 萤火虫博客 (fireflye.asia)
-3. 安装Hexo
-完成上面的安装后, 可以使用以下命令检查是否安装成功.
-打开git bash,输入
-node -vnpm -vgit -v
-显示版本信息, 说明安装成功.
-
-如果没有代理, 可用下面的淘宝镜像源:
-npm config set registry https://registry.npmmirror.com/
-之后再输入以下命令安装hexo
-npm install -g hexo-cli
-等待安装完成显示以下信息说明安装完成
-
-还可以使用以下命令来查看安装情况
-hexo -v
-若显示版本信息, 说明已成功安装
-打开一个要存放网站文件的位置, 例如F:\web\. 打开此文件夹, 右键选择open git bash here
-
-或者 直接打开git bash 输入cd f:\web. 路径替换为自己的路径.
-
-打开后会显示(我使用的虚拟机放在了桌面. 不建议这样做. 文件夹需要妥善保存.)
-
-输入以下命令初始化hexo(一定要在刚刚的文件夹内-路径显示)
-hexo init
-保证网络畅通, 耐心等待初始化完成.
-
-到此, hexo初始化完成. 下面配置github仓库.
-4. 创建Github仓库
-打开Github注册一个自己的账号
-
-输入自己的邮箱, 密码等
-
-用户名建议设置简单易记一些, 待会创建的网站域名与自己的用户名有关
-
-总览
-
-点击继续, 通过验证码和邮箱数字验证就可以注册成功.
-
-点击左侧的绿色按钮新建仓库Create repository.
-
-到此, 仓库已经创建完成
-
-接下来还需要配置一下上传的密钥对
-打开git bash, 输入以下命令 (&quot;email&quot;替换为自己的邮箱)
-ssh-keygen -t rsa -b 4096 -C &quot;email&quot;
-然后按三下回车键, 即均保持默认不设置密码. 也可根据自己需要修改
-
-
-第一次是保存位置
-第二次是密码
-第三次是重复密码
-
-创建完成后, 打开保存的目录. 默认在C:\Users\用户名\.ssh
-
-第一个是私钥, 自己一定要保存好, 不能给别人.
-将第二个pub结尾的用记事本打开, 将里面的内容复制出来.
-
-复制好后, 返回Github
-
-
-
-
-密钥添加完成
-5. 安装上传插件
-打开上文初始化的hexo目录, 右键选择open git bash here
-
-或者 直接打开git bash 输入cd f:\web. 路径替换为自己的路径.
-
-然后输入下面的命令安装插件到目录下
-npm install hexo-deployer-git --save
-
-安装完成
-6. 更改配置
-打开网站文件夹
-
-用记事本或VSCode等编辑软件打开_config.yml
-
-# 配置说明, 不要复制. 按说明修改# Hexo Configuration## Docs: https://hexo.io/docs/configuration.html## Source: https://github.com/hexojs/hexo/# Sitetitle: Hexo  # 网站的大标题subtitle: &#x27;&#x27;  # 副标题description: &#x27;&#x27; # 描述keywords:  # 网站的关键词author: John Doe # 作者language: en  # 语言 中文 zh-CNtimezone: &#x27;&#x27; # 时区 Asia/Shanghai# URL## Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;url: https://fireflyblog.github.io # 改成自己网址 https://用户名.github.io # 注意是httpspermalink: :year/:month/:day/:title/  # 其他默认转到最后一项permalink_defaults:pretty_urls:  trailing_index: true # Set to false to remove trailing &#x27;index.html&#x27; from permalinks  trailing_html: true # Set to false to remove trailing &#x27;.html&#x27; from permalinks# Directorysource_dir: sourcepublic_dir: publictag_dir: tagsarchive_dir: archivescategory_dir: categoriescode_dir: downloads/codei18n_dir: :langskip_render:# Writingnew_post_name: :title.md # File name of new postsdefault_layout: posttitlecase: false # Transform title into titlecaseexternal_link:  enable: true # Open external links in new tab  field: site # Apply to the whole site  exclude: &#x27;&#x27;filename_case: 0render_drafts: falsepost_asset_folder: falserelative_link: falsefuture: truesyntax_highlighter: highlight.jshighlight:  line_number: true  auto_detect: false  tab_replace: &#x27;&#x27;  wrap: true  hljs: falseprismjs:  preprocess: true  line_number: true  tab_replace: &#x27;&#x27;# Home page setting# path: Root path for your blogs index page. (default = &#x27;&#x27;)# per_page: Posts displayed per page. (0 = disable pagination)# order_by: Posts order. (Order by date descending by default)index_generator:  path: &#x27;&#x27;  per_page: 10  order_by: -date# Category &amp; Tagdefault_category: uncategorizedcategory_map:tag_map:# Metadata elements## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/metameta_generator: true# Date / Time format## Hexo uses Moment.js to parse and display date## You can customize the date format as defined in## http://momentjs.com/docs/#/displaying/format/date_format: YYYY-MM-DDtime_format: HH:mm:ss## updated_option supports &#x27;mtime&#x27;, &#x27;date&#x27;, &#x27;empty&#x27;updated_option: &#x27;mtime&#x27;# Pagination## Set per_page to 0 to disable paginationper_page: 10pagination_dir: page# Include / Exclude file(s)## include:/exclude: options only apply to the &#x27;source/&#x27; folderinclude:exclude:ignore:# Extensions## Plugins: https://hexo.io/plugins/## Themes: https://hexo.io/themes/theme: landscape# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: &#x27;&#x27;
-这一部分单拿出来修改(注意缩进为2个空格, 冒号后面一个空格)
-# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository:  branch: main
-仓库地址在Github, 打开找到自己的仓库
-
-复制好后粘贴到仓库参数后面, 完整的配置修改如下
-# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repository: git@github.com:fireflyblog/fireflyblog.github.io.git #替换为自己的链接  branch: main
-
-如果无法上传或分支报错可以使用以下样式:
-# Deployment## Docs: https://hexo.io/docs/one-command-deploymentdeploy:  type: git  repo:    github: git@github.com:fireflyblog/fireflyblog.github.io.git,main #替换为自己的链接
-
-7. 上传网页
-一切配置好之后, 打开网站文件夹. 右键选择open git bash here
-输入以下命令生成和上传网页
-hexo ghexo d
-
-
-上传成功之后, 等待一会. 就可以打开自己网页查看了(替换自己的用户名)
-https://fireflyblog.github.io
-
-至此, 网站已经搭建完成
-
-还有一些其他常使用的命令
-新建文章
-hexo new &quot;title&quot;
-本地部署预览
-hexo s
-清理生成文件(一般切换主题需要先清理再生成. 新建文章之类的不需要此操作.)
-hexo clean
-
-文章保存在
-网站文件夹\source\_posts
-
-文章格式说明以及主题美化待更新…
-]]></content>
-      <categories>
-        <category>计算机技术</category>
-        <category>网站建设</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>GitHub Actions</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Nginx 反向代理配置指南</title>
-    <url>/2025/03/4bc19655/</url>
-    <content><![CDATA[准备工作
-
-Ubuntu系统
-Nginx
-
-配置教程
-1.备份配置文件
-sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
-2.编辑配置文件
-sudo vim /etc/nginx/nginx.conf
-找到http&#123;&#125;块中的server&#123;&#125;块，注释掉原有的server&#123;&#125;
-
-3.按原有配置添加新的server块
-(1) 默认的错误界面
-server &#123;    listen 443 ssl default_server;    server_name _;    ssl_certificate /etc/nginx/xxx.crt;    ssl_certificate_key /etc/nginx/xxx.key;    return 404;&#125;
-(2) 主域名
-server &#123;     listen 443 ssl;     server_name fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;         root /home/www/website;         index  index.html index.htm;     &#125;&#125;
-其中root改为自己本地的网站目录
-(3) 主域名转发
-server &#123;        listen 80;        server_name fireflye.top;        return 301 https://$host$request_uri;        &#125;
-(4) 二级域名端口转发示例
-server &#123;     listen 443 ssl;     server_name xxx.fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;       proxy_set_header X-Forwarded-Proto $scheme;       proxy_set_header Host $host;       proxy_set_header X-Real-IP $remote_addr;       proxy_set_header Range $http_range;       proxy_set_header If-Range $http_if_range;       proxy_redirect off;       proxy_pass https://127.0.0.1:xxx;       client_max_body_size 20000m;       &#125;&#125; server &#123;        listen 80;        server_name xxx.fireflye.top;        return 301 https://$host$request_uri;				&#125;
-其他均可套此模版
-
-注意http{}需要闭合，最后的大括号容易被误删
-
-(5) 检验配置并重启nginx
-sudo nginx -t
-
-证明无错误，重启nginx
-sudo nginx -s reload
-4.SSL证书
-可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器
-
-每个证书有效期三个月
-除www外的二级域名需要单独申请
-总有效证书最多50个(到期会释放个数)
-
-]]></content>
-      <categories>
-        <category>计算机技术</category>
-        <category>服务器运维</category>
-      </categories>
-      <tags>
-        <tag>反向代理</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Hexo 博客云服务器部署指南</title>
     <url>/2025/03/ee12770f/</url>
     <content><![CDATA[准备工作
@@ -2836,6 +2786,56 @@ sudo vim /etc/passwd
       </tags>
   </entry>
   <entry>
+    <title>Nginx 反向代理配置指南</title>
+    <url>/2025/03/4bc19655/</url>
+    <content><![CDATA[准备工作
+
+Ubuntu系统
+Nginx
+
+配置教程
+1.备份配置文件
+sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
+2.编辑配置文件
+sudo vim /etc/nginx/nginx.conf
+找到http&#123;&#125;块中的server&#123;&#125;块，注释掉原有的server&#123;&#125;
+
+3.按原有配置添加新的server块
+(1) 默认的错误界面
+server &#123;    listen 443 ssl default_server;    server_name _;    ssl_certificate /etc/nginx/xxx.crt;    ssl_certificate_key /etc/nginx/xxx.key;    return 404;&#125;
+(2) 主域名
+server &#123;     listen 443 ssl;     server_name fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;         root /home/www/website;         index  index.html index.htm;     &#125;&#125;
+其中root改为自己本地的网站目录
+(3) 主域名转发
+server &#123;        listen 80;        server_name fireflye.top;        return 301 https://$host$request_uri;        &#125;
+(4) 二级域名端口转发示例
+server &#123;     listen 443 ssl;     server_name xxx.fireflye.top;     ssl_certificate /etc/nginx/xxx.crt;     ssl_certificate_key /etc/nginx/xxx.key;     ssl_session_timeout 5m;     ssl_protocols TLSv1.2 TLSv1.3;     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;     ssl_prefer_server_ciphers on;     location / &#123;       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;       proxy_set_header X-Forwarded-Proto $scheme;       proxy_set_header Host $host;       proxy_set_header X-Real-IP $remote_addr;       proxy_set_header Range $http_range;       proxy_set_header If-Range $http_if_range;       proxy_redirect off;       proxy_pass https://127.0.0.1:xxx;       client_max_body_size 20000m;       &#125;&#125; server &#123;        listen 80;        server_name xxx.fireflye.top;        return 301 https://$host$request_uri;				&#125;
+其他均可套此模版
+
+注意http{}需要闭合，最后的大括号容易被误删
+
+(5) 检验配置并重启nginx
+sudo nginx -t
+
+证明无错误，重启nginx
+sudo nginx -s reload
+4.SSL证书
+可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器
+
+每个证书有效期三个月
+除www外的二级域名需要单独申请
+总有效证书最多50个(到期会释放个数)
+
+]]></content>
+      <categories>
+        <category>计算机技术</category>
+        <category>服务器运维</category>
+      </categories>
+      <tags>
+        <tag>反向代理</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ArcGIS Pro 分水岭提取指南</title>
     <url>/2025/05/2ef32537/</url>
     <content><![CDATA[准备工具
@@ -2900,47 +2900,6 @@ ArcMap
         <tag>DEM</tag>
         <tag>水文分析</tag>
         <tag>分水岭</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ASF ALOS PALSAR 12.5 m DEM 数据下载指南</title>
-    <url>/2025/11/a648a944/</url>
-    <content><![CDATA[准备工作
-
-ASF账号（下载必须，免费注册）
-良好的网络连接
-ArcGis
-
-下载教程
-1. 打开ASF网站
-或网址：https://search.asf.alaska.edu/#/?dataset=ALOS
-2. 右上角注册并登录账号
-3. 下载数据
-(1) 如果使用上面的超链接或网址进入网站，那当前的数据来源应当为ALOS PALSAR，如果不是，下拉选择该选项
-
-(2) 框选需要下载的范围
-
-(3) 筛选数据
-
-
-点击搜索查找数据
-
-打开右上角购物车(下载列表)
-
-即可下载相关数据
-4. 合并数据
-将下载好的数据导入到ArcMap(或ArcGis Pro)中，下图为ArcGis Pro的示例(ArcMap操作相同仅界面不同)
-在地理处理中搜索”镶嵌至新栅格“
-
-这样就可以把多个栅格文件合并成一个栅格文件。
-]]></content>
-      <categories>
-        <category>地理空间技术</category>
-        <category>遥感数据</category>
-      </categories>
-      <tags>
-        <tag>DEM</tag>
-        <tag>ALOS PALSAR</tag>
       </tags>
   </entry>
   <entry>
@@ -3137,319 +3096,44 @@ MPM结果在土体剖面和自由水面演化方面均优于SPH和PFEM方法（�
       </tags>
   </entry>
   <entry>
-    <title>两相两点物质点法一维固结验证：饱和与非饱和响应</title>
-    <url>/2026/07/2c665521/</url>
-    <content><![CDATA[一维固结是检验流固耦合算法是否同时满足水力扩散和骨架变形规律的基础算例。只比较孔隙水压力并不足以证明模型正确：压力可能看似符合解析解，而沉降量仍会因为耦合系数、积分体积或基准应力处理不一致而偏离。
-本文采用两相两点物质点法（two-phase two-point MPM），分别以饱和 L8 和非饱和 L08U 工况验证平均孔压固结度、沉降固结度及沿深度的压力剖面。新版 L08U 结果使用变形一致解析解，替代了早期仅适用于压力子问题的冻结孔隙率参考；因此，本文只将新版结果作为非饱和固结通过的依据。
-一、物理问题与验证目标
-模型为高 H=10\ \mathrm{m}、截面 1\ \mathrm{m}\times1\ \mathrm{m} 的土柱，取 z=0 为不透水底面、z=H 为排水顶面。侧面限制法向位移且不透水，底面限制竖向位移且不透水，顶面施加相对于初始平衡状态的 1\ \mathrm{kPa} 压缩荷载。
-两相两点离散使用两套独立物质点：固相点携带骨架质量、应力和运动状态，液相点携带孔压、饱和度和液相状态。两相在背景网格上交换动量并求解水力—力学耦合。算例采用 10 层均匀网格，每层每相布置 8 个点，共 80 个固相点和 80 个液相点。
-本文检查三个互相独立的量：
+    <title>ASF ALOS PALSAR 12.5 m DEM 数据下载指南</title>
+    <url>/2025/11/a648a944/</url>
+    <content><![CDATA[准备工作
 
-平均超静孔压定义的固结度 U_p；
-顶面沉降定义的固结度 U_s；
-不同无量纲时间下的归一化超静孔压剖面 u/u_0。
+ASF账号（下载必须，免费注册）
+良好的网络连接
+ArcGis
 
-只有三者同时满足误差门限，才能认为压力扩散与变形耦合均得到验证。
-二、控制方程与变形一致耦合
-在忽略惯性的一维小应变固结极限下，两相模型可归结为骨架平衡、液相质量守恒和 Darcy 渗流。三维形式下的固相与液相动量方程可写为
+下载教程
+1. 打开ASF网站
+或网址：https://search.asf.alaska.edu/#/?dataset=ALOS
+2. 右上角注册并登录账号
+3. 下载数据
+(1) 如果使用上面的超链接或网址进入网站，那当前的数据来源应当为ALOS PALSAR，如果不是，下拉选择该选项
 
-(1-n)\rho_s\boldsymbol{a}_s
-=\nabla\cdot\boldsymbol{\sigma}
-+(1-n)\rho_s\boldsymbol{g}
-+\boldsymbol{f}^{\mathrm{drag}},
-\tag{1}\label{eq:solid-momentum}
+(2) 框选需要下载的范围
 
+(3) 筛选数据
 
-nS_r\rho_w\boldsymbol{a}_w
-=-\nabla(nS_rp_w)
-+nS_r\rho_w\boldsymbol{g}
--\boldsymbol{f}^{\mathrm{drag}},
-\tag{2}\label{eq:water-momentum}
 
-其中，n 为孔隙率，S_r 为饱和度，\rho_s 和 \rho_w 分别为固相与液相真实密度，p_w 为孔隙水压力，\boldsymbol{f}^{\mathrm{drag}} 为两相拖曳力。低速渗流时，拖曳关系退化为 Darcy 定律。
-采用 Bishop 有效应力表示总应力：
+点击搜索查找数据
 
-\boldsymbol{\sigma}
-=\boldsymbol{\sigma}'
--\alpha p_w\boldsymbol{I},
-\tag{3}\label{eq:bishop-stress}
+打开右上角购物车(下载列表)
 
-其中 \alpha 由饱和度和孔隙率决定。饱和极限下 S_r=1、\alpha=1，式 \eqref{eq:bishop-stress} 退化为经典有效应力关系。
-非饱和状态的变形一致线性化
-早期 L08U 对照把土—水特征曲线视为只依赖压力，即冻结孔隙率后仅保留 \partial S_r/\partial p_w。这种处理可以近似描述压力扩散，却遗漏了变形引起的孔隙率变化，因而不能作为沉降验证的解析参考。
-新版参考同时保留
+即可下载相关数据
+4. 合并数据
+将下载好的数据导入到ArcMap(或ArcGis Pro)中，下图为ArcGis Pro的示例(ArcMap操作相同仅界面不同)
+在地理处理中搜索”镶嵌至新栅格“
 
-S_{r,p}=\left.\frac{\partial S_r}{\partial p_w}\right|_n,
-\qquad
-S_{r,n}=\left.\frac{\partial S_r}{\partial n}\right|_{p_w}.
-\tag{4}\label{eq:saturation-tangents}
-
-由此得到压力耦合系数 \beta、质量—体应变耦合系数 \gamma 和 Bishop 应力的体应变切线 \alpha_\varepsilon：
-
-\beta
-=\frac{\partial(\alpha p_w)}{\partial p_w}
-=\alpha+p_w(1-n)S_{r,p},
-\tag{5}\label{eq:beta}
-
-
-\gamma
-=1+\frac{n(1-n)}{S_r}S_{r,n},
-\tag{6}\label{eq:gamma}
-
-
-\alpha_\varepsilon
-=(1-n)\left[1-S_r+(1-n)S_{r,n}\right].
-\tag{7}\label{eq:alpha-epsilon}
-
-在基准吸力 p_0 附近，侧限有效模量相应修正为
-
-M_{\mathrm{eff}}=M-p_0\alpha_\varepsilon.
-\tag{8}\label{eq:effective-modulus}
-
-压力增量与体积应变增量必须在同一线性化状态下求解。相应的增量形式为
-
-C_p\Delta p_w+\gamma\Delta\varepsilon_v
-+\Delta t\,\mathcal{H}(\Delta p_w)=R_p,
-\tag{9}\label{eq:mass-balance}
-
-
-\Delta\boldsymbol{\sigma}
-=\mathbb{C}:\Delta\boldsymbol{\varepsilon}
--\beta\Delta p_w\boldsymbol{I}
--p_0\alpha_\varepsilon\Delta\varepsilon_v\boldsymbol{I}.
-\tag{10}\label{eq:stress-increment}
-
-其中，C_p 为储水系数，\mathcal{H} 为离散渗流算子，R_p 为质量平衡残差。饱和极限满足 S_{r,n}=0、\beta=\gamma=1、\alpha_\varepsilon=0，可严格恢复经典饱和固结方程。
-本算例采用小应变参考构形。固相与液相积分权重均固定在参考构形，避免基准吸力应力随当前体积被重复缩放。该处理是新版沉降曲线能够与解析解一致的关键物理契约，不应直接外推到大变形更新拉格朗日问题。
-三、算例参数与解析基准
-饱和 L8 与非饱和 L08U 保持几何、网格、弹性参数、初始孔隙率、饱和渗透系数和附加荷载一致。两者仅在初始水力状态及其相应的非饱和耦合系数上不同。
-
-
-
-参数
-符号
-数值
-
-
-
-
-土柱高度
-H
-10\ \mathrm{m}
-
-
-弹性模量
-E
-50\ \mathrm{MPa}
-
-
-泊松比
-\nu
-0.3
-
-
-初始孔隙率
-n_0
-0.3
-
-
-水的体积模量
-K_w
-500\ \mathrm{MPa}
-
-
-饱和渗透系数
-k_s
-1.0\times10^{-3}\ \mathrm{m/s}
-
-
-固相真实密度
-\rho_s
-2600\ \mathrm{kg/m^3}
-
-
-液相真实密度
-\rho_w
-1000\ \mathrm{kg/m^3}
-
-
-附加压缩荷载
-q
-1\ \mathrm{kPa}
-
-
-
-饱和 L8
-线弹性材料的侧限压缩模量为
-
-M
-=\frac{E(1-\nu)}{(1+\nu)(1-2\nu)}
-=67.307692\ \mathrm{MPa}.
-\tag{11}\label{eq:constrained-modulus}
-
-考虑水的可压缩性后，固结系数为
-
-c_v
-=\frac{k_s}
-{\rho_wg\left(M^{-1}+n_0K_w^{-1}\right)}
-=6.594802\ \mathrm{m^2/s}.
-\tag{12}\label{eq:saturated-cv}
-
-最终沉降量为
-
-s_\infty=\frac{qH}{M}
-=1.485714\times10^{-4}\ \mathrm{m}.
-\tag{13}\label{eq:saturated-settlement}
-
-无量纲时间因子定义为
-
-T_v=\frac{c_vt}{H^2}.
-\tag{14}\label{eq:time-factor}
-
-对于顶面排水、底面不透水的土柱，超静孔压和平均固结度采用 Terzaghi 单向排水 Fourier 级数作为解析基准。
-非饱和 L08U
-L08U 在 p_0=-400\ \mathrm{kPa} 的基准吸力状态激活同一土—水特征曲线。初始饱和度为 S_{r0}=0.931035，相对渗透率为 k_{r0}=0.550073。为了满足 Bishop 牵引平衡，加载后的初始孔压为 -398.799828\ \mathrm{kPa}，对应初始超静孔压 u_0=1.200172\ \mathrm{kPa}，并非直接复制饱和算例的 1\ \mathrm{kPa}。
-基准状态下
-
-\beta_0=0.832637,\qquad
-\gamma_0=0.892770,\qquad
-\alpha_\varepsilon=-0.184672.
-\tag{15}\label{eq:unsaturated-couplings}
-
-由式 \eqref{eq:effective-modulus} 得 M_{\mathrm{eff}}=67.233823\ \mathrm{MPa}，变形一致固结系数为 c_u=0.377083\ \mathrm{m^2/s}，最终沉降量为 1.487347\times10^{-4}\ \mathrm{m}。非饱和工况的固结速度明显低于饱和工况，主要原因是基质吸力降低了相对渗透率并改变了储水与应变耦合。
-四、饱和固结结果
-饱和 L8 在 T_v=0.05、0.20、0.50 和 0.80 四个目标时刻的结果如下。U_p 由平均超静孔压计算，U_s=s/s_\infty。
-
-
-
-T_v
-t（s）
-U_p 数值解
-U_p 解析解
-U_s 数值解
-U_s 解析解
-
-
-
-
-0.05
-0.7885
-0.25637
-0.25231
-0.25642
-0.25231
-
-
-0.20
-3.0327
-0.50322
-0.50409
-0.50321
-0.50409
-
-
-0.50
-7.5817
-0.76285
-0.76395
-0.76281
-0.76395
-
-
-0.80
-12.1308
-0.88645
-0.88740
-0.88648
-0.88740
-
-
-
-除最早时刻受 10 层离散和输出采样影响较明显外，孔压与沉降两条曲线几乎重合。四个目标时刻的归一化孔压剖面均保持单调，并满足顶面排水、底面零通量的边界特征。
-
-
-五、非饱和固结的新验证结果
-旧 L08U 结果只使用冻结孔隙率的压力参考，且液相积分体积会随密度和饱和度变化而错误缩放基准吸力应力。因此，旧结果即使压力趋势合理，也不能证明沉降通过。新版结果同时修正了变形一致解析基准和小应变参考构形积分权重，未采用压力裁剪、人工阻尼或沉降回写。
-新版 10 层算例在时间步尺度系数为 0.2 时得到：
-
-
-
-T_v
-U_p 数值解
-U_p 解析解
-U_s 数值解
-U_s 解析解
-压力剖面 RMS 误差
-压力剖面最大误差
-
-
-
-
-0.05
-0.25310
-0.25183
-0.25188
-0.25183
-0.00344
-0.00624
-
-
-0.20
-0.50553
-0.50412
-0.50485
-0.50412
-0.00210
-0.00270
-
-
-0.50
-0.76535
-0.76399
-0.76525
-0.76399
-0.00180
-0.00259
-
-
-0.80
-0.88833
-0.88743
-0.88828
-0.88743
-0.00113
-0.00160
-
-
-
-四个目标时刻的最大 U_p 绝对误差为 0.00141，最大 U_s 绝对误差为 0.00126；压力剖面的 RMS 与最大误差均低于 0.01 和 0.025 的门限。时间步尺度从 0.2 依次减小至 0.1、0.05，以及网格从 10 层加密至 20 层时，结果均满足预设收敛门限。
-下图上排分别比较饱和 L8 和非饱和 L08U 的 U_p、U_s 时间历程，下排比较四个目标时刻的压力剖面。空心点为 MPM 结果，连续线为各自的解析解。非饱和算例中，孔压与沉降均与变形一致解析解重合，说明新版结果已经从“压力子问题可用”提升为完整的一维非饱和固结验证通过。
-
-六、数值稳定性与适用范围
-
-压力稳定化：低阶等阶插值在近不可压缩条件下可能产生体积自锁和棋盘状孔压。算例使用压力投影稳定化与质量加权压力恢复，并检查同一轴向平面上的粒子离散度和交替重构模态。
-时间与空间收敛：单个时间步或单一网格上的拟合不足以证明方法可靠。至少应同时比较时间步加密、网格加密、平均固结度和完整压力剖面。
-初始平衡：非饱和工况的附加荷载必须建立在基准吸力应力平衡之上。直接把饱和算例的初始超孔压复制到非饱和状态，会破坏初始牵引平衡。
-参考构形：本文结论适用于标准 MPM、线弹性、小应变和一维单向排水。大变形问题需要完整的更新构形线性化与独立验证，不能直接沿用本文的固定参考积分权重。
-验证边界：本文未验证塑性、GIMP、三维排水、受控通量入渗或显式两惯性声学响应。上述能力应分别使用与其物理机制相匹配的基准算例。
-
-综合孔压、沉降、压力剖面以及时间和网格收敛结果，可以确认两相两点 MPM 在本文限定范围内同时通过饱和与非饱和一维固结验证。
-
-
-  
-    
-  
-  本文含有 AI 生成内容
+这样就可以把多个栅格文件合并成一个栅格文件。
 ]]></content>
       <categories>
-        <category>数值模拟</category>
-        <category>物质点法（MPM）</category>
+        <category>地理空间技术</category>
+        <category>遥感数据</category>
       </categories>
       <tags>
-        <tag>孔隙水压力</tag>
-        <tag>固结</tag>
-        <tag>流固耦合</tag>
+        <tag>DEM</tag>
+        <tag>ALOS PALSAR</tag>
       </tags>
   </entry>
 </search>
