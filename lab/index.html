@@ -1,0 +1,175 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>计算实验室 | Firefly Blog | 萤火虫博客</title><meta name="author" content="Liudh"><meta name="copyright" content="Liudh"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="在浏览器中交互观察粒子—网格映射、土水特征曲线和 D8 地形汇流过程。"><meta property="og:type" content="website"><meta property="og:title" content="计算实验室"><meta property="og:url" content="https://fireflye.top/lab/"><meta property="og:site_name" content="Firefly Blog | 萤火虫博客"><meta property="og:description" content="在浏览器中交互观察粒子—网格映射、土水特征曲线和 D8 地形汇流过程。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://fireflye.top/img/homebg.jpg"><meta property="article:published_time" content="2026-08-30T02:10:00.000Z"><meta property="article:modified_time" content="2026-08-30T02:10:00.000Z"><meta property="article:author" content="Liudh"><meta property="article:tag" content="数值模拟, 物质点法, 有限元法, 流体力学, GIS, Linux"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://fireflye.top/img/homebg.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://fireflye.top/lab/"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//hm.baidu.com"><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="/css/lab.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media=&quot;all&quot;"><script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="https://hm.baidu.com/hm.js?317136679115f8c00b2042f2137bc84f";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE={title:"计算实验室",isPost:!1,isHome:!1,isHighlightShrink:!1,isToc:!1,postUpdate:"2026-08-30 10:10:00"}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/modify.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/miku.png" onerror="onerror=null,src=&quot;/img/friend_404.gif&quot;" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><hr class="custom-hr"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i> <span>主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i> <span>时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i> <span>标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i> <span>分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-compass"></i> <span>探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/knowledge-map/"><i class="fa-fw fas fa-diagram-project"></i> <span>知识地图</span></a></li><li><a class="site-page child" href="/lab/"><i class="fa-fw fas fa-flask"></i> <span>计算实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i> <span>关于</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="not-home-page" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Firefly Blog | 萤火虫博客"><span class="site-name">Firefly Blog | 萤火虫博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i> <span>搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i> <span>主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i> <span>时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i> <span>标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i> <span>分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-compass"></i> <span>探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/knowledge-map/"><i class="fa-fw fas fa-diagram-project"></i> <span>知识地图</span></a></li><li><a class="site-page child" href="/lab/"><i class="fa-fw fas fa-flask"></i> <span>计算实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i> <span>关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="page-site-info"><h1 id="site-title">计算实验室</h1></div></header><main class="layout hide-aside lab-layout" id="content-inner"><div id="page"><div id="article-container"><div id="computation-lab" class="computation-lab"><section class="lab-hero" aria-labelledby="lab-hero-title"><span class="lab-eyebrow">COMPUTATION LAB · BETA</span><h2 id="lab-hero-title">把公式变成可以操作的图形</h2><p>这些实验用于理解站内技术内容中的关键计算关系。所有计算均在当前浏览器本地完成，不上传输入数据，也不依赖远程计算服务。</p><div class="lab-principles" aria-label="实验设计原则"><span>即时参数反馈</span> <span>显示守恒误差</span> <span>原生 JavaScript</span> <span>移动端可用</span></div></section><section class="lab-shell"><div class="lab-tabs" role="tablist" aria-label="计算实验选择"><button id="tab-mpm" class="lab-tab" type="button" role="tab" aria-controls="mpm-lab" aria-selected="true" data-lab-tab="mpm-lab"><i class="fas fa-cubes" aria-hidden="true"></i> MPM 映射</button> <button id="tab-retention" class="lab-tab" type="button" role="tab" aria-controls="retention-lab" aria-selected="false" data-lab-tab="retention-lab"><i class="fas fa-chart-line" aria-hidden="true"></i> 土水特征曲线</button> <button id="tab-terrain" class="lab-tab" type="button" role="tab" aria-controls="terrain-lab" aria-selected="false" data-lab-tab="terrain-lab"><i class="fas fa-mountain-sun" aria-hidden="true"></i> D8 地形汇流</button></div><section id="mpm-lab" class="lab-panel" role="tabpanel" aria-labelledby="tab-mpm" tabindex="0" data-lab-panel=""><header class="lab-panel__header"><div><span class="lab-eyebrow">EXPERIMENT 01</span><h2>一维粒子—网格映射</h2><p>使用线性形函数完成 P2G 映射，并通过网格更新与 G2P 回传推进粒子。可调整质量、外部加速度及 PIC/FLIP 混合比例，观察数值耗散和边界效应。</p></div><span class="lab-panel__badge">P2G</span></header><div class="lab-workspace"><form class="lab-controls" id="p2g-controls"><div class="lab-control-group"><h3>粒子 A</h3><div class="lab-field"><label for="particle-a-position">位置 x/L</label><output id="particle-a-position-output">0.28</output><input id="particle-a-position" type="range" min="0" max="1" step="0.01" value="0.28"></div><div class="lab-field"><label for="particle-a-velocity">速度 v</label><output id="particle-a-velocity-output">1.20 m/s</output><input id="particle-a-velocity" type="range" min="-2" max="2" step="0.05" value="1.2"></div><div class="lab-field"><label for="particle-a-mass">质量 m</label><output id="particle-a-mass-output">1.00 kg</output><input id="particle-a-mass" type="range" min="0.2" max="2" step="0.1" value="1"></div></div><div class="lab-control-group"><h3>粒子 B</h3><div class="lab-field"><label for="particle-b-position">位置 x/L</label><output id="particle-b-position-output">0.68</output><input id="particle-b-position" type="range" min="0" max="1" step="0.01" value="0.68"></div><div class="lab-field"><label for="particle-b-velocity">速度 v</label><output id="particle-b-velocity-output">-0.40 m/s</output><input id="particle-b-velocity" type="range" min="-2" max="2" step="0.05" value="-0.4"></div><div class="lab-field"><label for="particle-b-mass">质量 m</label><output id="particle-b-mass-output">1.00 kg</output><input id="particle-b-mass" type="range" min="0.2" max="2" step="0.1" value="1"></div></div><div class="lab-control-group"><h3>网格更新与回传</h3><div class="lab-field"><label for="p2g-node-count">节点数量</label><output id="p2g-node-count-output">6</output><select id="p2g-node-count"><option value="5">5</option><option value="6" selected="">6</option><option value="9">9</option></select></div><div class="lab-field"><label for="p2g-time-step">时间步 Δt</label><output id="p2g-time-step-output">0.020 s</output><input id="p2g-time-step" type="range" min="0.005" max="0.08" step="0.005" value="0.02"></div><div class="lab-field"><label for="p2g-acceleration">外部加速度 a</label><output id="p2g-acceleration-output">0.00 m/s²</output><input id="p2g-acceleration" type="range" min="-2" max="2" step="0.1" value="0"></div><div class="lab-field"><label for="p2g-flip-ratio">FLIP 比例</label><output id="p2g-flip-ratio-output">70%</output><input id="p2g-flip-ratio" type="range" min="0" max="1" step="0.05" value="0.7"></div><label class="lab-check"><input id="p2g-fixed-boundaries" type="checkbox" checked=""> 固定两端网格节点</label><div class="lab-actions"><button class="lab-action lab-action--primary" id="p2g-step" type="button">推进一步</button> <button class="lab-action" id="p2g-play" type="button" aria-pressed="false">连续播放</button> <button class="lab-action" id="p2g-reset" type="button">重置</button></div></div></form><div><div class="lab-visual"><canvas id="p2g-canvas" class="lab-canvas" aria-label="粒子到网格的质量与动量映射图">浏览器不支持 Canvas，无法显示映射图。</canvas><p class="lab-hint">可直接拖动画布中的粒子；连线透明度表示形函数权重。</p></div><div class="lab-metrics lab-metrics--six" aria-live="polite"><div><span>总质量：粒子 / 网格</span><output id="p2g-mass-total">—</output></div><div><span>总动量：粒子 / 网格</span><output id="p2g-momentum-total">—</output></div><div><span>最大映射误差</span><output id="p2g-error">—</output></div><div><span>粒子动能：更新前 / 后</span><output id="p2g-particle-energy">—</output></div><div><span>更新后网格动能</span><output id="p2g-grid-energy">—</output></div><div><span>已推进时间 / 步数</span><output id="p2g-step-count">0.000 s / 0</output></div></div></div></div><div class="lab-equation">P2G：\(m_i=\sum_p N_i m_p\)，\(p_i=\sum_p N_i m_pv_p\)。G2P：\(v_p^{PIC}=\sum_iN_i v_i^{n+1}\)，\(v_p^{FLIP}=v_p^n+\sum_iN_i\Delta v_i\)。</div><div class="lab-table-wrap"><table class="lab-table"><thead><tr><th>节点</th><th>x/L</th><th>质量</th><th>动量</th><th>速度</th></tr></thead><tbody id="p2g-table-body"></tbody></table></div><div class="lab-note"><strong>模型边界：</strong>该实验展示一维线性形函数的 P2G—网格更新—G2P 循环，但没有应力、内力和本构更新；外部加速度仅用于观察传递算法与固定边界的影响。</div></section><section id="retention-lab" class="lab-panel" role="tabpanel" aria-labelledby="tab-retention" tabindex="0" data-lab-panel=""><header class="lab-panel__header"><div><span class="lab-eyebrow">EXPERIMENT 02</span><h2>Van Genuchten SWCC 与孔隙率相关 SWRC</h2><p>叠加经典 Van Genuchten 曲线与 Tarantino 孔隙率相关模型，观察孔隙率、残余饱和度和孔径分布参数如何改变持水行为。</p></div><span class="lab-panel__badge">SWCC · SWRC</span></header><div class="lab-workspace"><form class="lab-controls" id="retention-controls"><div class="lab-control-group"><h3>曲线参数</h3><div class="lab-field"><label for="vg-alpha">α</label><output id="vg-alpha-output">0.080 kPa⁻¹</output><input id="vg-alpha" type="range" min="0.005" max="0.3" step="0.005" value="0.08"></div><div class="lab-field"><label for="vg-n">n</label><output id="vg-n-output">1.60</output><input id="vg-n" type="range" min="1.1" max="3" step="0.05" value="1.6"></div><div class="lab-field"><label for="vg-theta-r">残余含水率 θr</label><output id="vg-theta-r-output">0.06</output><input id="vg-theta-r" type="range" min="0.01" max="0.2" step="0.01" value="0.06"></div><div class="lab-field"><label for="vg-theta-s">饱和含水率 θs</label><output id="vg-theta-s-output">0.46</output><input id="vg-theta-s" type="range" min="0.25" max="0.65" step="0.01" value="0.46"></div></div><div class="lab-control-group"><h3>Tarantino SWRC</h3><div class="lab-field"><label for="swrc-porosity">孔隙率 n</label><output id="swrc-porosity-output">0.40</output><input id="swrc-porosity" type="range" min="0.2" max="0.6" step="0.01" value="0.4"></div><div class="lab-field"><label for="swrc-a">参数 a</label><output id="swrc-a-output">12.0 m⁻¹</output><input id="swrc-a" type="range" min="1" max="25" step="0.5" value="12"></div><div class="lab-field"><label for="swrc-lambda">参数 λ</label><output id="swrc-lambda-output">0.30</output><input id="swrc-lambda" type="range" min="0.05" max="0.9" step="0.01" value="0.3"></div><div class="lab-field"><label for="swrc-residual">残余饱和度 Sres</label><output id="swrc-residual-output">0.05</output><input id="swrc-residual" type="range" min="0" max="0.4" step="0.01" value="0.05"></div><label class="lab-check"><input id="swrc-family" type="checkbox" checked=""> 显示 n ± 0.05 的孔隙率曲线</label><div class="lab-actions"><button class="lab-action" id="vg-reset" type="button">恢复全部参数</button></div></div></form><div><div class="lab-visual"><canvas id="retention-canvas" class="lab-canvas" aria-label="Van Genuchten SWCC 与孔隙率相关 SWRC 对比图">浏览器不支持 Canvas，无法显示曲线。</canvas><div class="lab-curve-legend" aria-hidden="true"><span class="lab-curve-legend__vg">Van Genuchten Se</span><span class="lab-curve-legend__swrc">Tarantino Seff</span><span class="lab-curve-legend__family">孔隙率变化</span></div></div><div class="lab-metrics" aria-live="polite"><div><span>m = 1 - 1/n</span><output id="vg-m-value">—</output></div><div><span>进气尺度 1/α</span><output id="vg-air-entry">—</output></div><div><span>e / b / Sr(100 kPa)</span><output id="swrc-summary">—</output></div></div></div></div><div class="lab-equation">Van Genuchten 与 Tarantino 模型：\[ \begin{aligned} S_e &amp;= \left[1+(\alpha s)^n\right]^{-m}, \\ S_{eff} &amp;= \left[1+\left(\frac{a s e^b}{\rho^l g}\right)^{\frac{1}{1-\lambda}}\right]^{-\lambda}, \\ e &amp;= \frac{n}{1-n}, \qquad b=\frac{1-\lambda}{\lambda}. \end{aligned} \]</div><div class="lab-table-wrap"><table class="lab-table"><thead><tr><th>吸力 s / kPa</th><th>VG Se</th><th>VG θ</th><th>SWRC Seff</th><th>SWRC Sr</th><th>相对渗透率 kr</th></tr></thead><tbody id="retention-table-body"></tbody></table></div><div class="lab-note"><strong>理论来源与边界：</strong>孔隙率相关曲线采用 Tarantino（2009）形式，并参照 Zhan 等（2023）式（12）—（13）实现；这里只模拟湿润主曲线，未考虑干湿滞回，参数不能替代具体土样标定。</div></section><section id="terrain-lab" class="lab-panel" role="tabpanel" aria-labelledby="tab-terrain" tabindex="0" data-lab-panel=""><header class="lab-panel__header"><div><span class="lab-eyebrow">EXPERIMENT 03</span><h2>简化 D8 地形汇流</h2><p>每个栅格流向八邻域中坡降最大的单元。点击网格选择起点，观察路径最终到达边界出口还是内部洼地。</p></div><span class="lab-panel__badge">D8</span></header><div class="lab-workspace"><div class="lab-controls"><div class="lab-control-group"><h3>地形操作</h3><p class="lab-hint">先选择栅格，再改变该单元高程。</p><div class="lab-actions"><button class="lab-action lab-action--primary" id="terrain-valley" type="button">生成山谷</button> <button class="lab-action" id="terrain-random" type="button">随机地形</button> <button class="lab-action" id="terrain-raise" type="button">抬高 +2 m</button> <button class="lab-action" id="terrain-lower" type="button">降低 -2 m</button></div></div><div class="lab-control-group"><h3>当前单元</h3><div class="lab-metrics"><div><span>行 / 列</span><output id="terrain-cell">—</output></div><div><span>高程</span><output id="terrain-elevation">—</output></div><div><span>路径状态</span><output id="terrain-status">—</output></div></div></div></div><div class="lab-visual"><canvas id="terrain-canvas" class="lab-canvas lab-canvas--square" aria-label="D8 地形高程、流向与选中汇流路径">浏览器不支持 Canvas，无法显示地形网格。</canvas><div class="lab-legend" aria-hidden="true"><span style="--legend-color:#355c8a">低高程</span><span style="--legend-color:#d8a05d">高高程</span><span style="--legend-color:#24a5a5">选中路径</span><span style="--legend-color:#d8843f">起点</span></div></div></div><div class="lab-equation">坡降：\(s_{ij}=(z_i-z_j)/d_{ij}\)。D8 将流向分配给八邻域中正坡降最大的单元。</div><div class="lab-note"><strong>模型边界：</strong>这是用于解释 D8 规则的简化网格，没有执行填洼、平坦区处理、汇流累积和河网提取，因此内部洼地可能终止路径。</div></section></section><p><noscript><div class="lab-noscript">交互实验需要启用 JavaScript；文章与知识地图在禁用 JavaScript 时仍可正常阅读。</div></noscript></p></div></div></div></main><footer id="footer" style="background:0 0"><div id="footer-wrap"><div class="copyright">©2020 - 2026 By Liudh</div><div class="framework-info"><span>框架</span> <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题</span> <a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="/js/lab-core.js"></script><script src="/js/lab.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.8.8/dist/lazyload.iife.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      // Markdown $...$ and $$...$$ are converted to math/tex script nodes.
+      // Raw interactive pages may additionally use explicit \(...\) and \[...\] delimiters.
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['\\[', '\\]']],
+      processEscapes: true,
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script></div><script src="/js/tag-cloud.js"></script><script async="" data-pjax="" src="//cn.vercount.one/js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i> <span>数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
