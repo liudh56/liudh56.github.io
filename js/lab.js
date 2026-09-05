@@ -22,8 +22,8 @@
     function setupCanvas(canvas) {
         const rectangle = canvas.getBoundingClientRect();
         const ratio = Math.min(window.devicePixelRatio || 1, 2);
-        const width = Math.max(300, rectangle.width);
-        const height = Math.max(260, rectangle.height);
+        const width = rectangle.width || 300;
+        const height = rectangle.height || 260;
         canvas.width = Math.round(width * ratio);
         canvas.height = Math.round(height * ratio);
         const context = canvas.getContext('2d');
@@ -341,6 +341,310 @@
     });
     ['pointerup', 'pointercancel'].forEach(name => p2g.canvas.addEventListener(name, () => { p2g.dragging = -1; }));
 
+    const mpm2d = {
+        canvas: byId('mpm2d-canvas'),
+        nodeCount: byId('mpm2d-node-count'),
+        basis: byId('mpm2d-basis'),
+        layer: byId('mpm2d-layer'),
+        selected: 0,
+        particles: [],
+        geometry: null,
+        pointerId: null
+    };
+    const mpm2dFields = [
+        { id: 'x', key: 'x', scale: 1 },
+        { id: 'y', key: 'y', scale: 1 },
+        { id: 'mass', key: 'mass', scale: 1 },
+        { id: 'vx', key: 'vx', scale: 1 },
+        { id: 'vy', key: 'vy', scale: 1 },
+        { id: 'volume', key: 'volume', scale: 1e-6 },
+        { id: 'stress-xx', key: 'stressXX', scale: 1000 },
+        { id: 'stress-yy', key: 'stressYY', scale: 1000 },
+        { id: 'stress-xy', key: 'stressXY', scale: 1000 }
+    ];
+
+    function syncMPM2DControls() {
+        const particle = mpm2d.particles[mpm2d.selected];
+        byId('mpm2d-particle').value = mpm2d.selected;
+        byId('mpm2d-particle-output').textContent = 'ABCD'[mpm2d.selected];
+        mpm2dFields.forEach(field => {
+            const value = particle[field.key] / field.scale;
+            const input = byId(`mpm2d-${field.id}`);
+            input.value = Number(value.toPrecision(12));
+            input.removeAttribute('aria-invalid');
+            byId(`mpm2d-${field.id}-output`).textContent = value.toFixed(3);
+        });
+        ['x', 'y'].forEach(axis => { byId(`mpm2d-${axis}-range`).value = particle[axis]; });
+        byId('mpm2d-input-status').textContent = '';
+    }
+
+    function setMPM2DPreset(preset) {
+        mpm2d.particles = [
+            { x: 0.28, y: 0.32, mass: 1, vx: 0.8, vy: 0.3 },
+            { x: 0.67, y: 0.29, mass: 1.4, vx: -0.4, vy: 0.6 },
+            { x: 0.36, y: 0.72, mass: 0.8, vx: 0.2, vy: -0.5 },
+            { x: 0.76, y: 0.68, mass: 1.2, vx: -0.3, vy: -0.2 }
+        ].map(particle => ({
+            ...particle, volume: 0.001, stressXX: 0, stressYY: 0, stressXY: 0
+        }));
+        const notes = {
+            reset: '默认：不同质量与速度，零应力；没有时间推进。',
+            translation: '均匀平移：四粒子 v = (1, 0.5) m/s、应力为零；有质量节点速度相同。仅映射，不移动粒子。',
+            compression: '压应力：四粒子 σxx = σyy = −20 kPa、σxy = 0、速度为零；展示给定各向同性压应力的离散内力。',
+            shear: '纯剪切应力：四粒子 σxy = σyx = +15 kPa、正应力与速度为零；展示对称剪应力的节点内力。'
+        };
+        if (preset !== 'reset') {
+            mpm2d.particles.forEach(particle => {
+                particle.vx = preset === 'translation' ? 1 : 0;
+                particle.vy = preset === 'translation' ? 0.5 : 0;
+                particle.stressXX = particle.stressYY = preset === 'compression' ? -20000 : 0;
+                particle.stressXY = preset === 'shear' ? 15000 : 0;
+            });
+        } else {
+            mpm2d.nodeCount.value = '5';
+            mpm2d.basis.value = 'linear';
+        }
+        mpm2d.layer.value = preset === 'translation' ? 'velocity' : preset === 'reset' ? 'mass' : 'internal-force';
+        mpm2d.selected = 0;
+        byId('mpm2d-preset-note').textContent = notes[preset];
+        syncMPM2DControls();
+        renderMPM2D();
+    }
+
+    function fillMPM2DTable(id, rows) {
+        byId(id).replaceChildren(...rows.map(values => {
+            const row = document.createElement('tr');
+            values.forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            return row;
+        }));
+    }
+
+    function renderMPM2D() {
+        if (byId('mpm2d-lab').hidden || !mpm2d.particles.length) return;
+        const nodeCount = Number(mpm2d.nodeCount.value);
+        const basis = mpm2d.basis.value;
+        const layer = mpm2d.layer.value;
+        const h = 1 / (nodeCount - 1);
+        const result = core.particleToGrid2D(mpm2d.particles, { nodeCount, basis });
+        const selected = mpm2d.particles[mpm2d.selected];
+        const support = result.nodes.flatMap(node => {
+            const contribution = node.contributions.find(item => item.particleIndex === mpm2d.selected);
+            return contribution ? [{ node, ...contribution }] : [];
+        });
+        const supportByIndex = new Map(support.map(item => [item.node.index, item]));
+        const { context, width, height } = setupCanvas(mpm2d.canvas);
+        const palette = colors();
+        const particleColors = [palette.orange, palette.violet, palette.cyan, palette.blue];
+        // Reserve 0.65 cell on each side for arrows on outer support nodes.
+        const cell = Math.min(width - 64, height - 64) / (nodeCount + 2.3);
+        const plotSize = cell * (nodeCount + 1);
+        const span = cell * (nodeCount - 1);
+        const originX = (width - plotSize) / 2 + cell;
+        const originY = (height + plotSize) / 2 - cell;
+        const xFor = x => originX + x * span;
+        const yFor = y => originY - y * span;
+        mpm2d.geometry = { width, height, originX, originY, span };
+
+        for (let index = -1; index <= nodeCount; index += 1) {
+            context.setLineDash(index === -1 || index === nodeCount ? [3, 4] : []);
+            line(context, xFor(index * h), yFor(-h), xFor(index * h), yFor(1 + h), palette.border);
+            line(context, xFor(-h), yFor(index * h), xFor(1 + h), yFor(index * h), palette.border);
+        }
+        context.setLineDash([]);
+        context.strokeStyle = palette.muted;
+        context.lineWidth = 1.5;
+        context.strokeRect(xFor(0), yFor(1), span, span);
+        context.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+        context.fillStyle = palette.text;
+        context.textAlign = 'center';
+        context.fillText('0', xFor(0), yFor(0) + 16);
+        context.fillText('1', xFor(1), yFor(0) + 16);
+        context.fillText('x / m →', width / 2, height - 9);
+        context.textAlign = 'left';
+        context.fillText('y / m ↑', 8, 15);
+        context.fillText('1', xFor(0) - 16, yFor(1) + 4);
+        context.fillText('0', xFor(0) - 16, yFor(0) + 4);
+
+        if (layer === 'weights') {
+            support.forEach(item => {
+                context.save();
+                context.globalAlpha = 0.25 + 0.75 * item.weight;
+                context.setLineDash(item.weight === 0 ? [3, 3] : []);
+                line(context, xFor(selected.x), yFor(selected.y), xFor(item.node.x), yFor(item.node.y), particleColors[mpm2d.selected], 1.5);
+                context.restore();
+            });
+        }
+        const vectorLayer = layer === 'velocity' || layer === 'internal-force';
+        const vectorX = layer === 'velocity' ? 'vx' : 'fx';
+        const vectorY = layer === 'velocity' ? 'vy' : 'fy';
+        const maxVector = vectorLayer ? Math.max(...result.nodes.map(node => Math.hypot(node[vectorX], node[vectorY]))) : 0;
+        const maxMass = Math.max(...result.nodes.map(node => node.mass));
+        const maxWeight = Math.max(...support.map(item => item.weight));
+        const arrowLength = cell * 0.65;
+        result.nodes.forEach(node => {
+            const contribution = supportByIndex.get(node.index);
+            const ratio = layer === 'mass' ? node.mass / maxMass : layer === 'weights' && contribution ? contribution.weight / maxWeight : 0;
+            const size = 2 + Math.min(7, cell * 0.22) * Math.sqrt(ratio);
+            const active = layer === 'weights' ? Boolean(contribution) : node.contributions.length > 0;
+            const color = active ? (layer === 'weights' ? particleColors[mpm2d.selected] : palette.blue) : palette.muted;
+            context.strokeStyle = color;
+            context.fillStyle = color;
+            context.lineWidth = active ? 1.5 : 1;
+            context.setLineDash(node.ghost ? [2, 2] : []);
+            if (!node.ghost && active) context.fillRect(xFor(node.x) - size, yFor(node.y) - size, size * 2, size * 2);
+            context.strokeRect(xFor(node.x) - size, yFor(node.y) - size, size * 2, size * 2);
+            context.setLineDash([]);
+            if (vectorLayer && maxVector > 0) {
+                const dx = node[vectorX] / maxVector * arrowLength;
+                const dy = -node[vectorY] / maxVector * arrowLength;
+                if (Math.hypot(dx, dy) >= 1) arrow(context, xFor(node.x), yFor(node.y), xFor(node.x) + dx, yFor(node.y) + dy, layer === 'velocity' ? palette.cyan : palette.orange, 1.8);
+            }
+        });
+        mpm2d.particles.forEach((particle, index) => {
+            context.beginPath();
+            context.arc(xFor(particle.x), yFor(particle.y), index === mpm2d.selected ? 11 : 8, 0, Math.PI * 2);
+            context.fillStyle = particleColors[index];
+            context.fill();
+            context.strokeStyle = palette.text;
+            context.lineWidth = index === mpm2d.selected ? 2 : 1;
+            context.stroke();
+            context.fillStyle = palette.text;
+            context.textAlign = 'center';
+            context.fillText('ABCD'[index], xFor(particle.x), yFor(particle.y) - 16);
+        });
+        byId('mpm2d-scale').textContent = vectorLayer
+            ? `箭头每图自适应：最长为 0.65 个网格间距，表示 ${maxVector.toExponential(3)} ${layer === 'velocity' ? 'm/s' : 'N'}；长度按向量模同比缩放，短于 1 绘图像素不画。精确分量见节点表。`
+            : layer === 'mass'
+                ? `方块尺寸随节点质量增大；本图最大 ${maxMass.toFixed(4)} kg。真实网格 h = ${h.toFixed(3)} m；外围一层为外延支持。`
+                : `仅显示粒子 ${'ABCD'[mpm2d.selected]} 的支持；方块尺寸与连线深浅随权重增大，最大 N = ${maxWeight.toFixed(4)}。虚线连线表示零权重、非零梯度。`;
+
+        const totals = result.totals;
+        const fixed = value => value.toFixed(6);
+        const error = value => value.toExponential(2);
+        byId('mpm2d-mass-total').textContent = `${fixed(totals.particleMass)} / ${fixed(totals.gridMass)}`;
+        byId('mpm2d-momentum-x').textContent = `${fixed(totals.particleMomentumX)} / ${fixed(totals.gridMomentumX)}`;
+        byId('mpm2d-momentum-y').textContent = `${fixed(totals.particleMomentumY)} / ${fixed(totals.gridMomentumY)}`;
+        byId('mpm2d-mass-error').textContent = error(totals.massError);
+        byId('mpm2d-momentum-error').textContent = `(${error(totals.momentumErrorX)}, ${error(totals.momentumErrorY)})`;
+        byId('mpm2d-force-total').textContent = `(${error(totals.internalForceX)}, ${error(totals.internalForceY)})`;
+        byId('mpm2d-partition-error').textContent = error(totals.maxPartitionError);
+        byId('mpm2d-gradient-error').textContent = error(totals.maxGradientSumError);
+        [mpm2d.nodeCount, mpm2d.basis, mpm2d.layer].forEach(select => {
+            byId(`${select.id}-output`).textContent = select.selectedOptions[0].textContent;
+        });
+        fillMPM2DTable('mpm2d-node-body', result.nodes.filter(node => node.contributions.length).map(node => [
+            `(${node.ix}, ${node.iy})`, node.ghost ? '外延' : '真实',
+            ...[node.mass, node.px, node.py, node.vx, node.vy, node.fx, node.fy].map(fixed)
+        ]));
+        fillMPM2DTable('mpm2d-support-body', support.map(item => [
+            `(${item.node.ix}, ${item.node.iy})`, item.node.ghost ? '外延' : '真实',
+            fixed(item.weight), fixed(item.gradientX), fixed(item.gradientY)
+        ]));
+        const stencil = core.shapeStencil1D(selected.x, nodeCount, basis);
+        byId('mpm2d-shape-summary').textContent = `粒子 ${'ABCD'[mpm2d.selected]}：x = ${selected.x.toFixed(6)} m，h = ${h.toFixed(3)} m。${basis === 'linear' ? '线性一维支持（二维为双线性）' : '二次 B 样条一维支持'}；下表梯度单位 m⁻¹。`;
+        fillMPM2DTable('mpm2d-shape-body', stencil.map(node => [
+            `${node.index}${node.index < 0 || node.index >= nodeCount ? '（外延）' : ''}`,
+            fixed(node.position), fixed(node.weight), fixed(node.gradient)
+        ]));
+        const boundary = core.clamp(Math.round(selected.x / h), 1, nodeCount - 2) * h;
+        const epsilon = h * 0.001;
+        byId('mpm2d-boundary-note').textContent = `当前比较边界 xb = ${fixed(boundary)} m；ε = ${fixed(epsilon)} m。两种基函数使用相同网格与采样位置，与当前二维图层无关。`;
+        const comparison = [];
+        ['linear', 'quadratic'].forEach(comparisonBasis => {
+            [-1, 0, 1].forEach(side => {
+                core.shapeStencil1D(boundary + side * epsilon, nodeCount, comparisonBasis).forEach(node => {
+                    comparison.push([
+                        comparisonBasis === 'linear' ? '线性' : '二次 B 样条',
+                        side === -1 ? 'xb − ε' : side === 1 ? 'xb + ε' : 'xb',
+                        node.index, fixed(node.weight), fixed(node.gradient)
+                    ]);
+                });
+            });
+        });
+        fillMPM2DTable('mpm2d-boundary-body', comparison);
+    }
+
+    byId('mpm2d-controls').addEventListener('submit', event => event.preventDefault());
+    mpm2dFields.forEach(field => {
+        const input = byId(`mpm2d-${field.id}`);
+        input.addEventListener('input', () => {
+            if (!input.checkValidity() || !Number.isFinite(input.valueAsNumber)) {
+                input.setAttribute('aria-invalid', 'true');
+                byId('mpm2d-input-status').textContent = '此输入尚未应用：请输入范围内的有限数值；图表保留最近一次有效结果。';
+                return;
+            }
+            input.removeAttribute('aria-invalid');
+            mpm2d.particles[mpm2d.selected][field.key] = input.valueAsNumber * field.scale;
+            byId(`${input.id}-output`).textContent = input.valueAsNumber.toFixed(3);
+            if (field.id === 'x' || field.id === 'y') byId(`${input.id}-range`).value = input.value;
+            byId('mpm2d-input-status').textContent = byId('mpm2d-controls').querySelector('[aria-invalid="true"]') ? '仍有无效输入未应用；图表使用各参数最近一次有效值。' : '';
+            byId('mpm2d-preset-note').textContent = '自定义当前状态；没有时间推进。';
+            renderMPM2D();
+        });
+    });
+    ['x', 'y'].forEach(axis => {
+        byId(`mpm2d-${axis}-range`).addEventListener('input', event => {
+            const input = byId(`mpm2d-${axis}`);
+            input.value = event.target.value;
+            input.dispatchEvent(new Event('input'));
+        });
+    });
+    byId('mpm2d-particle').addEventListener('change', event => {
+        mpm2d.selected = Number(event.target.value);
+        syncMPM2DControls();
+        renderMPM2D();
+    });
+    [mpm2d.nodeCount, mpm2d.basis, mpm2d.layer].forEach(select => select.addEventListener('change', renderMPM2D));
+    ['reset', 'translation', 'compression', 'shear'].forEach(preset => {
+        byId(`mpm2d-${preset}`).addEventListener('click', () => setMPM2DPreset(preset));
+    });
+
+    function mpm2dPointer(event) {
+        const rectangle = mpm2d.canvas.getBoundingClientRect();
+        return {
+            x: (event.clientX - rectangle.left) * mpm2d.geometry.width / rectangle.width,
+            y: (event.clientY - rectangle.top) * mpm2d.geometry.height / rectangle.height
+        };
+    }
+    mpm2d.canvas.addEventListener('pointerdown', event => {
+        if (!mpm2d.geometry || mpm2d.pointerId !== null || event.button !== 0) return;
+        const point = mpm2dPointer(event);
+        const { originX, originY, span } = mpm2d.geometry;
+        let closest = -1;
+        let distance = 28;
+        mpm2d.particles.forEach((particle, index) => {
+            const candidate = Math.hypot(point.x - originX - particle.x * span, point.y - originY + particle.y * span);
+            if (candidate < distance) { closest = index; distance = candidate; }
+        });
+        if (closest < 0) return;
+        event.preventDefault();
+        mpm2d.selected = closest;
+        mpm2d.pointerId = event.pointerId;
+        mpm2d.canvas.setPointerCapture(event.pointerId);
+        syncMPM2DControls();
+        renderMPM2D();
+    });
+    mpm2d.canvas.addEventListener('pointermove', event => {
+        if (event.pointerId !== mpm2d.pointerId || byId('mpm2d-lab').hidden) return;
+        const point = mpm2dPointer(event);
+        const { originX, originY, span } = mpm2d.geometry;
+        const particle = mpm2d.particles[mpm2d.selected];
+        particle.x = Number(core.clamp((point.x - originX) / span, 0, 1).toFixed(3));
+        particle.y = Number(core.clamp((originY - point.y) / span, 0, 1).toFixed(3));
+        byId('mpm2d-preset-note').textContent = '自定义当前状态；没有时间推进。';
+        syncMPM2DControls();
+        renderMPM2D();
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(name => {
+        mpm2d.canvas.addEventListener(name, event => {
+            if (event.pointerId === mpm2d.pointerId) mpm2d.pointerId = null;
+        });
+    });
+
     const vg = {
         canvas: byId('retention-canvas'),
         alpha: byId('vg-alpha'),
@@ -587,12 +891,16 @@
 
     function renderVisible() {
         renderP2G();
+        renderMPM2D();
         renderRetention();
         renderTerrain();
     }
 
     const initialPanel = panels.some(panel => `#${panel.id}` === location.hash) ? location.hash.slice(1) : 'mpm-lab';
+    byId('mpm2d-lab').hidden = initialPanel !== 'mpm2d-lab';
+    setMPM2DPreset('reset');
     activatePanel(initialPanel, false);
+    window.addEventListener('hashchange', () => activatePanel(location.hash.slice(1), false));
 
     if ('ResizeObserver' in window) {
         const observer = new ResizeObserver(() => requestAnimationFrame(renderVisible));

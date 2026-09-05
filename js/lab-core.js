@@ -70,6 +70,173 @@
         };
     }
 
+    function shapeStencil1D(position, nodeCount, basis = 'linear') {
+        assert(Number.isFinite(position) && position >= 0 && position <= 1, 'Position must be finite and in [0, 1].');
+        assert(Number.isInteger(nodeCount) && nodeCount >= 3 && nodeCount <= 17, 'nodeCount must be an integer in [3, 17].');
+        assert(basis === 'linear' || basis === 'quadratic', 'Basis must be linear or quadratic.');
+
+        const inverseSpacing = nodeCount - 1;
+        const spacing = 1 / inverseSpacing;
+        const coordinate = position * inverseSpacing;
+        if (basis === 'linear') {
+            // Half-open cells select the right derivative at interior knots;
+            // x = 1 uses the last cell's left derivative. Keep both endpoints,
+            // including a zero weight with a nonzero spatial derivative.
+            const left = position === 1 ? nodeCount - 2 : Math.floor(coordinate);
+            const fraction = coordinate - left;
+            return [
+                { index: left, position: left * spacing, weight: 1 - fraction, gradient: -inverseSpacing },
+                { index: left + 1, position: (left + 1) * spacing, weight: fraction, gradient: inverseSpacing }
+            ];
+        }
+
+        const center = Math.floor(coordinate + 0.5);
+        const stencil = [];
+        for (let index = center - 1; index <= center + 1; index += 1) {
+            const offset = coordinate - index;
+            const distance = Math.abs(offset);
+            let weight;
+            let gradient;
+            if (distance < 0.5) {
+                weight = 0.75 - offset * offset;
+                gradient = -2 * offset * inverseSpacing;
+            } else {
+                const remaining = 1.5 - distance;
+                weight = 0.5 * remaining * remaining;
+                gradient = -Math.sign(offset) * remaining * inverseSpacing;
+            }
+            stencil.push({ index, position: index * spacing, weight, gradient });
+        }
+        // Do not clip or renormalize boundary support: the exterior nodes
+        // preserve sum(N) = 1, sum(x_i N_i) = x, and sum(dN/dx) = 0.
+        return stencil;
+    }
+
+    function particleToGrid2D(particles, options) {
+        assert(Array.isArray(particles) && particles.length > 0, 'At least one particle is required.');
+        assert(options && typeof options === 'object', 'Mapping options are required.');
+        const { nodeCount, basis = 'linear' } = options;
+        assert(Number.isInteger(nodeCount) && nodeCount >= 3 && nodeCount <= 17, 'nodeCount must be an integer in [3, 17].');
+        assert(basis === 'linear' || basis === 'quadratic', 'Basis must be linear or quadratic.');
+
+        const spacing = 1 / (nodeCount - 1);
+        const width = nodeCount + 2;
+        const nodes = [];
+        // One exterior layer supplies mathematical support, not boundary
+        // conditions. Its nodes participate in all conservation totals.
+        for (let iy = -1; iy <= nodeCount; iy += 1) {
+            for (let ix = -1; ix <= nodeCount; ix += 1) {
+                nodes.push({
+                    index: (iy + 1) * width + ix + 1,
+                    ix,
+                    iy,
+                    x: ix * spacing,
+                    y: iy * spacing,
+                    ghost: ix < 0 || ix >= nodeCount || iy < 0 || iy >= nodeCount,
+                    mass: 0,
+                    px: 0,
+                    py: 0,
+                    vx: 0,
+                    vy: 0,
+                    fx: 0,
+                    fy: 0,
+                    contributions: []
+                });
+            }
+        }
+
+        let particleMass = 0;
+        let particleMomentumX = 0;
+        let particleMomentumY = 0;
+        let maxPartitionError = 0;
+        let maxGradientSumError = 0;
+        for (let particleIndex = 0; particleIndex < particles.length; particleIndex += 1) {
+            const particle = particles[particleIndex];
+            assert(particle && typeof particle === 'object', 'Each particle must be an object.');
+            const { x, y, mass, vx, vy, volume, stressXX, stressYY, stressXY } = particle;
+            assert(Number.isFinite(x) && x >= 0 && x <= 1 && Number.isFinite(y) && y >= 0 && y <= 1, 'Particle coordinates must be finite and in [0, 1].');
+            assert(Number.isFinite(mass) && mass > 0, 'Particle masses must be finite and positive.');
+            assert(Number.isFinite(vx) && Number.isFinite(vy), 'Particle velocities must be finite.');
+            assert(Number.isFinite(volume) && volume > 0, 'Particle volumes must be finite and positive.');
+            assert(Number.isFinite(stressXX) && Number.isFinite(stressYY) && Number.isFinite(stressXY), 'Particle stresses must be finite.');
+
+            const stencilX = shapeStencil1D(x, nodeCount, basis);
+            const stencilY = shapeStencil1D(y, nodeCount, basis);
+            particleMass += mass;
+            particleMomentumX += mass * vx;
+            particleMomentumY += mass * vy;
+            let weightSum = 0;
+            let gradientSumX = 0;
+            let gradientSumY = 0;
+            for (let j = 0; j < stencilY.length; j += 1) {
+                const sy = stencilY[j];
+                for (let i = 0; i < stencilX.length; i += 1) {
+                    const sx = stencilX[i];
+                    const weight = sx.weight * sy.weight;
+                    const gradientX = sx.gradient * sy.weight;
+                    const gradientY = sx.weight * sy.gradient;
+                    weightSum += weight;
+                    gradientSumX += gradientX;
+                    gradientSumY += gradientY;
+                    if (weight === 0 && gradientX === 0 && gradientY === 0) continue;
+
+                    const node = nodes[(sy.index + 1) * width + sx.index + 1];
+                    const mappedMass = mass * weight;
+                    node.mass += mappedMass;
+                    node.px += mappedMass * vx;
+                    node.py += mappedMass * vy;
+                    // Tension-positive symmetric Cauchy stress (Pa), volume
+                    // in m^3, and spatial gradients in 1/m give force in N:
+                    // f_i = -sum_p V_p sigma_p grad(N_i).
+                    node.fx -= volume * (stressXX * gradientX + stressXY * gradientY);
+                    node.fy -= volume * (stressXY * gradientX + stressYY * gradientY);
+                    node.contributions.push({ particleIndex, weight, gradientX, gradientY });
+                }
+            }
+            maxPartitionError = Math.max(maxPartitionError, Math.abs(weightSum - 1));
+            maxGradientSumError = Math.max(maxGradientSumError, Math.hypot(gradientSumX, gradientSumY));
+        }
+
+        let gridMass = 0;
+        let gridMomentumX = 0;
+        let gridMomentumY = 0;
+        let internalForceX = 0;
+        let internalForceY = 0;
+        for (let index = 0; index < nodes.length; index += 1) {
+            const node = nodes[index];
+            // No absolute mass cutoff: even tiny positive masses retain
+            // their mapped velocity. Zero-mass nodes can still carry force.
+            if (node.mass > 0) {
+                node.vx = node.px / node.mass;
+                node.vy = node.py / node.mass;
+            }
+            gridMass += node.mass;
+            gridMomentumX += node.px;
+            gridMomentumY += node.py;
+            internalForceX += node.fx;
+            internalForceY += node.fy;
+        }
+
+        return {
+            nodes,
+            totals: {
+                particleMass,
+                gridMass,
+                particleMomentumX,
+                particleMomentumY,
+                gridMomentumX,
+                gridMomentumY,
+                massError: gridMass - particleMass,
+                momentumErrorX: gridMomentumX - particleMomentumX,
+                momentumErrorY: gridMomentumY - particleMomentumY,
+                internalForceX,
+                internalForceY,
+                maxPartitionError,
+                maxGradientSumError
+            }
+        };
+    }
+
     function transferStep(particles, options) {
         const nodeCount = Number(options.nodeCount);
         const timeStep = Number(options.timeStep);
@@ -271,6 +438,8 @@
     root.FireflyLabCore = {
         clamp,
         particleToGrid,
+        shapeStencil1D,
+        particleToGrid2D,
         transferStep,
         vanGenuchten,
         tarantinoSWRC,
