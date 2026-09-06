@@ -69,6 +69,7 @@
     function activatePanel(id, updateHash) {
         if (!panels.some(panel => panel.id === id)) id = 'mpm-lab';
         if (id !== 'mpm-lab') stopP2G();
+        if (id !== 'mpm2d-lab') stopMPMScan();
         tabs.forEach(tab => {
             const active = tab.dataset.labTab === id;
             tab.setAttribute('aria-selected', String(active));
@@ -426,6 +427,182 @@
         }));
     }
 
+    const scan = {
+        panel: byId('mpm-scan'),
+        position: byId('mpm-scan-position'),
+        frame: null,
+        lastFrame: null,
+        cache: null
+    };
+    const scanBases = ['linear', 'quadratic', 'gimp'];
+
+    function scanValue(position, nodeCount, basis, ratio, nodeIndex) {
+        const node = core.shapeStencil1D(position, nodeCount, basis, ratio)
+            .find(item => item.index === nodeIndex);
+        const weight = node ? node.weight : 0;
+        const gradient = node ? node.gradient : 0;
+        return [weight, gradient, -10 * gradient];
+    }
+
+    function scanData() {
+        const nodeCount = Number(mpm2d.nodeCount.value);
+        const ratio = Number(mpm2d.halfWidthRatio.value);
+        if (scan.cache && scan.cache.nodeCount === nodeCount && scan.cache.ratio === ratio) return scan.cache;
+        const h = 1 / (nodeCount - 1);
+        const nodeIndex = (nodeCount - 1) / 2;
+        const center = nodeIndex * h;
+        const start = center - h;
+        const end = center + h;
+        // Duplicate the middle sample so linear gradient/force paths can break
+        // there. Each segment endpoint is evaluated from inside its interval.
+        const curves = scanBases.map(basis => [0, 1].map(half =>
+            Array.from({ length: 121 }, (_, index) => {
+                const progress = (half + index / 120) / 2;
+                let position = start + (end - start) * progress;
+                if (basis === 'linear') {
+                    if (index === 0) position += h * 1e-9;
+                    if (index === 120) position -= h * 1e-9;
+                }
+                return { progress, values: scanValue(position, nodeCount, basis, ratio, nodeIndex) };
+            })
+        ));
+        scan.cache = { nodeCount, ratio, h, nodeIndex, center, start, end, curves };
+        return scan.cache;
+    }
+
+    function renderMPMScan() {
+        if (!scan.panel.open || byId('mpm2d-lab').hidden) return;
+        const data = scanData();
+        const progress = Number(scan.position.value);
+        const position = data.start + 2 * data.h * progress;
+        const values = scanBases.map(basis => scanValue(position, data.nodeCount, basis, data.ratio, data.nodeIndex));
+        const palette = colors();
+        const curveColors = [palette.blue, palette.cyan, palette.orange];
+        const dashes = [[], [7, 4], [3, 3]];
+        byId('mpm-scan-position-output').textContent = `${(progress * 100).toFixed(1)}%`;
+        byId('mpm-scan-status').textContent = `固定节点 i = ${data.nodeIndex}，xᵢ = ${data.center.toFixed(4)} m；粒子 xₚ = ${position.toFixed(4)} m。扫描区间 [${data.start.toFixed(4)}, ${data.end.toFixed(4)}] m，h = ${data.h.toFixed(4)} m，uGIMP ℓp/h = ${data.ratio.toFixed(2)}。`;
+        fillMPM2DTable('mpm-scan-values', values.map((row, index) =>
+            [mpm2dBasisNames[scanBases[index]], ...row.map(value => value.toFixed(6))]
+        ));
+        const path = setupCanvas(byId('mpm-scan-path'));
+        const pathX = value => 40 + value * (path.width - 80);
+        line(path.context, pathX(0), 44, pathX(1), 44, palette.border, 2);
+        path.context.font = '12px sans-serif';
+        path.context.textAlign = 'center';
+        [0, 0.5, 1].forEach(value => {
+            path.context.fillStyle = value === 0.5 ? palette.text : palette.muted;
+            path.context.fillRect(pathX(value) - 4, 40, 8, 8);
+            path.context.fillText(value === 0.5 ? '固定节点 i' : `${value === 0 ? 'i − 1' : 'i + 1'}`, pathX(value), 72);
+        });
+        path.context.fillStyle = palette.orange;
+        path.context.beginPath();
+        path.context.arc(pathX(progress), 25, 5, 0, 2 * Math.PI);
+        path.context.fill();
+        line(path.context, pathX(progress), 30, pathX(progress), 39, palette.orange);
+        const charts = [
+            { id: 'weight', title: '权重 Nᵢ', min: 0, max: 1.1 },
+            { id: 'gradient', title: '梯度 dNᵢ/dx / m⁻¹', min: -1.2 / data.h, max: 1.2 / data.h },
+            { id: 'force', title: '单粒子内力 fᵢₚ / N', min: -12 / data.h, max: 12 / data.h }
+        ];
+        charts.forEach((chart, field) => {
+            const { context, width, height } = setupCanvas(byId(`mpm-scan-${chart.id}`));
+            const left = 48, right = width - 20, top = 32, bottom = height - 36;
+            const xFor = value => left + value * (right - left);
+            const yFor = value => bottom - (value - chart.min) / (chart.max - chart.min) * (bottom - top);
+            context.font = '12px sans-serif';
+            context.fillStyle = palette.text;
+            context.textAlign = 'left';
+            context.fillText(chart.title, left, 17);
+            context.textAlign = 'right';
+            [chart.min, (chart.min + chart.max) / 2, chart.max].forEach(value => {
+                line(context, left, yFor(value), right, yFor(value), palette.border);
+                context.fillText(value.toFixed(1), left - 6, yFor(value) + 4);
+            });
+            context.textAlign = 'center';
+            [0, 0.5, 1].forEach(value => {
+                line(context, xFor(value), top, xFor(value), bottom, palette.border);
+                context.fillText((data.start + value * 2 * data.h).toFixed(3), xFor(value), bottom + 17);
+            });
+            context.textAlign = 'right';
+            context.fillText('xₚ / m', right, height - 3);
+            data.curves.forEach((segments, basisIndex) => {
+                context.strokeStyle = curveColors[basisIndex];
+                context.lineWidth = 2;
+                context.setLineDash(dashes[basisIndex]);
+                segments.forEach(segment => {
+                    context.beginPath();
+                    segment.forEach((point, index) => {
+                        if (index === 0) context.moveTo(xFor(point.progress), yFor(point.values[field]));
+                        else context.lineTo(xFor(point.progress), yFor(point.values[field]));
+                    });
+                    context.stroke();
+                });
+            });
+            context.setLineDash([2, 3]);
+            line(context, xFor(progress), top, xFor(progress), bottom, palette.muted);
+            context.setLineDash([]);
+            values.forEach((row, index) => {
+                context.fillStyle = curveColors[index];
+                context.beginPath();
+                context.arc(xFor(progress), yFor(row[field]), 3.5, 0, 2 * Math.PI);
+                context.fill();
+            });
+        });
+    }
+
+    function stopMPMScan() {
+        if (scan.frame !== null) cancelAnimationFrame(scan.frame);
+        scan.frame = null;
+        scan.lastFrame = null;
+        byId('mpm-scan-play').textContent = '播放扫描';
+        byId('mpm-scan-play').setAttribute('aria-pressed', 'false');
+    }
+
+    function advanceMPMScan(timestamp) {
+        if (!scan.panel.open || byId('mpm2d-lab').hidden || document.hidden) {
+            stopMPMScan();
+            return;
+        }
+        if (scan.lastFrame === null) scan.lastFrame = timestamp;
+        const elapsed = timestamp - scan.lastFrame;
+        if (elapsed >= 32) {
+            // Display pacing only: it does not represent a physical time step.
+            scan.position.value = Math.min(1, Number(scan.position.value) + Math.min(elapsed, 100) / 8000);
+            scan.lastFrame = timestamp;
+            renderMPMScan();
+        }
+        if (Number(scan.position.value) >= 1) stopMPMScan();
+        else scan.frame = requestAnimationFrame(advanceMPMScan);
+    }
+
+    byId('mpm-scan-play').addEventListener('click', () => {
+        if (scan.frame !== null) {
+            stopMPMScan();
+            return;
+        }
+        if (Number(scan.position.value) >= 1) scan.position.value = 0;
+        byId('mpm-scan-play').textContent = '暂停扫描';
+        byId('mpm-scan-play').setAttribute('aria-pressed', 'true');
+        scan.frame = requestAnimationFrame(advanceMPMScan);
+    });
+    byId('mpm-scan-reset').addEventListener('click', () => {
+        stopMPMScan();
+        scan.position.value = 0;
+        renderMPMScan();
+    });
+    scan.position.addEventListener('input', () => {
+        stopMPMScan();
+        renderMPMScan();
+    });
+    scan.panel.addEventListener('toggle', () => {
+        if (!scan.panel.open) stopMPMScan();
+        else renderMPMScan();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopMPMScan();
+    });
+    window.addEventListener('pagehide', stopMPMScan);
+
     function renderMPM2D() {
         if (byId('mpm2d-lab').hidden || !mpm2d.particles.length) return;
         const nodeCount = Number(mpm2d.nodeCount.value);
@@ -600,6 +777,7 @@
             });
         });
         fillMPM2DTable('mpm2d-boundary-body', comparison);
+        renderMPMScan();
     }
 
     byId('mpm2d-controls').addEventListener('submit', event => event.preventDefault());
