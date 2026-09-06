@@ -345,6 +345,7 @@
         canvas: byId('mpm2d-canvas'),
         nodeCount: byId('mpm2d-node-count'),
         basis: byId('mpm2d-basis'),
+        halfWidthRatio: byId('mpm2d-half-width-ratio'),
         layer: byId('mpm2d-layer'),
         selected: 0,
         particles: [],
@@ -362,6 +363,7 @@
         { id: 'stress-yy', key: 'stressYY', scale: 1000 },
         { id: 'stress-xy', key: 'stressXY', scale: 1000 }
     ];
+    const mpm2dBasisNames = { linear: '线性', quadratic: '二次 B 样条', gimp: 'uGIMP' };
 
     function syncMPM2DControls() {
         const particle = mpm2d.particles[mpm2d.selected];
@@ -403,6 +405,7 @@
         } else {
             mpm2d.nodeCount.value = '5';
             mpm2d.basis.value = 'linear';
+            mpm2d.halfWidthRatio.value = '0.25';
         }
         mpm2d.layer.value = preset === 'translation' ? 'velocity' : preset === 'reset' ? 'mass' : 'internal-force';
         mpm2d.selected = 0;
@@ -427,9 +430,15 @@
         if (byId('mpm2d-lab').hidden || !mpm2d.particles.length) return;
         const nodeCount = Number(mpm2d.nodeCount.value);
         const basis = mpm2d.basis.value;
+        const particleHalfWidthRatio = Number(mpm2d.halfWidthRatio.value);
         const layer = mpm2d.layer.value;
         const h = 1 / (nodeCount - 1);
-        const result = core.particleToGrid2D(mpm2d.particles, { nodeCount, basis });
+        const particleHalfWidth = particleHalfWidthRatio * h;
+        const domainDescription = `ℓp/h = ${particleHalfWidthRatio.toFixed(2)}，半宽 ℓp = ${particleHalfWidth.toFixed(5)} m，全宽 2ℓp = ${(2 * particleHalfWidth).toFixed(5)} m`;
+        mpm2d.halfWidthRatio.disabled = basis !== 'gimp';
+        byId('mpm2d-half-width-ratio-output').textContent = particleHalfWidthRatio.toFixed(2);
+        byId('mpm2d-domain-note').textContent = `${basis === 'gimp' ? '当前 uGIMP 域' : '保留的 uGIMP 比较参数（选择 uGIMP 后可调整）'}：${domainDescription}；h = ${h.toFixed(3)} m。切换形函数保留半宽比，跨边界对比始终使用此值。`;
+        const result = core.particleToGrid2D(mpm2d.particles, { nodeCount, basis, particleHalfWidthRatio });
         const selected = mpm2d.particles[mpm2d.selected];
         const support = result.nodes.flatMap(node => {
             const contribution = node.contributions.find(item => item.particleIndex === mpm2d.selected);
@@ -504,18 +513,43 @@
                 if (Math.hypot(dx, dy) >= 1) arrow(context, xFor(node.x), yFor(node.y), xFor(node.x) + dx, yFor(node.y) + dy, layer === 'velocity' ? palette.cyan : palette.orange, 1.8);
             }
         });
-        mpm2d.particles.forEach((particle, index) => {
+        const domainHalfPixels = particleHalfWidth * span;
+        // Draw the selected particle last so its domain remains visible if domains overlap.
+        for (let offset = 1; offset <= mpm2d.particles.length; offset += 1) {
+            const index = (mpm2d.selected + offset) % mpm2d.particles.length;
+            const particle = mpm2d.particles[index];
+            const isSelected = index === mpm2d.selected;
+            if (basis === 'gimp') {
+                const left = xFor(particle.x - particleHalfWidth);
+                const top = yFor(particle.y + particleHalfWidth);
+                const size = 2 * domainHalfPixels;
+                context.save();
+                context.fillStyle = particleColors[index];
+                context.globalAlpha = isSelected ? 0.2 : 0.1;
+                context.fillRect(left, top, size, size);
+                context.globalAlpha = 1;
+                if (isSelected) {
+                    context.strokeStyle = palette.text;
+                    context.lineWidth = 3;
+                    context.strokeRect(left, top, size, size);
+                }
+                context.strokeStyle = particleColors[index];
+                context.lineWidth = isSelected ? 1.5 : 1.2;
+                context.strokeRect(left, top, size, size);
+                context.restore();
+            }
             context.beginPath();
-            context.arc(xFor(particle.x), yFor(particle.y), index === mpm2d.selected ? 11 : 8, 0, Math.PI * 2);
+            const radius = basis === 'gimp' ? Math.min(2, domainHalfPixels * 0.25) : isSelected ? 11 : 8;
+            context.arc(xFor(particle.x), yFor(particle.y), radius, 0, Math.PI * 2);
             context.fillStyle = particleColors[index];
             context.fill();
             context.strokeStyle = palette.text;
-            context.lineWidth = index === mpm2d.selected ? 2 : 1;
+            context.lineWidth = basis === 'gimp' ? 0.75 : isSelected ? 2 : 1;
             context.stroke();
             context.fillStyle = palette.text;
             context.textAlign = 'center';
-            context.fillText('ABCD'[index], xFor(particle.x), yFor(particle.y) - 16);
-        });
+            context.fillText('ABCD'[index], xFor(particle.x), yFor(particle.y) - (basis === 'gimp' ? Math.max(16, domainHalfPixels + 10) : 16));
+        }
         byId('mpm2d-scale').textContent = vectorLayer
             ? `箭头每图自适应：最长为 0.65 个网格间距，表示 ${maxVector.toExponential(3)} ${layer === 'velocity' ? 'm/s' : 'N'}；长度按向量模同比缩放，短于 1 绘图像素不画。精确分量见节点表。`
             : layer === 'mass'
@@ -544,21 +578,21 @@
             `(${item.node.ix}, ${item.node.iy})`, item.node.ghost ? '外延' : '真实',
             fixed(item.weight), fixed(item.gradientX), fixed(item.gradientY)
         ]));
-        const stencil = core.shapeStencil1D(selected.x, nodeCount, basis);
-        byId('mpm2d-shape-summary').textContent = `粒子 ${'ABCD'[mpm2d.selected]}：x = ${selected.x.toFixed(6)} m，h = ${h.toFixed(3)} m。${basis === 'linear' ? '线性一维支持（二维为双线性）' : '二次 B 样条一维支持'}；下表梯度单位 m⁻¹。`;
+        const stencil = core.shapeStencil1D(selected.x, nodeCount, basis, particleHalfWidthRatio);
+        byId('mpm2d-shape-summary').textContent = `粒子 ${'ABCD'[mpm2d.selected]}：x = ${selected.x.toFixed(6)} m，h = ${h.toFixed(3)} m。${mpm2dBasisNames[basis]} 一维支持（二维为张量积）${basis === 'gimp' ? `；${domainDescription}` : ''}；下表梯度单位 m⁻¹。`;
         fillMPM2DTable('mpm2d-shape-body', stencil.map(node => [
             `${node.index}${node.index < 0 || node.index >= nodeCount ? '（外延）' : ''}`,
             fixed(node.position), fixed(node.weight), fixed(node.gradient)
         ]));
         const boundary = core.clamp(Math.round(selected.x / h), 1, nodeCount - 2) * h;
         const epsilon = h * 0.001;
-        byId('mpm2d-boundary-note').textContent = `当前比较边界 xb = ${fixed(boundary)} m；ε = ${fixed(epsilon)} m。两种基函数使用相同网格与采样位置，与当前二维图层无关。`;
+        byId('mpm2d-boundary-note').textContent = `当前比较边界 xb = ${fixed(boundary)} m；ε = ${fixed(epsilon)} m。三种基函数使用相同网格与采样位置，与当前二维图层无关。uGIMP 使用 ${domainDescription}。`;
         const comparison = [];
-        ['linear', 'quadratic'].forEach(comparisonBasis => {
+        ['linear', 'quadratic', 'gimp'].forEach(comparisonBasis => {
             [-1, 0, 1].forEach(side => {
-                core.shapeStencil1D(boundary + side * epsilon, nodeCount, comparisonBasis).forEach(node => {
+                core.shapeStencil1D(boundary + side * epsilon, nodeCount, comparisonBasis, particleHalfWidthRatio).forEach(node => {
                     comparison.push([
-                        comparisonBasis === 'linear' ? '线性' : '二次 B 样条',
+                        mpm2dBasisNames[comparisonBasis],
                         side === -1 ? 'xb − ε' : side === 1 ? 'xb + ε' : 'xb',
                         node.index, fixed(node.weight), fixed(node.gradient)
                     ]);
@@ -599,6 +633,7 @@
         renderMPM2D();
     });
     [mpm2d.nodeCount, mpm2d.basis, mpm2d.layer].forEach(select => select.addEventListener('change', renderMPM2D));
+    mpm2d.halfWidthRatio.addEventListener('input', renderMPM2D);
     ['reset', 'translation', 'compression', 'shear'].forEach(preset => {
         byId(`mpm2d-${preset}`).addEventListener('click', () => setMPM2DPreset(preset));
     });

@@ -70,10 +70,14 @@
         };
     }
 
-    function shapeStencil1D(position, nodeCount, basis = 'linear') {
+    function shapeStencil1D(position, nodeCount, basis = 'linear', particleHalfWidthRatio = 0.25) {
         assert(Number.isFinite(position) && position >= 0 && position <= 1, 'Position must be finite and in [0, 1].');
         assert(Number.isInteger(nodeCount) && nodeCount >= 3 && nodeCount <= 17, 'nodeCount must be an integer in [3, 17].');
-        assert(basis === 'linear' || basis === 'quadratic', 'Basis must be linear or quadratic.');
+        assert(basis === 'linear' || basis === 'quadratic' || basis === 'gimp', 'Basis must be linear, quadratic or gimp.');
+        if (basis === 'gimp') {
+            assert(Number.isFinite(particleHalfWidthRatio) && particleHalfWidthRatio > 0 && particleHalfWidthRatio <= 0.5,
+                'particleHalfWidthRatio must be finite and in (0, 0.5].');
+        }
 
         const inverseSpacing = nodeCount - 1;
         const spacing = 1 / inverseSpacing;
@@ -92,6 +96,36 @@
 
         const center = Math.floor(coordinate + 0.5);
         const stencil = [];
+        if (basis === 'gimp') {
+            // Exact normalized linear-hat average over [x - lp, x + lp],
+            // lp = ratio * h. Its derivative is the hat endpoint difference
+            // divided by 2 lp. The fixed domain is independent of volume.
+            const ratio = particleHalfWidthRatio;
+            for (let index = center - 1; index <= center + 1; index += 1) {
+                const offset = coordinate - index;
+                const distance = Math.abs(offset);
+                const edgeOffset = distance - 1;
+                let weight = 0;
+                let gradient = 0;
+                if (distance < ratio) {
+                    weight = 1 - 0.5 * (ratio + distance * (distance / ratio));
+                    gradient = -(offset / ratio) * inverseSpacing;
+                } else if (edgeOffset <= -ratio) {
+                    weight = 1 - distance;
+                    gradient = -Math.sign(offset) * inverseSpacing;
+                } else if (edgeOffset < ratio) {
+                    // Subtract from the hat edge before adding the small
+                    // domain width, retaining the limit even for tiny lp/h.
+                    const remaining = ratio - edgeOffset;
+                    const fraction = remaining / ratio;
+                    weight = 0.25 * fraction * remaining;
+                    gradient = -0.5 * Math.sign(offset) * fraction * inverseSpacing;
+                }
+                stencil.push({ index, position: index * spacing, weight, gradient });
+            }
+            // One exterior layer retains the complete averaged-hat support.
+            return stencil;
+        }
         for (let index = center - 1; index <= center + 1; index += 1) {
             const offset = coordinate - index;
             const distance = Math.abs(offset);
@@ -115,9 +149,13 @@
     function particleToGrid2D(particles, options) {
         assert(Array.isArray(particles) && particles.length > 0, 'At least one particle is required.');
         assert(options && typeof options === 'object', 'Mapping options are required.');
-        const { nodeCount, basis = 'linear' } = options;
+        const { nodeCount, basis = 'linear', particleHalfWidthRatio = 0.25 } = options;
         assert(Number.isInteger(nodeCount) && nodeCount >= 3 && nodeCount <= 17, 'nodeCount must be an integer in [3, 17].');
-        assert(basis === 'linear' || basis === 'quadratic', 'Basis must be linear or quadratic.');
+        assert(basis === 'linear' || basis === 'quadratic' || basis === 'gimp', 'Basis must be linear, quadratic or gimp.');
+        if (basis === 'gimp') {
+            assert(Number.isFinite(particleHalfWidthRatio) && particleHalfWidthRatio > 0 && particleHalfWidthRatio <= 0.5,
+                'particleHalfWidthRatio must be finite and in (0, 0.5].');
+        }
 
         const spacing = 1 / (nodeCount - 1);
         const width = nodeCount + 2;
@@ -160,8 +198,8 @@
             assert(Number.isFinite(volume) && volume > 0, 'Particle volumes must be finite and positive.');
             assert(Number.isFinite(stressXX) && Number.isFinite(stressYY) && Number.isFinite(stressXY), 'Particle stresses must be finite.');
 
-            const stencilX = shapeStencil1D(x, nodeCount, basis);
-            const stencilY = shapeStencil1D(y, nodeCount, basis);
+            const stencilX = shapeStencil1D(x, nodeCount, basis, particleHalfWidthRatio);
+            const stencilY = shapeStencil1D(y, nodeCount, basis, particleHalfWidthRatio);
             particleMass += mass;
             particleMomentumX += mass * vx;
             particleMomentumY += mass * vy;
