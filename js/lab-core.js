@@ -72,7 +72,7 @@
 
     function shapeStencil1D(position, nodeCount, basis = 'linear', particleHalfWidthRatio = 0.25) {
         assert(Number.isFinite(position) && position >= 0 && position <= 1, 'Position must be finite and in [0, 1].');
-        assert(Number.isInteger(nodeCount) && nodeCount >= 3 && nodeCount <= 17, 'nodeCount must be an integer in [3, 17].');
+        assert(Number.isInteger(nodeCount) && nodeCount >= 3 && nodeCount <= 129, 'nodeCount must be an integer in [3, 129].');
         assert(basis === 'linear' || basis === 'quadratic' || basis === 'gimp', 'Basis must be linear, quadratic or gimp.');
         if (basis === 'gimp') {
             assert(Number.isFinite(particleHalfWidthRatio) && particleHalfWidthRatio > 0 && particleHalfWidthRatio <= 0.5,
@@ -144,6 +144,281 @@
         // Do not clip or renormalize boundary support: the exterior nodes
         // preserve sum(N) = 1, sum(x_i N_i) = x, and sum(dN/dx) = 0.
         return stencil;
+    }
+
+    function kinematics2D(options = {}) {
+        assert(options && typeof options === 'object' && !Array.isArray(options), 'Kinematics options must be an object.');
+        const {
+            preset = 'translation', rate = 1, timeStep = 0.5,
+            x = 0.45, y = 0.55, nodeCount = 5, basis = 'linear',
+            particleHalfWidthRatio = 0.25
+        } = options;
+        assert(preset === 'translation' || preset === 'extension' || preset === 'shear' || preset === 'rotation',
+            'Preset must be translation, extension, shear or rotation.');
+        assert(Number.isFinite(rate) && rate >= 0 && rate <= 2, 'Rate must be finite and in [0, 2].');
+        assert(Number.isFinite(timeStep) && timeStep >= 0 && timeStep <= 1, 'timeStep must be finite and in [0, 1].');
+        assert(Number.isInteger(nodeCount) && nodeCount >= 3 && nodeCount <= 17, 'nodeCount must be an integer in [3, 17].');
+        const stencilX = shapeStencil1D(x, nodeCount, basis, particleHalfWidthRatio);
+        const stencilY = shapeStencil1D(y, nodeCount, basis, particleHalfWidthRatio);
+
+        // The exact reference uses the prescribed field, independently of
+        // interpolation. Matrices are row-major: [xx, xy, yx, yy].
+        let prescribedL;
+        let exactF;
+        const b = [0, 0];
+        const increment = rate * timeStep;
+        if (preset === 'translation') {
+            prescribedL = [0, 0, 0, 0];
+            b[0] = 0.2 * rate;
+            b[1] = 0.1 * rate;
+            exactF = [1, 0, 0, 1];
+        } else if (preset === 'extension') {
+            prescribedL = [rate, 0, 0, 0];
+            exactF = [Math.exp(increment), 0, 0, 1];
+        } else if (preset === 'shear') {
+            prescribedL = [0, rate, 0, 0];
+            exactF = [1, increment, 0, 1];
+        } else {
+            prescribedL = [0, -rate, rate, 0];
+            const cosine = Math.cos(increment);
+            const sine = Math.sin(increment);
+            exactF = [cosine, -sine, sine, cosine];
+        }
+
+        const spacing = 1 / (nodeCount - 1);
+        const width = nodeCount + 2;
+        const nodes = [];
+        // Prescribe velocities directly, not via particle-to-grid transfer.
+        // Exterior nodes are mathematical support, not boundary conditions.
+        for (let iy = -1; iy <= nodeCount; iy += 1) {
+            for (let ix = -1; ix <= nodeCount; ix += 1) {
+                const nx = ix * spacing;
+                const ny = iy * spacing;
+                nodes.push({
+                    x: nx, y: ny,
+                    vx: prescribedL[0] * (nx - 0.5) + prescribedL[1] * (ny - 0.5) + b[0],
+                    vy: prescribedL[2] * (nx - 0.5) + prescribedL[3] * (ny - 0.5) + b[1],
+                    weight: 0, gx: 0, gy: 0,
+                    ghost: ix < 0 || ix >= nodeCount || iy < 0 || iy >= nodeCount
+                });
+            }
+        }
+        const velocity = [0, 0];
+        const L = [0, 0, 0, 0];
+        for (const sy of stencilY) {
+            for (const sx of stencilX) {
+                const node = nodes[(sy.index + 1) * width + sx.index + 1];
+                node.weight = sx.weight * sy.weight;
+                node.gx = sx.gradient * sy.weight;
+                node.gy = sx.weight * sy.gradient;
+                velocity[0] += node.vx * node.weight;
+                velocity[1] += node.vy * node.weight;
+                // Keep zero-weight derivative nodes, including at knots.
+                L[0] += node.vx * node.gx;
+                L[1] += node.vx * node.gy;
+                L[2] += node.vy * node.gx;
+                L[3] += node.vy * node.gy;
+            }
+        }
+        const symmetricShear = 0.5 * (L[1] + L[2]);
+        const spin = 0.5 * (L[1] - L[2]);
+        const D = [L[0], symmetricShear, symmetricShear, L[3]];
+        const W = [0, spin, -spin, 0];
+        const gradientError = Math.hypot(
+            L[0] - prescribedL[0], L[1] - prescribedL[1],
+            L[2] - prescribedL[2], L[3] - prescribedL[3]
+        );
+        // One explicit Euler step, not the exact long-time flow map.
+        const eulerF = [1 + timeStep * L[0], timeStep * L[1], timeStep * L[2], 1 + timeStep * L[3]];
+        const exactJ = exactF[0] * exactF[3] - exactF[1] * exactF[2];
+        const eulerJ = eulerF[0] * eulerF[3] - eulerF[1] * eulerF[2];
+        const position = [x, y];
+        const exactPosition = [
+            0.5 + exactF[0] * (x - 0.5) + exactF[1] * (y - 0.5) + b[0] * timeStep,
+            0.5 + exactF[2] * (x - 0.5) + exactF[3] * (y - 0.5) + b[1] * timeStep
+        ];
+        const eulerPosition = [x + timeStep * velocity[0], y + timeStep * velocity[1]];
+        const originalCorners = [[x - 0.06, y - 0.06], [x + 0.06, y - 0.06],
+            [x + 0.06, y + 0.06], [x - 0.06, y + 0.06]];
+        function transformCorners(F, center) {
+            return originalCorners.map(([cx, cy]) => [
+                center[0] + F[0] * (cx - x) + F[1] * (cy - y),
+                center[1] + F[2] * (cx - x) + F[3] * (cy - y)
+            ]);
+        }
+        return {
+            nodes, velocity, L, D, W, prescribedL, gradientError,
+            exactF, eulerF, exactJ, eulerJ, position, exactPosition, eulerPosition,
+            originalCorners, exactCorners: transformCorners(exactF, exactPosition),
+            eulerCorners: transformCorners(eulerF, eulerPosition)
+        };
+    }
+
+    function elasticBar(options = {}) {
+        assert(options && typeof options === 'object' && !Array.isArray(options), 'Elastic bar options must be an object.');
+        const { cells = 16, particlesPerCell = 4, cfl = 0.2, periods = 1, transfer = 'flip' } = options;
+        assert(cells === 8 || cells === 16 || cells === 32 || cells === 64, 'cells must be 8, 16, 32 or 64.');
+        assert(particlesPerCell === 2 || particlesPerCell === 4 || particlesPerCell === 8,
+            'particlesPerCell must be 2, 4 or 8.');
+        assert(Number.isFinite(cfl) && cfl >= 0.05 && cfl <= 0.5, 'cfl must be finite and in [0.05, 0.5].');
+        assert(Number.isFinite(periods) && periods >= 0.25 && periods <= 2, 'periods must be finite and in [0.25, 2].');
+        assert(transfer === 'flip' || transfer === 'pic', 'transfer must be flip or pic.');
+
+        // SI units; small strain on a FIXED reference grid, not advected MPM.
+        const length = 1;
+        const youngModulus = 1e6;
+        const density = 1000;
+        const area = 0.01;
+        const waveSpeed = Math.sqrt(youngModulus / density);
+        const velocityAmplitude = 0.001 * waveSpeed;
+        const waveNumber = Math.PI / length;
+        const angularFrequency = waveNumber * waveSpeed;
+        const period = 2 * length / waveSpeed;
+        const displacementAmplitude = velocityAmplitude / angularFrequency;
+        const stressAmplitude = youngModulus * velocityAmplitude / waveSpeed;
+        const duration = periods * period;
+        // duration / (cfl * h / c), cancelling common factors before rounding.
+        // This CFL range is conservative for this uniform fixed-grid example.
+        const stepCount = Math.ceil(2 * periods * cells / cfl);
+        const timeStep = duration / stepCount;
+        const particleCount = cells * particlesPerCell;
+        const nodeCount = cells + 1;
+        const particleVolume = area * length / particleCount;
+        const particleMass = density * particleVolume;
+        const useFlip = transfer === 'flip';
+
+        const referencePosition = new Float64Array(particleCount);
+        const displacement = new Float64Array(particleCount);
+        const velocity = new Float64Array(particleCount);
+        const strain = new Float64Array(particleCount);
+        const stress = new Float64Array(particleCount);
+        const leftNode = new Uint16Array(particleCount);
+        const leftWeight = new Float64Array(particleCount);
+        const rightWeight = new Float64Array(particleCount);
+        const leftGradient = new Float64Array(particleCount);
+        const rightGradient = new Float64Array(particleCount);
+        const sineMode = new Float64Array(particleCount);
+        const cosineMode = new Float64Array(particleCount);
+        const gridMass = new Float64Array(nodeCount);
+        const gridMomentum = new Float64Array(nodeCount);
+        const gridForce = new Float64Array(nodeCount);
+        const gridVelocity = new Float64Array(nodeCount);
+        const gridAcceleration = new Float64Array(nodeCount);
+        let initialEnergy = 0;
+
+        // Midpoint quadrature, masses, volumes and linear stencils never move.
+        for (let p = 0; p < particleCount; p += 1) {
+            const X = (p + 0.5) * length / particleCount;
+            const stencil = shapeStencil1D(X / length, nodeCount);
+            referencePosition[p] = X;
+            leftNode[p] = stencil[0].index;
+            leftWeight[p] = stencil[0].weight;
+            rightWeight[p] = stencil[1].weight;
+            leftGradient[p] = stencil[0].gradient / length;
+            rightGradient[p] = stencil[1].gradient / length;
+            sineMode[p] = Math.sin(waveNumber * X);
+            cosineMode[p] = Math.cos(waveNumber * X);
+            velocity[p] = velocityAmplitude * sineMode[p];
+            gridMass[stencil[0].index] += particleMass * leftWeight[p];
+            gridMass[stencil[1].index] += particleMass * rightWeight[p];
+            initialEnergy += 0.5 * particleMass * velocity[p] * velocity[p];
+        }
+
+        const history = [];
+        const sampleIntervals = Math.min(stepCount, 120);
+        function sample(time) {
+            // Exact values are comparison only: none enter the stepping loop.
+            const phaseSine = Math.sin(angularFrequency * time);
+            const phaseCosine = Math.cos(angularFrequency * time);
+            const particles = new Array(particleCount);
+            let kineticEnergy = 0;
+            let strainEnergy = 0;
+            let displacementSquaredError = 0;
+            let velocitySquaredError = 0;
+            let stressSquaredError = 0;
+            for (let p = 0; p < particleCount; p += 1) {
+                const exactDisplacement = displacementAmplitude * sineMode[p] * phaseSine;
+                const exactVelocity = velocityAmplitude * sineMode[p] * phaseCosine;
+                const exactStress = stressAmplitude * cosineMode[p] * phaseSine;
+                const du = displacement[p] - exactDisplacement;
+                const dv = velocity[p] - exactVelocity;
+                const ds = stress[p] - exactStress;
+                displacementSquaredError += du * du;
+                velocitySquaredError += dv * dv;
+                stressSquaredError += ds * ds;
+                kineticEnergy += 0.5 * particleMass * velocity[p] * velocity[p];
+                strainEnergy += particleVolume * stress[p] * stress[p] / (2 * youngModulus);
+                particles[p] = {
+                    referencePosition: referencePosition[p], displacement: displacement[p],
+                    velocity: velocity[p], stress: stress[p], exactDisplacement, exactVelocity, exactStress
+                };
+            }
+            // Nonzero peak RMS scales, never the instantaneous exact norm.
+            const displacementError = Math.sqrt(2 * displacementSquaredError / particleCount) / displacementAmplitude;
+            const velocityError = Math.sqrt(2 * velocitySquaredError / particleCount) / velocityAmplitude;
+            const stressError = Math.sqrt(2 * stressSquaredError / particleCount) / stressAmplitude;
+            const totalEnergy = kineticEnergy + strainEnergy;
+            assert(Number.isFinite(totalEnergy) && Number.isFinite(displacementError) &&
+                Number.isFinite(velocityError) && Number.isFinite(stressError),
+            'Elastic bar diagnostics became non-finite.');
+            history.push({ time, kineticEnergy, strainEnergy, totalEnergy,
+                displacementError, velocityError, stressError, particles });
+        }
+
+        sample(0);
+        for (let step = 1; step <= stepCount; step += 1) {
+            gridMomentum.fill(0);
+            gridForce.fill(0);
+            for (let p = 0; p < particleCount; p += 1) {
+                const left = leftNode[p];
+                const right = left + 1;
+                const momentum = particleMass * velocity[p];
+                const integratedStress = particleVolume * stress[p];
+                gridMomentum[left] += leftWeight[p] * momentum;
+                gridMomentum[right] += rightWeight[p] * momentum;
+                // Tension positive: -V sigma dN/dX has units of force (N).
+                gridForce[left] -= integratedStress * leftGradient[p];
+                gridForce[right] -= integratedStress * rightGradient[p];
+            }
+            // Both fixed endpoints constrain mapped velocity AND acceleration.
+            gridVelocity[0] = gridVelocity[cells] = 0;
+            gridAcceleration[0] = gridAcceleration[cells] = 0;
+            for (let node = 1; node < cells; node += 1) {
+                const acceleration = gridForce[node] / gridMass[node];
+                gridAcceleration[node] = acceleration;
+                gridVelocity[node] = gridMomentum[node] / gridMass[node] + timeStep * acceleration;
+            }
+            for (let p = 0; p < particleCount; p += 1) {
+                const left = leftNode[p];
+                const right = left + 1;
+                const interpolatedVelocity = leftWeight[p] * gridVelocity[left] + rightWeight[p] * gridVelocity[right];
+                if (useFlip) {
+                    // Increment only constrained acceleration, not the change
+                    // from an unconstrained boundary momentum projection.
+                    velocity[p] += timeStep * (leftWeight[p] * gridAcceleration[left] +
+                        rightWeight[p] * gridAcceleration[right]);
+                } else {
+                    velocity[p] = interpolatedVelocity;
+                }
+                displacement[p] += timeStep * interpolatedVelocity;
+                strain[p] += timeStep * (leftGradient[p] * gridVelocity[left] +
+                    rightGradient[p] * gridVelocity[right]);
+                stress[p] = youngModulus * strain[p];
+                assert(Number.isFinite(displacement[p]) && Number.isFinite(velocity[p]) &&
+                    Number.isFinite(strain[p]) && Number.isFinite(stress[p]),
+                'Elastic bar state became non-finite.');
+            }
+            if (step === Math.round(history.length * stepCount / sampleIntervals)) {
+                sample(step === stepCount ? duration : step * timeStep);
+            }
+        }
+
+        return {
+            parameters: { cells, particlesPerCell, cfl, periods, transfer, length, youngModulus,
+                density, area, velocityAmplitude, waveSpeed, period, timeStep, stepCount,
+                initialEnergy, displacementAmplitude, stressAmplitude },
+            history
+        };
     }
 
     function particleToGrid2D(particles, options) {
@@ -478,6 +753,8 @@
         particleToGrid,
         shapeStencil1D,
         particleToGrid2D,
+        kinematics2D,
+        elasticBar,
         transferStep,
         vanGenuchten,
         tarantinoSWRC,

@@ -79,6 +79,7 @@
             panel.hidden = panel.id !== id;
         });
         if (updateHash) history.replaceState(null, '', `#${id}`);
+        if (id === 'elastic-bar-lab' && !elasticBar.attempted) runElasticBar();
         requestAnimationFrame(renderVisible);
     }
 
@@ -1102,11 +1103,408 @@
     byId('terrain-raise').addEventListener('click', () => { terrain.grid[terrain.selected.row][terrain.selected.column] += 2; renderTerrain(); });
     byId('terrain-lower').addEventListener('click', () => { terrain.grid[terrain.selected.row][terrain.selected.column] -= 2; renderTerrain(); });
 
+    const kinematics = {
+        canvas: byId('kinematics-canvas'),
+        preset: byId('kinematics-preset'),
+        rate: byId('kinematics-rate'),
+        timeStep: byId('kinematics-time-step'),
+        x: byId('kinematics-x'),
+        y: byId('kinematics-y'),
+        nodeCount: byId('kinematics-node-count'),
+        basis: byId('kinematics-basis'),
+        halfWidthRatio: byId('kinematics-half-width-ratio')
+    };
+
+    function renderKinematics() {
+        if (byId('kinematics-lab').hidden) return;
+        const options = {
+            preset: kinematics.preset.value,
+            rate: Number(kinematics.rate.value),
+            timeStep: Number(kinematics.timeStep.value),
+            x: Number(kinematics.x.value),
+            y: Number(kinematics.y.value),
+            nodeCount: Number(kinematics.nodeCount.value),
+            basis: kinematics.basis.value,
+            particleHalfWidthRatio: Number(kinematics.halfWidthRatio.value)
+        };
+        const result = core.kinematics2D(options);
+        const h = 1 / (options.nodeCount - 1);
+        const fixed = value => (Math.abs(value) < 0.0000005 ? 0 : value).toFixed(6);
+        const coordinate = point => `(${point.map(fixed).join(', ')})`;
+        [kinematics.preset, kinematics.nodeCount, kinematics.basis].forEach(select => {
+            byId(`${select.id}-output`).textContent = select.selectedOptions[0].textContent;
+        });
+        [kinematics.rate, kinematics.timeStep, kinematics.halfWidthRatio, kinematics.x, kinematics.y].forEach(input => {
+            byId(`${input.id}-output`).textContent = Number(input.value).toFixed(input === kinematics.x || input === kinematics.y ? 3 : 2);
+        });
+        kinematics.halfWidthRatio.disabled = options.basis !== 'gimp';
+        byId('kinematics-rate-label').textContent = options.preset === 'translation' ? '平移倍率（无量纲）' : '速率 r / s⁻¹';
+        const fieldNotes = {
+            translation: `v = (${(0.2 * options.rate).toFixed(3)}, ${(0.1 * options.rate).toFixed(3)}) m/s；所有节点同速，梯度为零。`,
+            extension: `vx = r(x − 0.5 m)，vy = 0；沿 x 轴伸长，r = ${options.rate.toFixed(2)} s⁻¹。`,
+            shear: `vx = r(y − 0.5 m)，vy = 0；简单剪切，r = ${options.rate.toFixed(2)} s⁻¹。`,
+            rotation: `vx = −r(y − 0.5 m)，vy = r(x − 0.5 m)；逆时针角速度 ${options.rate.toFixed(2)} rad/s。`
+        };
+        byId('kinematics-field-note').textContent = fieldNotes[options.preset];
+        byId('kinematics-domain-note').textContent = `${options.basis === 'gimp' ? '当前' : '保留的'} uGIMP 半宽 ℓp = ${(options.particleHalfWidthRatio * h).toFixed(5)} m，全宽 2ℓp = ${(2 * options.particleHalfWidthRatio * h).toFixed(5)} m；h = ${h.toFixed(3)} m。此固定积分域独立于图示的 0.12 m 初始方域，不随 F 更新。`;
+
+        const { context, width, height } = setupCanvas(kinematics.canvas);
+        const palette = colors();
+        const maxVelocity = Math.max(...result.nodes.map(node => Math.hypot(node.vx, node.vy)));
+        const arrowScale = maxVelocity > 0 ? 0.5 * h / maxVelocity : 0;
+        const localView = byId('kinematics-view').value === 'domain';
+        // Include every node, arrow endpoint and transformed corner before fitting an equal-axis view.
+        const points = [
+            result.position, result.exactPosition, result.eulerPosition,
+            ...result.originalCorners, ...result.exactCorners, ...result.eulerCorners
+        ];
+        if (!localView) {
+            points.push([0, 0], [1, 1]);
+            result.nodes.forEach(node => {
+                points.push([node.x, node.y], [node.x + node.vx * arrowScale, node.y + node.vy * arrowScale]);
+            });
+        }
+        const minX = Math.min(...points.map(point => point[0]));
+        const maxX = Math.max(...points.map(point => point[0]));
+        const minY = Math.min(...points.map(point => point[1]));
+        const maxY = Math.max(...points.map(point => point[1]));
+        const margin = 36;
+        const scale = Math.min((width - 2 * margin) / (maxX - minX), (height - 2 * margin) / (maxY - minY));
+        const xFor = x => width / 2 + (x - (minX + maxX) / 2) * scale;
+        const yFor = y => height / 2 - (y - (minY + maxY) / 2) * scale;
+        for (let index = -1; index <= options.nodeCount; index += 1) {
+            context.setLineDash(index < 0 || index >= options.nodeCount ? [2, 4] : []);
+            line(context, xFor(index * h), yFor(-h), xFor(index * h), yFor(1 + h), palette.border);
+            line(context, xFor(-h), yFor(index * h), xFor(1 + h), yFor(index * h), palette.border);
+        }
+        context.setLineDash([]);
+        context.strokeStyle = palette.muted;
+        context.lineWidth = 1.5;
+        context.strokeRect(xFor(0), yFor(1), scale, scale);
+        result.nodes.forEach(node => {
+            const active = node.weight !== 0 || node.gx !== 0 || node.gy !== 0;
+            const size = active ? 3 : 2;
+            const px = xFor(node.x);
+            const py = yFor(node.y);
+            context.strokeStyle = active ? palette.blue : palette.muted;
+            context.fillStyle = palette.blue;
+            context.lineWidth = 1;
+            context.setLineDash(node.ghost ? [2, 2] : []);
+            if (active && !node.ghost) context.fillRect(px - size, py - size, size * 2, size * 2);
+            context.strokeRect(px - size, py - size, size * 2, size * 2);
+            context.setLineDash([]);
+            const endX = xFor(node.x + node.vx * arrowScale);
+            const endY = yFor(node.y + node.vy * arrowScale);
+            const length = Math.hypot(endX - px, endY - py);
+            if (length >= 8) arrow(context, px, py, endX, endY, palette.blue, 1.2);
+            else if (length >= 1) line(context, px, py, endX, endY, palette.blue, 1.2);
+        });
+        const drawDomain = (corners, color, dash, thickness) => {
+            context.beginPath();
+            corners.forEach((point, index) => {
+                if (index === 0) context.moveTo(xFor(point[0]), yFor(point[1]));
+                else context.lineTo(xFor(point[0]), yFor(point[1]));
+            });
+            context.closePath();
+            context.strokeStyle = color;
+            context.lineWidth = thickness;
+            context.setLineDash(dash);
+            context.stroke();
+            context.setLineDash([]);
+        };
+        drawDomain(result.originalCorners, palette.muted, [2, 3], 2);
+        drawDomain(result.exactCorners, palette.cyan, [], 4);
+        drawDomain(result.eulerCorners, palette.orange, [7, 4], 2);
+        [result.exactPosition, result.eulerPosition].forEach((point, index) => {
+            context.beginPath();
+            context.arc(xFor(point[0]), yFor(point[1]), index === 0 ? 4 : 2, 0, Math.PI * 2);
+            context.fillStyle = index === 0 ? palette.cyan : palette.orange;
+            context.fill();
+        });
+        const probeX = xFor(result.position[0]);
+        const probeY = yFor(result.position[1]);
+        line(context, probeX - 7, probeY, probeX + 7, probeY, palette.violet, 2);
+        line(context, probeX, probeY - 7, probeX, probeY + 7, palette.violet, 2);
+        context.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+        context.fillStyle = palette.text;
+        context.textAlign = 'center';
+        context.fillText('0', xFor(0), yFor(0) + 17);
+        context.fillText('1', xFor(1), yFor(0) + 17);
+        context.fillText('x / m →', width / 2, height - 8);
+        context.textAlign = 'right';
+        context.fillText('1', xFor(0) - 9, yFor(1) + 4);
+        context.textAlign = 'left';
+        context.fillText('y / m ↑', 8, 15);
+        byId('kinematics-scale').textContent = `${localView ? '局部放大' : '完整网格'}，x、y 等比例；域与视野参考范围 x ∈ [${minX.toFixed(3)}, ${maxX.toFixed(3)}] m，y ∈ [${minY.toFixed(3)}, ${maxY.toFixed(3)}] m。网格 h = ${h.toFixed(3)} m。速度箭头每图同比缩放：最长 0.5h 表示 ${maxVelocity.toExponential(3)} m/s；短于 8 像素只画线段，短于 1 像素不画。Δt = ${options.timeStep.toFixed(2)} s 的一次比较，无连续积分。`;
+
+        [['l', result.L], ['d', result.D], ['w', result.W]].forEach(([name, matrix]) => {
+            fillMPM2DTable(`kinematics-${name}-body`, [
+                ['x', fixed(matrix[0]), fixed(matrix[1])],
+                ['y', fixed(matrix[2]), fixed(matrix[3])]
+            ]);
+        });
+        byId('kinematics-gradient-error').textContent = result.gradientError.toExponential(3);
+        byId('kinematics-exact-j').textContent = fixed(result.exactJ);
+        byId('kinematics-euler-j').textContent = fixed(result.eulerJ);
+        const resultNotes = {
+            translation: '均匀平移不产生速度梯度、变形率或自旋；精确与一次 Euler 域重合，面积不变。',
+            extension: '单轴伸长的精确面积比为 exp(rΔt)，一次 Euler 为 1 + rΔt；差异来自时间离散，而不是形函数梯度误差。',
+            shear: '简单剪切同时含对称变形率与反对称自旋；本预设 A² = 0，精确与一次 Euler 域重合，面积比均为 1。',
+            rotation: `刚体旋转 D = 0，精确 J = 1；一次 Euler J = 1 + (rΔt)² = ${(1 + (options.rate * options.timeStep) ** 2).toFixed(6)}。Euler 面积增大是时间离散误差，不是材料可压缩性；不应据此推断应力。`
+        };
+        byId('kinematics-result-note').textContent = resultNotes[options.preset];
+        fillMPM2DTable('kinematics-position-body', [
+            ['固定采样点 / 初始中心', ...result.position.map(fixed)],
+            ['采样重构速度', ...result.velocity.map(fixed)],
+            ['精确演化中心', ...result.exactPosition.map(fixed)],
+            ['一次 Euler 中心', ...result.eulerPosition.map(fixed)]
+        ]);
+        fillMPM2DTable('kinematics-f-body', [
+            ['给定 A / s⁻¹', ...result.prescribedL.map(fixed)],
+            ['精确 F', ...result.exactF.map(fixed)],
+            ['一次 Euler F', ...result.eulerF.map(fixed)]
+        ]);
+        fillMPM2DTable('kinematics-corner-body', result.originalCorners.map((point, index) => [
+            index + 1, coordinate(point), coordinate(result.exactCorners[index]), coordinate(result.eulerCorners[index])
+        ]));
+        fillMPM2DTable('kinematics-node-body', result.nodes.filter(node => node.weight !== 0 || node.gx !== 0 || node.gy !== 0).map(node => [
+            coordinate([node.x, node.y]), node.ghost ? '外延' : '真实',
+            fixed(node.vx), fixed(node.vy), fixed(node.weight), fixed(node.gx), fixed(node.gy)
+        ]));
+    }
+
+    byId('kinematics-controls').addEventListener('submit', event => event.preventDefault());
+    byId('kinematics-controls').addEventListener('input', renderKinematics);
+    byId('kinematics-controls').addEventListener('change', renderKinematics);
+
+    const elasticBar = {
+        controls: byId('elastic-bar-controls'),
+        cells: byId('elastic-bar-cells'),
+        particlesPerCell: byId('elastic-bar-particles-per-cell'),
+        cfl: byId('elastic-bar-cfl'),
+        periods: byId('elastic-bar-periods'),
+        transfer: byId('elastic-bar-transfer'),
+        snapshot: byId('elastic-bar-snapshot'),
+        attempted: false,
+        result: null,
+        comparison: null
+    };
+
+    function elasticBarOptions() {
+        return {
+            cells: Number(elasticBar.cells.value),
+            particlesPerCell: Number(elasticBar.particlesPerCell.value),
+            cfl: Number(elasticBar.cfl.value),
+            periods: Number(elasticBar.periods.value),
+            transfer: elasticBar.transfer.value
+        };
+    }
+
+    function elasticBarCase(parameters, includeCells) {
+        return `${includeCells ? `${parameters.cells} 单元 · ${parameters.cells * parameters.particlesPerCell} 粒子 · ` : ''}${parameters.particlesPerCell} 粒子/单元 · CFL ${parameters.cfl.toFixed(2)} · ${parameters.periods.toFixed(2)} T · ${parameters.transfer.toUpperCase()}`;
+    }
+
+    function elasticBarError(error, action) {
+        const output = byId('elastic-bar-error');
+        output.hidden = false;
+        output.textContent = `${action}失败：${error instanceof Error ? error.message : String(error)} 请检查参数后重试。`;
+    }
+
+    function runElasticBar() {
+        elasticBar.attempted = true;
+        byId('elastic-bar-error').hidden = true;
+        try {
+            const result = core.elasticBar(elasticBarOptions());
+            elasticBar.result = result;
+            elasticBar.snapshot.max = String(result.history.length - 1);
+            elasticBar.snapshot.value = elasticBar.snapshot.max;
+            byId('elastic-bar-result').hidden = false;
+            byId('elastic-bar-status').dataset.stale = 'false';
+            byId('elastic-bar-status').textContent = '验证完成：下方为当前参数的已保存数值解。快照仅选择时间点，不重新求解。';
+            const parameters = result.parameters;
+            byId('elastic-bar-case').textContent = `已运行算例：${elasticBarCase(parameters, true)}；${parameters.stepCount} 步，实际 Δt = ${parameters.timeStep.toExponential(4)} s，实际 cΔt/h = ${(parameters.waveSpeed * parameters.timeStep * parameters.cells / parameters.length).toFixed(4)}；E₀ = ${parameters.initialEnergy.toExponential(4)} J。`;
+            updateElasticBarSnapshot();
+        } catch (error) {
+            byId('elastic-bar-status').dataset.stale = 'true';
+            byId('elastic-bar-status').textContent = elasticBar.result ? '本次运行未成功。下方仅保留上一次算例，不代表当前参数。' : '本次运行未成功，尚无数值结果。';
+            elasticBarError(error, '验证');
+        }
+    }
+
+    function runElasticBarConvergence() {
+        byId('elastic-bar-error').hidden = true;
+        try {
+            if (!elasticBar.comparison) {
+                const options = elasticBarOptions();
+                elasticBar.comparison = [8, 16, 32, 64].map(cells => {
+                    const result = core.elasticBar({ ...options, cells });
+                    return { parameters: result.parameters, final: result.history[result.history.length - 1] };
+                });
+            }
+            fillMPM2DTable('elastic-bar-convergence-body', elasticBar.comparison.map(({ parameters, final }) => [
+                `${parameters.cells} / ${parameters.cells * parameters.particlesPerCell}`,
+                `${parameters.stepCount} / ${parameters.timeStep.toExponential(3)}`,
+                (final.displacementError * 100).toFixed(4),
+                (final.velocityError * 100).toFixed(4),
+                (final.stressError * 100).toFixed(4),
+                (final.totalEnergy / parameters.initialEnergy).toFixed(6)
+            ]));
+            const parameters = elasticBar.comparison[0].parameters;
+            byId('elastic-bar-convergence-status').textContent = `已缓存对照：8 / 16 / 32 / 64 单元；${elasticBarCase(parameters, false)}；所有行终态 t = ${(parameters.periods * parameters.period).toFixed(6)} s。此表独立于上方单算例与快照；修改任一求解参数即失效。`;
+            byId('elastic-bar-convergence-result').hidden = false;
+        } catch (error) {
+            elasticBar.comparison = null;
+            byId('elastic-bar-convergence-result').hidden = true;
+            byId('elastic-bar-convergence-status').textContent = '对照未完成，没有可用对照表；请重新运行。';
+            elasticBarError(error, '网格对照');
+        }
+    }
+
+    function invalidateElasticBar() {
+        byId('elastic-bar-cfl-output').textContent = Number(elasticBar.cfl.value).toFixed(2);
+        byId('elastic-bar-periods-output').textContent = Number(elasticBar.periods.value).toFixed(2);
+        elasticBar.comparison = null;
+        byId('elastic-bar-error').hidden = true;
+        byId('elastic-bar-status').dataset.stale = 'true';
+        byId('elastic-bar-status').textContent = elasticBar.result ? '参数已修改，结果已过期。下方图表、误差与快照仍属于“已运行算例”，不是当前参数；请点击“运行验证”。' : '参数已修改，请点击“运行验证”生成数值结果。';
+        byId('elastic-bar-convergence-result').hidden = true;
+        byId('elastic-bar-convergence-body').replaceChildren();
+        byId('elastic-bar-convergence-status').textContent = '参数已修改，对照缓存已清除；请点击“网格收敛对照”重新生成。';
+    }
+
+    function updateElasticBarParticleTable() {
+        if (!elasticBar.result || !byId('elastic-bar-particle-details').open) return;
+        const sample = elasticBar.result.history[Number(elasticBar.snapshot.value)];
+        fillMPM2DTable('elastic-bar-particle-body', sample.particles.map(particle => [
+            particle.referencePosition.toFixed(6),
+            (particle.displacement * 1e6).toFixed(4),
+            (particle.exactDisplacement * 1e6).toFixed(4),
+            particle.velocity.toFixed(7),
+            particle.exactVelocity.toFixed(7),
+            (particle.stress / 1000).toFixed(6),
+            (particle.exactStress / 1000).toFixed(6)
+        ]));
+    }
+
+    function updateElasticBarSnapshot() {
+        if (!elasticBar.result) return;
+        const { parameters, history: samples } = elasticBar.result;
+        const index = Number(elasticBar.snapshot.value);
+        const sample = samples[index];
+        byId('elastic-bar-snapshot-output').textContent = `${index + 1} / ${samples.length}`;
+        byId('elastic-bar-time').textContent = `已运行算例快照：t = ${sample.time.toFixed(6)} s = ${(sample.time / parameters.period).toFixed(4)} T。`;
+        ['displacement', 'velocity', 'stress'].forEach(field => {
+            byId(`elastic-bar-${field}-error`).textContent = `${(sample[`${field}Error`] * 100).toFixed(4)}%`;
+        });
+        byId('elastic-bar-energy-summary').textContent = `当前 K/E₀ = ${(sample.kineticEnergy / parameters.initialEnergy).toFixed(6)}，U/E₀ = ${(sample.strainEnergy / parameters.initialEnergy).toFixed(6)}，总能量/E₀ = ${(sample.totalEnergy / parameters.initialEnergy).toFixed(6)}；解析总能量/E₀ = 1。`;
+        updateElasticBarParticleTable();
+        renderElasticBar();
+    }
+
+    function drawElasticBarPlot(canvas, series, options) {
+        const { context, width, height } = setupCanvas(canvas);
+        const palette = colors();
+        const margin = { left: 61, right: 18, top: 30, bottom: 43 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const x = value => margin.left + value / options.xMax * plotWidth;
+        const y = value => margin.top + (options.yMax - value) / (options.yMax - options.yMin) * plotHeight;
+        context.font = '11px system-ui, sans-serif';
+        context.fillStyle = palette.text;
+        context.textAlign = 'left';
+        context.fillText(options.label, margin.left, 18);
+        for (let index = 0; index <= 4; index += 1) {
+            const xValue = options.xMax * index / 4;
+            const yValue = options.yMin + (options.yMax - options.yMin) * index / 4;
+            line(context, x(xValue), margin.top, x(xValue), height - margin.bottom, palette.border);
+            line(context, margin.left, y(yValue), width - margin.right, y(yValue), palette.border);
+            context.fillStyle = palette.muted;
+            context.textAlign = 'center';
+            context.fillText(xValue.toFixed(2), x(xValue), height - margin.bottom + 17);
+            context.textAlign = 'right';
+            context.fillText(Math.abs(yValue) < 1e-12 ? '0' : yValue.toFixed(options.decimals), margin.left - 7, y(yValue) + 4);
+        }
+        if (options.marker !== undefined) {
+            line(context, x(options.marker), margin.top, x(options.marker), height - margin.bottom, palette.muted);
+        }
+        series.forEach(curve => {
+            context.beginPath();
+            curve.points.forEach((point, index) => {
+                if (index === 0) context.moveTo(x(point[0]), y(point[1]));
+                else context.lineTo(x(point[0]), y(point[1]));
+            });
+            context.strokeStyle = curve.color;
+            context.lineWidth = curve.width || 2;
+            context.setLineDash(curve.dash || []);
+            context.stroke();
+            context.setLineDash([]);
+            if (curve.dots) {
+                context.fillStyle = curve.color;
+                curve.points.forEach(point => {
+                    context.beginPath();
+                    context.arc(x(point[0]), y(point[1]), 1.6, 0, 2 * Math.PI);
+                    context.fill();
+                });
+            }
+        });
+        context.fillStyle = palette.text;
+        context.textAlign = 'center';
+        context.fillText(options.xLabel, margin.left + plotWidth / 2, height - 6);
+    }
+
+    function renderElasticBar() {
+        if (byId('elastic-bar-lab').hidden || !elasticBar.result) return;
+        const { parameters, history: samples } = elasticBar.result;
+        const sample = samples[Number(elasticBar.snapshot.value)];
+        const palette = colors();
+        const phase = 2 * Math.PI * sample.time / parameters.period;
+        [
+            { field: 'displacement', label: 'u / µm', scale: 1e6, amplitude: parameters.displacementAmplitude, temporal: Math.sin(phase), decimals: 1 },
+            { field: 'velocity', label: 'v / m/s', scale: 1, amplitude: parameters.velocityAmplitude, temporal: Math.cos(phase), decimals: 3 },
+            { field: 'stress', label: 'σ / kPa (拉正)', scale: 0.001, amplitude: parameters.stressAmplitude, temporal: Math.sin(phase), decimals: 2 }
+        ].forEach(({ field, label, scale, amplitude, temporal, decimals }) => {
+            const numerical = sample.particles.map(particle => [particle.referencePosition, particle[field] * scale]);
+            const analytical = Array.from({ length: 161 }, (_, index) => {
+                const position = parameters.length * index / 160;
+                const spatial = field === 'stress' ? Math.cos(Math.PI * position / parameters.length) : Math.sin(Math.PI * position / parameters.length);
+                return [position, amplitude * spatial * temporal * scale];
+            });
+            const extent = Math.max(amplitude * scale, ...numerical.map(point => Math.abs(point[1]))) * 1.12;
+            drawElasticBarPlot(byId(`elastic-bar-${field}`), [
+                { points: numerical, color: palette.blue, dots: true },
+                { points: analytical, color: palette.orange, dash: [6, 4] }
+            ], { label, xLabel: '参考 X / m', xMax: parameters.length, yMin: -extent, yMax: extent, decimals });
+        });
+        const energySeries = [
+            { field: 'kineticEnergy', color: palette.blue },
+            { field: 'strainEnergy', color: palette.cyan, dash: [6, 4] },
+            { field: 'totalEnergy', color: palette.violet, width: 3 }
+        ].map(curve => ({
+            ...curve,
+            points: samples.map(point => [point.time / parameters.period, point[curve.field] / parameters.initialEnergy])
+        }));
+        energySeries.push({ points: [[0, 1], [parameters.periods, 1]], color: palette.orange, dash: [2, 4] });
+        drawElasticBarPlot(byId('elastic-bar-energy'), energySeries, {
+            label: '能量 / E₀', xLabel: 't / T', xMax: parameters.periods,
+            yMin: 0, yMax: 1.12 * Math.max(1, ...samples.map(point => point.totalEnergy / parameters.initialEnergy)),
+            decimals: 2, marker: sample.time / parameters.period
+        });
+    }
+
+    elasticBar.controls.addEventListener('submit', event => { event.preventDefault(); runElasticBar(); });
+    elasticBar.controls.addEventListener('input', invalidateElasticBar);
+    elasticBar.controls.addEventListener('change', invalidateElasticBar);
+    byId('elastic-bar-convergence').addEventListener('click', runElasticBarConvergence);
+    elasticBar.snapshot.addEventListener('input', updateElasticBarSnapshot);
+    byId('elastic-bar-particle-details').addEventListener('toggle', updateElasticBarParticleTable);
+
     function renderVisible() {
         renderP2G();
         renderMPM2D();
         renderRetention();
         renderTerrain();
+        renderKinematics();
+        renderElasticBar();
     }
 
     const initialPanel = panels.some(panel => `#${panel.id}` === location.hash) ? location.hash.slice(1) : 'mpm-lab';
