@@ -1,105 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>基于蒙特卡洛法的边坡可靠度分析程序说明</title>
-    <url>/2024/04/74b4d97f/</url>
-    <content><![CDATA[<h2 id="非饱和黄土边坡失效概率计算程序">非饱和黄土边坡失效概率计算程序</h2>
-<p>本程序是基于有限元的边坡可靠度分析程序，改进自<a href="https://inside.mines.edu/~vgriffit">Griffith教授</a> 的非饱和黄土边坡稳定性计算程序</p>
-<p>本程序使用强度折减法计算稳定系数，使用Monte-Carlo法计算失效概率；</p>
-<p>将计算作业量，分成<strong>线程数量</strong>的段数，将作业量平均分配给每一个线程；</p>
-<p><strong>本程序使用MPI实现并行运算</strong></p>
-<p><strong>程序文件</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">slope_new/Subroutine.py</span><br><span class="line">slope_new/slope2.f90</span><br></pre></td></tr></table></figure>
-<p><strong>示例数据文件</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exmaple/1.dat</span><br><span class="line">exmaple/1_c.txt</span><br><span class="line">exmaple/1_phi.txt</span><br><span class="line">example/1_gamma.txt !未给出</span><br><span class="line">exmaple/1_mstd.txt</span><br><span class="line">exmaple/1_grid.txt</span><br></pre></td></tr></table></figure>
-<p><strong>结果文件</strong> 未给出</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1_fs.res</span><br><span class="line">1_fail.res</span><br></pre></td></tr></table></figure>
-<h3 id="前置安装教程">前置安装教程</h3>
-<ol>
-<li>Fortran程序前置安装：<a href="https://github.com/sourceryinstitute/OpenCoarrays">OpenCoarrays</a></li>
-</ol>
-<p>以Ubuntu22.04安装Open-coarrays 2.9.2为例：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install cmake gfortran</span><br><span class="line">wget https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz</span><br><span class="line">tar xf 2.9.2.tar.gz</span><br><span class="line">cd OpenCoarrays-2.9.2</span><br><span class="line">makedir build</span><br><span class="line">cd build</span><br><span class="line">cmake ..</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-<p>！若<a href="https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz">OpenCoarrays2.9.2</a> 下载失败可手动下载并上传到<code>/home/username/</code>再解压编译安装</p>
-<ol start="2">
-<li>可选安装–后台运行<a href="https://www.gnu.org/software/screen/">Screen</a></li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">安装：</span><br><span class="line">sudo apt-get install screen</span><br><span class="line">列出全部会话：</span><br><span class="line">screen -ls</span><br><span class="line">新建：</span><br><span class="line">screen</span><br><span class="line">screen -S name</span><br><span class="line">删除：</span><br><span class="line">screen -S name -X quit ! 或在窗口内使用快捷键ctrl + D</span><br><span class="line">放置后台：</span><br><span class="line">使用快捷键ctrl+A再ctrl+D </span><br><span class="line">返回窗口：</span><br><span class="line">screen -R</span><br><span class="line">screen -r name </span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>Python程序须安装<a href="https://www.python.org/downloads/">Python3.x</a> ！无须安装在服务器中，仅做数据处理工作，在本地使用即可</li>
-</ol>
-<p>程序运行依赖<code>numpy</code>库，可使用pip安装：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pip install numpy</span><br></pre></td></tr></table></figure>
-<h3 id="程序使用教程">程序使用教程</h3>
-<ol>
-<li>运行<a href="https://github.com/liudh56/Slope/blob/main/Slope_new/Subroutine.py">Subroutine.py</a></li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd 代码所在目录</span><br><span class="line">python ./Subroutine.py</span><br></pre></td></tr></table></figure>
-<p>根据提示操作即可<a href="https://github.com/liudh56/Slope/tree/main/example">使用教程</a></p>
-<ol start="2">
-<li>将生成文件与<code>slope2.f90</code>放在同一文件夹内（本文件夹即要上传的文件夹）</li>
-</ol>
-<p>文件包括：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx.dat</span><br><span class="line">xxx_c.txt xxx_phi.txt xxx_gamma.txt #具体文件数量与设为随机的参数有关</span><br></pre></td></tr></table></figure>
-<p><a href="https://github.com/liudh56/Slope/blob/main/example/1.dat">dat文件详细</a></p>
-<p>其他python程序使用文件（无需上传）：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx_mstd.txt</span><br><span class="line">xxx_grid.txt</span><br></pre></td></tr></table></figure>
-<h4 id="Fortran程序–在服务器中运行">Fortran程序–在服务器中运行</h4>
-<ol>
-<li>
-<p>将上文中的文件夹上传至服务器并打开目录</p>
-</li>
-<li>
-<p>编译命令：</p>
-</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">caf slope2.f90 -o slope</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>运行：</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cafrun -n 4 slope</span><br><span class="line">！ 4代表线程数，可更改，若线程数报错改用下面的命令</span><br></pre></td></tr></table></figure>
-<p>或者：使用下面命令适用于多主机的情况，根据主机实际情况分配线程数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mpirun --host host1:40 host2:40 -n 80 filename</span><br><span class="line">mpirun --host hostfile -n 80 filename !使用该命令须先创建hostfile文件</span><br></pre></td></tr></table></figure>
-<ol start="4">
-<li>保存结果文件到本地与Subroutine.py文件放置在同一文件内</li>
-</ol>
-<p>运行Subroutine.py程序并选择功能3计算失效概率，结果保存在<code>xxx_fail.res</code>文件内。</p>
-<h2 id="Subroutine-py程序使用方式">Subroutine.py程序使用方式</h2>
-<h3 id="1-输入项目名称xxx。">1. 输入项目名称xxx。</h3>
-<h3 id="2-选择功能（输入序号）。">2. 选择功能（输入序号）。</h3>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. （首次使用）引导填写并重新生成xxx.dat和xxx_mstd.txt文件</span><br><span class="line">   </span><br><span class="line">2. 根据xxx_mstd.txt生成phi、c和gamma的值</span><br><span class="line">   </span><br><span class="line">3. 计算失效概率,并生成xxx_fail.res文件,储存失效概率</span><br><span class="line">   </span><br><span class="line">4. 生成xxx_grid.txt文件,储存网格点的序号(多层土的情况使用)</span><br><span class="line">   </span><br><span class="line">5. 根据xxx_mstd.txt重新生成某参数值</span><br><span class="line"></span><br><span class="line">0. 退出程序(默认)</span><br></pre></td></tr></table></figure>
-<h3 id="功能使用教程">功能使用教程</h3>
-<ol>
-<li>第一次使用选择<code>1</code>填写<code>xxx.dat</code>和<code>xxx_mstd.txt</code>文件（也可直接修改示例文件来使用）</li>
-</ol>
-<p><strong>建议先查看示例文件</strong></p>
-<p><strong>若填写过程中出现填写错误，可继续填写，等待填写完成再从生成文件内修改错误</strong></p>
-<p><strong>功能4，可协助填写<code>xxx.dat</code>文件，后文介绍</strong></p>
-<ol start="2">
-<li>再选择<code>2</code>根据提示进行选择（以内摩擦角和粘聚力为随机参数为例）</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">请输入模拟次数:10000</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 10</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布) 1</span><br><span class="line">已生成xxx_c.txt文件!</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 20</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布): 1</span><br><span class="line">已生成xxx_phi.txt文件!</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>
-<p>文件上传计算</p>
-</li>
-<li>
-<p>计算完成后，将结果文件<code>xxx_fs.res</code>放置与本程序在同一文件夹内，运行程序选择<code>3</code>，结果保存在<code>xxx_fail.res</code>文件</p>
-</li>
-</ol>
-<p><strong>功能4介绍（单层土不需要使用）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">！根据自己划分的每层土的单元格数（不是高度）填写即可，注意与ny1和ny2区分</span><br><span class="line">请输入第1层土的厚度(竖向单元格数): 16</span><br><span class="line">请输入第2层土的厚度(竖向单元格数): 5</span><br><span class="line">已生成xxx_grid.txt文件!</span><br></pre></td></tr></table></figure>
-<p><code>xxx_grid.txt</code>的内容复制到<code>xxx.dat</code>文件的以下位置：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;Choose whether to set it as a random variable (the order is: phi c gamma,1 is random)&quot;</span><br><span class="line">1 1 0</span><br><span class="line"></span><br><span class="line">&quot;Property group assigned to each element (etype, data not needed if np_types=1)&quot;</span><br><span class="line">（--------此位置--------）</span><br><span class="line"></span><br><span class="line">&quot;Pseudo-static analysis: Horizontal acceleration factor (k_h)&quot;</span><br><span class="line">0.0</span><br></pre></td></tr></table></figure>
+    <title>有限元非饱和土孔压迭代程序修改说明</title>
+    <url>/2024/04/863a85e0/</url>
+    <content><![CDATA[<h2 id="修改内容">修改内容</h2>
+<h3 id="1、输入参数改变">1、输入参数改变</h3>
+<p>t(nl) 每层层底沉积年代(37 行)<br>
+土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)<br>
+内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)<br>
+水位位置（坡顶为 0，y 方向为负值）(58 行)<br>
+非饱和抗剪强度公式中 κ(59 行)</p>
+<h3 id="2、输入所有节点孔压-53-行">2、输入所有节点孔压(53 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">READ(<span class="number">12</span>,*)inpore  <span class="comment">!所有节点孔压</span></span><br></pre></td></tr></table></figure>
+<h3 id="3、输出-prop-nprops-np-types-98-85-行">3、输出 prop(nprops,np_types)(98-85 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">nprops=<span class="number">10</span> <span class="comment">!分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CALL</span> g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;</span><br><span class="line">  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;</span><br><span class="line">  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;</span><br><span class="line">  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，求prop1：一列单元的参数(其中重度为干重度)</span><br><span class="line">其次，求prop：所有单元参数(其中重度为干重度)</span><br><span class="line">之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率</span><br><span class="line">最后，利用含水率计算天然重度</span><br></pre></td></tr></table></figure>
+<h3 id="4、输出-surf-2-nosurf-79-行">4、输出 surf(2,nosurf) (79 行)</h3>
+<p>根据水位计算水位线上各节点坐标</p>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">call</span> WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)</span><br></pre></td></tr></table></figure>
+<h3 id="5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行">5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)</h3>
+<h3 id="6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行">6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> water_loads</span><br></pre></td></tr></table></figure>
+<h3 id="7、对于孔压-inpore-的处理">7、对于孔压 inpore 的处理</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，单元循环内提取该单元所有节点的孔压(172行)</span><br><span class="line">其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)</span><br><span class="line">之后，高斯循环中计算高斯点吸应力pore (181行)</span><br><span class="line">最后，修正正应力(186-188行)</span><br></pre></td></tr></table></figure>
+<h3 id="8、若收敛，对应力进行恢复-193-195-行">8、若收敛，对应力进行恢复(193-195 行)</h3>
+<h3 id="9、奇偶分层下的变形图-224-行">9、奇偶分层下的变形图(224 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> dismsh</span><br></pre></td></tr></table></figure>
+<h2 id="输入说明">输入说明</h2>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">w1   s1   w2   h1   h2   nl <span class="comment">!分层数  用于划分黄土古土壤序列情况</span></span><br><span class="line"><span class="number">8</span>    <span class="number">4</span>     <span class="number">4</span>    <span class="number">14</span>   <span class="number">8</span>    <span class="number">4</span></span><br><span class="line">h(nl) <span class="comment">!每层层底距坡顶距离</span></span><br><span class="line"><span class="number">4</span>   <span class="number">12</span>   <span class="number">16</span>   <span class="number">22</span></span><br><span class="line">ny(nl) <span class="comment">!每层划分网格数</span></span><br><span class="line"><span class="number">2</span>    <span class="number">4</span>    <span class="number">2</span>   <span class="number">3</span></span><br><span class="line">t(nl) <span class="comment">!每层层底沉积年代</span></span><br><span class="line"><span class="number">8</span>   <span class="number">12</span>   <span class="number">18</span>   <span class="number">33</span></span><br><span class="line">nx1    nx2   ny1    ny2</span><br><span class="line"><span class="number">4</span>       <span class="number">2</span>     <span class="number">7</span>    <span class="number">4</span></span><br><span class="line"><span class="comment">!土水特征参数a、m、n随沉积年代模型参数</span></span><br><span class="line"><span class="number">0.044</span>     <span class="number">7.062</span>      -<span class="number">0.0000724</span>      <span class="number">0.3318</span>              -<span class="number">0.000161</span>      <span class="number">1.5092</span></span><br><span class="line"><span class="number">24.4397</span>   -<span class="number">113.0186</span>   <span class="number">0.000000176</span>   -<span class="number">0.0000591</span>   <span class="number">0.2077</span>   <span class="number">0.000000331</span>   -<span class="number">0.000128</span>   <span class="number">1.2664</span></span><br><span class="line"><span class="comment">!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">0.17</span>    <span class="number">0</span>      <span class="number">0.0</span>        <span class="number">1.25</span>   <span class="number">0.018</span>    <span class="number">0.4623</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.71</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">3.56</span>   <span class="number">500</span>     <span class="number">0.0</span>        <span class="number">1.39</span>   <span class="number">0.0035</span>   <span class="number">0.6489</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.72</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">100</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">1.4</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span>   <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">9</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">0.8</span>  <span class="number">0.9</span>  <span class="number">1.0</span>  <span class="number">1.1</span>  <span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
+<hr>
+<p>非本人原创内容</p>
 ]]></content>
       <categories>
         <category>数值模拟</category>
         <category>有限元法（FEM）</category>
       </categories>
       <tags>
-        <tag>边坡稳定性</tag>
-        <tag>可靠度分析</tag>
-        <tag>蒙特卡洛法</tag>
+        <tag>非饱和土</tag>
+        <tag>孔隙水压力</tag>
       </tags>
   </entry>
   <entry>
@@ -144,49 +82,9 @@
         <category>有限元法（FEM）</category>
       </categories>
       <tags>
+        <tag>非饱和土</tag>
+        <tag>孔隙水压力</tag>
         <tag>边坡稳定性</tag>
-        <tag>非饱和土</tag>
-        <tag>孔隙水压力</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>有限元非饱和土孔压迭代程序修改说明</title>
-    <url>/2024/04/863a85e0/</url>
-    <content><![CDATA[<h2 id="修改内容">修改内容</h2>
-<h3 id="1、输入参数改变">1、输入参数改变</h3>
-<p>t(nl) 每层层底沉积年代(37 行)<br>
-土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)<br>
-内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)<br>
-水位位置（坡顶为 0，y 方向为负值）(58 行)<br>
-非饱和抗剪强度公式中 κ(59 行)</p>
-<h3 id="2、输入所有节点孔压-53-行">2、输入所有节点孔压(53 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">READ(<span class="number">12</span>,*)inpore  <span class="comment">!所有节点孔压</span></span><br></pre></td></tr></table></figure>
-<h3 id="3、输出-prop-nprops-np-types-98-85-行">3、输出 prop(nprops,np_types)(98-85 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">nprops=<span class="number">10</span> <span class="comment">!分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CALL</span> g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;</span><br><span class="line">  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;</span><br><span class="line">  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;</span><br><span class="line">  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，求prop1：一列单元的参数(其中重度为干重度)</span><br><span class="line">其次，求prop：所有单元参数(其中重度为干重度)</span><br><span class="line">之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率</span><br><span class="line">最后，利用含水率计算天然重度</span><br></pre></td></tr></table></figure>
-<h3 id="4、输出-surf-2-nosurf-79-行">4、输出 surf(2,nosurf) (79 行)</h3>
-<p>根据水位计算水位线上各节点坐标</p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">call</span> WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)</span><br></pre></td></tr></table></figure>
-<h3 id="5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行">5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)</h3>
-<h3 id="6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行">6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> water_loads</span><br></pre></td></tr></table></figure>
-<h3 id="7、对于孔压-inpore-的处理">7、对于孔压 inpore 的处理</h3>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，单元循环内提取该单元所有节点的孔压(172行)</span><br><span class="line">其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)</span><br><span class="line">之后，高斯循环中计算高斯点吸应力pore (181行)</span><br><span class="line">最后，修正正应力(186-188行)</span><br></pre></td></tr></table></figure>
-<h3 id="8、若收敛，对应力进行恢复-193-195-行">8、若收敛，对应力进行恢复(193-195 行)</h3>
-<h3 id="9、奇偶分层下的变形图-224-行">9、奇偶分层下的变形图(224 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> dismsh</span><br></pre></td></tr></table></figure>
-<h2 id="输入说明">输入说明</h2>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">w1   s1   w2   h1   h2   nl <span class="comment">!分层数  用于划分黄土古土壤序列情况</span></span><br><span class="line"><span class="number">8</span>    <span class="number">4</span>     <span class="number">4</span>    <span class="number">14</span>   <span class="number">8</span>    <span class="number">4</span></span><br><span class="line">h(nl) <span class="comment">!每层层底距坡顶距离</span></span><br><span class="line"><span class="number">4</span>   <span class="number">12</span>   <span class="number">16</span>   <span class="number">22</span></span><br><span class="line">ny(nl) <span class="comment">!每层划分网格数</span></span><br><span class="line"><span class="number">2</span>    <span class="number">4</span>    <span class="number">2</span>   <span class="number">3</span></span><br><span class="line">t(nl) <span class="comment">!每层层底沉积年代</span></span><br><span class="line"><span class="number">8</span>   <span class="number">12</span>   <span class="number">18</span>   <span class="number">33</span></span><br><span class="line">nx1    nx2   ny1    ny2</span><br><span class="line"><span class="number">4</span>       <span class="number">2</span>     <span class="number">7</span>    <span class="number">4</span></span><br><span class="line"><span class="comment">!土水特征参数a、m、n随沉积年代模型参数</span></span><br><span class="line"><span class="number">0.044</span>     <span class="number">7.062</span>      -<span class="number">0.0000724</span>      <span class="number">0.3318</span>              -<span class="number">0.000161</span>      <span class="number">1.5092</span></span><br><span class="line"><span class="number">24.4397</span>   -<span class="number">113.0186</span>   <span class="number">0.000000176</span>   -<span class="number">0.0000591</span>   <span class="number">0.2077</span>   <span class="number">0.000000331</span>   -<span class="number">0.000128</span>   <span class="number">1.2664</span></span><br><span class="line"><span class="comment">!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">0.17</span>    <span class="number">0</span>      <span class="number">0.0</span>        <span class="number">1.25</span>   <span class="number">0.018</span>    <span class="number">0.4623</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.71</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">3.56</span>   <span class="number">500</span>     <span class="number">0.0</span>        <span class="number">1.39</span>   <span class="number">0.0035</span>   <span class="number">0.6489</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.72</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">100</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">1.4</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span>   <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">9</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">0.8</span>  <span class="number">0.9</span>  <span class="number">1.0</span>  <span class="number">1.1</span>  <span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
-<hr>
-<p>非本人原创内容</p>
-]]></content>
-      <categories>
-        <category>数值模拟</category>
-        <category>有限元法（FEM）</category>
-      </categories>
-      <tags>
-        <tag>非饱和土</tag>
-        <tag>孔隙水压力</tag>
       </tags>
   </entry>
   <entry>
@@ -869,6 +767,108 @@
       </tags>
   </entry>
   <entry>
+    <title>基于蒙特卡洛法的边坡可靠度分析程序说明</title>
+    <url>/2024/04/74b4d97f/</url>
+    <content><![CDATA[<h2 id="非饱和黄土边坡失效概率计算程序">非饱和黄土边坡失效概率计算程序</h2>
+<p>本程序是基于有限元的边坡可靠度分析程序，改进自<a href="https://inside.mines.edu/~vgriffit">Griffith教授</a> 的非饱和黄土边坡稳定性计算程序</p>
+<p>本程序使用强度折减法计算稳定系数，使用Monte-Carlo法计算失效概率；</p>
+<p>将计算作业量，分成<strong>线程数量</strong>的段数，将作业量平均分配给每一个线程；</p>
+<p><strong>本程序使用MPI实现并行运算</strong></p>
+<p><strong>程序文件</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">slope_new/Subroutine.py</span><br><span class="line">slope_new/slope2.f90</span><br></pre></td></tr></table></figure>
+<p><strong>示例数据文件</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exmaple/1.dat</span><br><span class="line">exmaple/1_c.txt</span><br><span class="line">exmaple/1_phi.txt</span><br><span class="line">example/1_gamma.txt !未给出</span><br><span class="line">exmaple/1_mstd.txt</span><br><span class="line">exmaple/1_grid.txt</span><br></pre></td></tr></table></figure>
+<p><strong>结果文件</strong> 未给出</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1_fs.res</span><br><span class="line">1_fail.res</span><br></pre></td></tr></table></figure>
+<h3 id="前置安装教程">前置安装教程</h3>
+<ol>
+<li>Fortran程序前置安装：<a href="https://github.com/sourceryinstitute/OpenCoarrays">OpenCoarrays</a></li>
+</ol>
+<p>以Ubuntu22.04安装Open-coarrays 2.9.2为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install cmake gfortran</span><br><span class="line">wget https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz</span><br><span class="line">tar xf 2.9.2.tar.gz</span><br><span class="line">cd OpenCoarrays-2.9.2</span><br><span class="line">makedir build</span><br><span class="line">cd build</span><br><span class="line">cmake ..</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<p>！若<a href="https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz">OpenCoarrays2.9.2</a> 下载失败可手动下载并上传到<code>/home/username/</code>再解压编译安装</p>
+<ol start="2">
+<li>可选安装–后台运行<a href="https://www.gnu.org/software/screen/">Screen</a></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">安装：</span><br><span class="line">sudo apt-get install screen</span><br><span class="line">列出全部会话：</span><br><span class="line">screen -ls</span><br><span class="line">新建：</span><br><span class="line">screen</span><br><span class="line">screen -S name</span><br><span class="line">删除：</span><br><span class="line">screen -S name -X quit ! 或在窗口内使用快捷键ctrl + D</span><br><span class="line">放置后台：</span><br><span class="line">使用快捷键ctrl+A再ctrl+D </span><br><span class="line">返回窗口：</span><br><span class="line">screen -R</span><br><span class="line">screen -r name </span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>Python程序须安装<a href="https://www.python.org/downloads/">Python3.x</a> ！无须安装在服务器中，仅做数据处理工作，在本地使用即可</li>
+</ol>
+<p>程序运行依赖<code>numpy</code>库，可使用pip安装：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pip install numpy</span><br></pre></td></tr></table></figure>
+<h3 id="程序使用教程">程序使用教程</h3>
+<ol>
+<li>运行<a href="https://github.com/liudh56/Slope/blob/main/Slope_new/Subroutine.py">Subroutine.py</a></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd 代码所在目录</span><br><span class="line">python ./Subroutine.py</span><br></pre></td></tr></table></figure>
+<p>根据提示操作即可<a href="https://github.com/liudh56/Slope/tree/main/example">使用教程</a></p>
+<ol start="2">
+<li>将生成文件与<code>slope2.f90</code>放在同一文件夹内（本文件夹即要上传的文件夹）</li>
+</ol>
+<p>文件包括：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx.dat</span><br><span class="line">xxx_c.txt xxx_phi.txt xxx_gamma.txt #具体文件数量与设为随机的参数有关</span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/liudh56/Slope/blob/main/example/1.dat">dat文件详细</a></p>
+<p>其他python程序使用文件（无需上传）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx_mstd.txt</span><br><span class="line">xxx_grid.txt</span><br></pre></td></tr></table></figure>
+<h4 id="Fortran程序–在服务器中运行">Fortran程序–在服务器中运行</h4>
+<ol>
+<li>
+<p>将上文中的文件夹上传至服务器并打开目录</p>
+</li>
+<li>
+<p>编译命令：</p>
+</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">caf slope2.f90 -o slope</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>运行：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cafrun -n 4 slope</span><br><span class="line">！ 4代表线程数，可更改，若线程数报错改用下面的命令</span><br></pre></td></tr></table></figure>
+<p>或者：使用下面命令适用于多主机的情况，根据主机实际情况分配线程数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mpirun --host host1:40 host2:40 -n 80 filename</span><br><span class="line">mpirun --host hostfile -n 80 filename !使用该命令须先创建hostfile文件</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>保存结果文件到本地与Subroutine.py文件放置在同一文件内</li>
+</ol>
+<p>运行Subroutine.py程序并选择功能3计算失效概率，结果保存在<code>xxx_fail.res</code>文件内。</p>
+<h2 id="Subroutine-py程序使用方式">Subroutine.py程序使用方式</h2>
+<h3 id="1-输入项目名称xxx。">1. 输入项目名称xxx。</h3>
+<h3 id="2-选择功能（输入序号）。">2. 选择功能（输入序号）。</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. （首次使用）引导填写并重新生成xxx.dat和xxx_mstd.txt文件</span><br><span class="line">   </span><br><span class="line">2. 根据xxx_mstd.txt生成phi、c和gamma的值</span><br><span class="line">   </span><br><span class="line">3. 计算失效概率,并生成xxx_fail.res文件,储存失效概率</span><br><span class="line">   </span><br><span class="line">4. 生成xxx_grid.txt文件,储存网格点的序号(多层土的情况使用)</span><br><span class="line">   </span><br><span class="line">5. 根据xxx_mstd.txt重新生成某参数值</span><br><span class="line"></span><br><span class="line">0. 退出程序(默认)</span><br></pre></td></tr></table></figure>
+<h3 id="功能使用教程">功能使用教程</h3>
+<ol>
+<li>第一次使用选择<code>1</code>填写<code>xxx.dat</code>和<code>xxx_mstd.txt</code>文件（也可直接修改示例文件来使用）</li>
+</ol>
+<p><strong>建议先查看示例文件</strong></p>
+<p><strong>若填写过程中出现填写错误，可继续填写，等待填写完成再从生成文件内修改错误</strong></p>
+<p><strong>功能4，可协助填写<code>xxx.dat</code>文件，后文介绍</strong></p>
+<ol start="2">
+<li>再选择<code>2</code>根据提示进行选择（以内摩擦角和粘聚力为随机参数为例）</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">请输入模拟次数:10000</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 10</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布) 1</span><br><span class="line">已生成xxx_c.txt文件!</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 20</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布): 1</span><br><span class="line">已生成xxx_phi.txt文件!</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>
+<p>文件上传计算</p>
+</li>
+<li>
+<p>计算完成后，将结果文件<code>xxx_fs.res</code>放置与本程序在同一文件夹内，运行程序选择<code>3</code>，结果保存在<code>xxx_fail.res</code>文件</p>
+</li>
+</ol>
+<p><strong>功能4介绍（单层土不需要使用）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">！根据自己划分的每层土的单元格数（不是高度）填写即可，注意与ny1和ny2区分</span><br><span class="line">请输入第1层土的厚度(竖向单元格数): 16</span><br><span class="line">请输入第2层土的厚度(竖向单元格数): 5</span><br><span class="line">已生成xxx_grid.txt文件!</span><br></pre></td></tr></table></figure>
+<p><code>xxx_grid.txt</code>的内容复制到<code>xxx.dat</code>文件的以下位置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;Choose whether to set it as a random variable (the order is: phi c gamma,1 is random)&quot;</span><br><span class="line">1 1 0</span><br><span class="line"></span><br><span class="line">&quot;Property group assigned to each element (etype, data not needed if np_types=1)&quot;</span><br><span class="line">（--------此位置--------）</span><br><span class="line"></span><br><span class="line">&quot;Pseudo-static analysis: Horizontal acceleration factor (k_h)&quot;</span><br><span class="line">0.0</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>有限元法（FEM）</category>
+      </categories>
+      <tags>
+        <tag>边坡稳定性</tag>
+        <tag>可靠度分析</tag>
+        <tag>蒙特卡洛法</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Ubuntu 22.04 双系统安装指南</title>
     <url>/2024/05/deb026e9/</url>
     <content><![CDATA[<h2 id="准备工作">准备工作</h2>
@@ -1027,58 +1027,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Ubuntu WebDAV 服务部署指南</title>
-    <url>/2024/05/e8755f24/</url>
-    <content><![CDATA[<p>参考文章: <a href="https://colzry.github.io/posts/linux%E6%9C%8D%E5%8A%A1/linux%E6%90%AD%E5%BB%BAwebdav%E6%9C%8D%E5%8A%A1/">Linux搭建WebDav服务 - Colzry’s Blog</a></p>
-<blockquote>
-<p>以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决</p>
-</blockquote>
-<h2 id="步骤一-安装WebDAV服务">步骤一: 安装WebDAV服务</h2>
-<p>首先, 我们需要安装<a href="https://github.com/hacdias/webdav">WebDAV Server</a>, 打开页面下载合适的版本, 本文以<a href="https://github.com/hacdias/webdav/releases/download/v4.2.0/linux-amd64-webdav.tar.gz"><code>linux-amd64-webdav.tar.gz</code></a>为例, 其中<code>amd64</code>表示<code>x64</code>架构</p>
-<p>然后, 解压并移动文件到<code>/usr/bin/</code>, 其余的README和LICENSE文件可删除</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -zxvf linux-amd64-webdav.tar.gz</span><br><span class="line">mv webdav /usr/bin/</span><br></pre></td></tr></table></figure>
-<h2 id="步骤二-配置WebDAV服务">步骤二: 配置WebDAV服务</h2>
-<p>安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 <code>/home/liudh/webdav</code>的目录, 注意修改用户名<code>liudh</code>为自己的用户名</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir /home/liudh/webdav</span><br></pre></td></tr></table></figure>
-<p>然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
-<p>在配置文件中, 我们需要添加以下内容.</p>
-<blockquote>
-<p>注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容</p>
-<p>注意缩进, <code>cors</code>和<code>users</code>后的参数均需要两个空格的缩进, 带<code>-</code>的参数需再缩进两个空格(四个)</p>
-<p>每一个参数<code>:</code>后均有一个空格</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Server related settings</span><br><span class="line">address: 0.0.0.0</span><br><span class="line">port: 10101</span><br><span class="line"># 如果无需验证填 false</span><br><span class="line">auth: true</span><br><span class="line"># 如果不需要 https 则填 false</span><br><span class="line">tls: false</span><br><span class="line"># https证书和密钥，如果 tls 为 false，cert 和 key 不需要</span><br><span class="line"># cert: cert_path</span><br><span class="line"># key: key_path</span><br><span class="line"># 访问前缀，建议默认</span><br><span class="line">prefix: /</span><br><span class="line">debug: false</span><br><span class="line"># 如果 auth 为 false 生效，文件共享的路径</span><br><span class="line">scope: .</span><br><span class="line">modify: true</span><br><span class="line">rules: []</span><br><span class="line"># 跨域设置</span><br><span class="line">cors:</span><br><span class="line">  enabled: true</span><br><span class="line">  credentials: true</span><br><span class="line">  allowed_headers:</span><br><span class="line">    - Depth</span><br><span class="line">  allowed_hosts:</span><br><span class="line">    - http://localhost:10101</span><br><span class="line">  allowed_methods:</span><br><span class="line">    - GET</span><br><span class="line">  exposed_headers:</span><br><span class="line">    - Content-Length</span><br><span class="line">    - Content-Range</span><br><span class="line"># 用户信息，如果 auth 为 true 生效</span><br><span class="line">users:</span><br><span class="line">  - username: liudh</span><br><span class="line">    password: passwd</span><br><span class="line">    scope: /home/liudh/webdav/</span><br><span class="line">    # 是否允许修改</span><br><span class="line">    modify: true</span><br><span class="line"># 可以根据此模板继续添加其他用户</span><br></pre></td></tr></table></figure>
-<p>保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/bin/webdav -c /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
-<h2 id="步骤三-添加守护进程">步骤三: 添加守护进程</h2>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /usr/lib/systemd/system/webdav.service</span><br></pre></td></tr></table></figure>
-<p>将以下内容添加到文件中</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=WebDAV server</span><br><span class="line">After=network.target</span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">ExecStart=/usr/bin/webdav -c /opt/webdav_config.yaml</span><br><span class="line">Restart=on-failure</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-<p>保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start webdav.service</span><br><span class="line">systemctl status webdav.service</span><br><span class="line">systemctl enable webdav.service</span><br></pre></td></tr></table></figure>
-<p>之后修改配置文件后, 可以使用以下命令重启服务</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl restart webdav.service</span><br></pre></td></tr></table></figure>
-<h2 id="步骤四-挂载webdav测试服务">步骤四: 挂载webdav测试服务</h2>
-<p>使用任意webdav挂载软件, 挂载测试, 注意填写参数如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">协议: http # 如果配置了ssl证书就用https</span><br><span class="line">主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号</span><br><span class="line">	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/</span><br><span class="line">端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要</span><br><span class="line">用户名: liudh # 都改成自己的</span><br><span class="line">密码: passwd</span><br></pre></td></tr></table></figure>
-<p>之后就可以上传下载文件测试一下了, 如果有错误就用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl status webdav.service</span><br></pre></td></tr></table></figure>
-<p>查看错误日志.</p>
-<blockquote>
-<p>如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>计算机技术</category>
-        <category>服务器运维</category>
-      </categories>
-      <tags>
-        <tag>WebDAV</tag>
-        <tag>文件共享</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Windows Git 安装与基础配置指南</title>
     <url>/2024/05/cbf708ce/</url>
     <content><![CDATA[<h2 id="1-下载安装包">1. 下载安装包</h2>
@@ -1135,6 +1083,58 @@
       <tags>
         <tag>安装配置</tag>
         <tag>Windows</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu WebDAV 服务部署指南</title>
+    <url>/2024/05/e8755f24/</url>
+    <content><![CDATA[<p>参考文章: <a href="https://colzry.github.io/posts/linux%E6%9C%8D%E5%8A%A1/linux%E6%90%AD%E5%BB%BAwebdav%E6%9C%8D%E5%8A%A1/">Linux搭建WebDav服务 - Colzry’s Blog</a></p>
+<blockquote>
+<p>以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决</p>
+</blockquote>
+<h2 id="步骤一-安装WebDAV服务">步骤一: 安装WebDAV服务</h2>
+<p>首先, 我们需要安装<a href="https://github.com/hacdias/webdav">WebDAV Server</a>, 打开页面下载合适的版本, 本文以<a href="https://github.com/hacdias/webdav/releases/download/v4.2.0/linux-amd64-webdav.tar.gz"><code>linux-amd64-webdav.tar.gz</code></a>为例, 其中<code>amd64</code>表示<code>x64</code>架构</p>
+<p>然后, 解压并移动文件到<code>/usr/bin/</code>, 其余的README和LICENSE文件可删除</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -zxvf linux-amd64-webdav.tar.gz</span><br><span class="line">mv webdav /usr/bin/</span><br></pre></td></tr></table></figure>
+<h2 id="步骤二-配置WebDAV服务">步骤二: 配置WebDAV服务</h2>
+<p>安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 <code>/home/liudh/webdav</code>的目录, 注意修改用户名<code>liudh</code>为自己的用户名</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir /home/liudh/webdav</span><br></pre></td></tr></table></figure>
+<p>然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
+<p>在配置文件中, 我们需要添加以下内容.</p>
+<blockquote>
+<p>注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容</p>
+<p>注意缩进, <code>cors</code>和<code>users</code>后的参数均需要两个空格的缩进, 带<code>-</code>的参数需再缩进两个空格(四个)</p>
+<p>每一个参数<code>:</code>后均有一个空格</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Server related settings</span><br><span class="line">address: 0.0.0.0</span><br><span class="line">port: 10101</span><br><span class="line"># 如果无需验证填 false</span><br><span class="line">auth: true</span><br><span class="line"># 如果不需要 https 则填 false</span><br><span class="line">tls: false</span><br><span class="line"># https证书和密钥，如果 tls 为 false，cert 和 key 不需要</span><br><span class="line"># cert: cert_path</span><br><span class="line"># key: key_path</span><br><span class="line"># 访问前缀，建议默认</span><br><span class="line">prefix: /</span><br><span class="line">debug: false</span><br><span class="line"># 如果 auth 为 false 生效，文件共享的路径</span><br><span class="line">scope: .</span><br><span class="line">modify: true</span><br><span class="line">rules: []</span><br><span class="line"># 跨域设置</span><br><span class="line">cors:</span><br><span class="line">  enabled: true</span><br><span class="line">  credentials: true</span><br><span class="line">  allowed_headers:</span><br><span class="line">    - Depth</span><br><span class="line">  allowed_hosts:</span><br><span class="line">    - http://localhost:10101</span><br><span class="line">  allowed_methods:</span><br><span class="line">    - GET</span><br><span class="line">  exposed_headers:</span><br><span class="line">    - Content-Length</span><br><span class="line">    - Content-Range</span><br><span class="line"># 用户信息，如果 auth 为 true 生效</span><br><span class="line">users:</span><br><span class="line">  - username: liudh</span><br><span class="line">    password: passwd</span><br><span class="line">    scope: /home/liudh/webdav/</span><br><span class="line">    # 是否允许修改</span><br><span class="line">    modify: true</span><br><span class="line"># 可以根据此模板继续添加其他用户</span><br></pre></td></tr></table></figure>
+<p>保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/bin/webdav -c /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="步骤三-添加守护进程">步骤三: 添加守护进程</h2>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /usr/lib/systemd/system/webdav.service</span><br></pre></td></tr></table></figure>
+<p>将以下内容添加到文件中</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=WebDAV server</span><br><span class="line">After=network.target</span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">ExecStart=/usr/bin/webdav -c /opt/webdav_config.yaml</span><br><span class="line">Restart=on-failure</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start webdav.service</span><br><span class="line">systemctl status webdav.service</span><br><span class="line">systemctl enable webdav.service</span><br></pre></td></tr></table></figure>
+<p>之后修改配置文件后, 可以使用以下命令重启服务</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl restart webdav.service</span><br></pre></td></tr></table></figure>
+<h2 id="步骤四-挂载webdav测试服务">步骤四: 挂载webdav测试服务</h2>
+<p>使用任意webdav挂载软件, 挂载测试, 注意填写参数如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">协议: http # 如果配置了ssl证书就用https</span><br><span class="line">主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号</span><br><span class="line">	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/</span><br><span class="line">端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要</span><br><span class="line">用户名: liudh # 都改成自己的</span><br><span class="line">密码: passwd</span><br></pre></td></tr></table></figure>
+<p>之后就可以上传下载文件测试一下了, 如果有错误就用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl status webdav.service</span><br></pre></td></tr></table></figure>
+<p>查看错误日志.</p>
+<blockquote>
+<p>如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>计算机技术</category>
+        <category>服务器运维</category>
+      </categories>
+      <tags>
+        <tag>WebDAV</tag>
+        <tag>文件共享</tag>
       </tags>
   </entry>
   <entry>
@@ -3525,6 +3525,261 @@ M\left( \dfrac{\tau_b}{\tau_{e,p}} - 1 \right),
         <tag>两相流</tag>
         <tag>颗粒流</tag>
         <tag>相变</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>物质点法运动学：从速度梯度到粒子变形</title>
+    <url>/2026/09/f1536c55/</url>
+    <content><![CDATA[<p>一个小方块转过了一个角度，它是否就产生了应变？如果计算结果显示旋转后的方块变大了，又该怀疑材料模型，还是数值算法？</p>
+<p>回答这些问题之前，需要分清三个层次：<strong>物体的位置变化、材料内部的相对运动，以及数值更新对运动的近似</strong>。平移会改变位置，却不改变形状；刚体旋转会改变方向，却不拉伸材料；剪切则可能同时包含形状改变与旋转成分。</p>
+<p><a href="/2026/09/1de4dce6/">上一篇形函数文章</a>解释了粒子—网格映射中的权重和梯度。本文接着讨论：网格上已有速度之后，怎样判断粒子附近的材料会如何运动、如何变形？推导沿用<a href="/2024/07/af38f644/">物质点法基础中的运动描述</a>，重点放在几何意义，不展开本构、应力率或完整 cpGIMP。</p>
+<p>读者只需具备偏导数、二维向量与矩阵乘法的基础。可先看第一节的四幅图，再按需要阅读公式；<a href="/lab/#kinematics-lab">速度梯度与形变实验</a>用于交互观察，不是阅读本文的前提。</p>
+<h2 id="一、先看四种运动，不急着写矩阵">一、先看四种运动，不急着写矩阵</h2>
+<p>下面始终取 <span class="math inline"><script type="math/tex">x</script></span> 向右、<span class="math inline"><script type="math/tex">y</script></span> 向上。把小方块看成一块材料区域，内部细线连接的是同一批材料点，<strong>不是每一步重新生成的背景网格</strong>。橙色角点用于追踪方向，前后两图采用相同尺度。</p>
+<p>图中尺寸用于几何示意，不代表具体材料参数；除了平移，后三种图示都以方块中心为运动中心。</p>
+<h3 id="1-均匀平移：大家走得一样快">1. 均匀平移：大家走得一样快</h3>
+<p><img src="/2026/09/f1536c55/translation.svg" alt="均匀平移前后对照：整个方块向右上方移动，边长、夹角与橙色角点的相对位置不变"></p>
+<p>所有材料点的速度都相同。方块虽然移动了，但任意两点之间的距离和方向都没有变化。</p>
+<p><strong>存在速度，不意味着存在速度梯度</strong>。决定变形的不是“跑得多快”，而是“相邻位置跑得是否一样”。</p>
+<h3 id="2-单轴伸长：两侧逐渐分开">2. 单轴伸长：两侧逐渐分开</h3>
+<p><img src="/2026/09/f1536c55/extension.svg" alt="单轴伸长前后对照：方块水平方向伸长为原来的约1.65倍，高度保持不变"></p>
+<p>左侧向左、右侧向右，离中心越远，水平速度的绝对值越大。水平材料线被拉长，竖向高度不变，面积因此增大。</p>
+<p>这里指的是<strong>给定速度场中的几何伸长</strong>，不预设泊松收缩，也不根据材料参数求侧向响应。它不等同于对某种材料施加单轴应力的完整力学试验。</p>
+<h3 id="3-简单剪切：上边相对下边错动">3. 简单剪切：上边相对下边错动</h3>
+<p><img src="/2026/09/f1536c55/shear.svg" alt="简单剪切前后对照：上下边相对水平错动，方块变成平行四边形，面积保持不变"></p>
+<p>水平速度随高度变化，上边相对下边向右错动。原来的直角改变，竖向材料线也不再保持竖直，方块变成平行四边形。</p>
+<p>这个例子说明：<strong>面积不变，也可以有变形</strong>。只检查体积或面积，无法识别剪切。</p>
+<h3 id="4-刚体旋转：方向变了，形状没变">4. 刚体旋转：方向变了，形状没变</h3>
+<p><img src="/2026/09/f1536c55/rotation.svg" alt="刚体旋转前后对照：方块逆时针转过45度，橙色角点移动到上方，边长与面积均保持不变"></p>
+<p>方块绕中心逆时针旋转。橙色角点的位置变了，所有材料线的方向都在转动，但边长、夹角和面积保持不变。</p>
+<p>正方形有旋转对称性，只看轮廓容易误判；追踪同一个角点或一条材料线，才能看清它确实在转动。</p>
+<table>
+<thead>
+<tr>
+<th>运动</th>
+<th>位置或方向</th>
+<th>材料内部变化</th>
+<th>面积</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>均匀平移</td>
+<td>整体位置改变</td>
+<td>距离、夹角不变</td>
+<td>不变</td>
+</tr>
+<tr>
+<td>单轴伸长</td>
+<td>两侧分开</td>
+<td>水平长度增大</td>
+<td>增大</td>
+</tr>
+<tr>
+<td>简单剪切</td>
+<td>各高度相对错动</td>
+<td>长度或夹角改变</td>
+<td>不变</td>
+</tr>
+<tr>
+<td>刚体旋转</td>
+<td>整体方向改变</td>
+<td>距离、夹角不变</td>
+<td>不变</td>
+</tr>
+</tbody>
+</table>
+<h2 id="二、速度梯度描述的是相邻点的速度差">二、速度梯度描述的是相邻点的速度差</h2>
+<h3 id="1-从一段很短的材料线出发">1. 从一段很短的材料线出发</h3>
+<p>设当前速度场为 <span class="math inline"><script type="math/tex">\boldsymbol v(\boldsymbol x,t)</script></span>，<span class="math inline"><script type="math/tex">\boldsymbol x</script></span> 是当前位置，<span class="math inline"><script type="math/tex">t</script></span> 是时间。相邻两点之间有一个很小的间隔 <span class="math inline"><script type="math/tex">\delta\boldsymbol x</script></span>，它们的速度差近似为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\delta\boldsymbol v
+\approx \boldsymbol L\,\delta\boldsymbol x,
+\qquad
+L_{ab}=\frac{\partial v_a}{\partial x_b}.
+\tag{1}\label{eq:kin-local-difference}</script>
+</div>
+<p><span class="math inline"><script type="math/tex">\boldsymbol L</script></span> 称为<strong>速度梯度</strong>，单位为 <span class="math inline"><script type="math/tex">\mathrm{s}^{-1}</script></span>。本文约定：矩阵的行对应速度分量，列对应求导方向。在二维中，</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol L=
+\begin{pmatrix}
+\partial v_x/\partial x & \partial v_x/\partial y\\
+\partial v_y/\partial x & \partial v_y/\partial y
+\end{pmatrix}.</script>
+</div>
+<p>例如，<span class="math inline"><script type="math/tex">L_{xy}</script></span> 表示水平速度沿竖直方向的变化率。上下两点即使位于同一条竖线上，也可能有不同的水平速度，这正是简单剪切的来源。</p>
+<p>均匀平移时 <span class="math inline"><script type="math/tex">\boldsymbol v=\boldsymbol b</script></span>，其中 <span class="math inline"><script type="math/tex">\boldsymbol b</script></span> 是不随位置变化的速度向量，因此 <span class="math inline"><script type="math/tex">\boldsymbol L=\boldsymbol 0</script></span>。这与第一幅图的观察一致。</p>
+<h3 id="2-MPM-怎样从节点速度得到它">2. MPM 怎样从节点速度得到它</h3>
+<p>用 <span class="math inline"><script type="math/tex">i</script></span> 表示网格节点，<span class="math inline"><script type="math/tex">p</script></span> 表示物质点。给定节点速度 <span class="math inline"><script type="math/tex">\boldsymbol v_i</script></span>，用形函数 <span class="math inline"><script type="math/tex">N_i</script></span> 插值得到局部速度场：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol v^h(\boldsymbol x)=\sum_iN_i(\boldsymbol x)\boldsymbol v_i.</script>
+</div>
+<p>上标 <span class="math inline"><script type="math/tex">h</script></span> 表示离散近似。对<strong>当前物理坐标</strong>求导，并在粒子位置 <span class="math inline"><script type="math/tex">\boldsymbol x_p</script></span> 处取值，就得到</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol L_p
+=\sum_i\boldsymbol v_i\otimes\boldsymbol G_{ip},
+\qquad
+\boldsymbol G_{ip}=\nabla_{\boldsymbol x}N_i(\boldsymbol x_p).
+\tag{2}\label{eq:kin-grid-gradient}</script>
+</div>
+<p>这里的外积按 <span class="math inline"><script type="math/tex">(\boldsymbol v_i\otimes\boldsymbol G_{ip})_{ab}=v_{i,a}G_{ip,b}</script></span> 定义。节点速度单位为 <span class="math inline"><script type="math/tex">\mathrm{m/s}</script></span>，形函数梯度单位为 <span class="math inline"><script type="math/tex">\mathrm{m}^{-1}</script></span>，两者相乘正好得到 <span class="math inline"><script type="math/tex">\mathrm{s}^{-1}</script></span>。</p>
+<p>这一步容易出现两类错误：</p>
+<ul>
+<li>把外积次序写反，导致非对角分量转置；均匀平移未必能暴露这个错误，简单剪切更适合检查。</li>
+<li>直接使用单元局部坐标下的导数，没有换算成物理坐标梯度，使结果随网格尺寸出现错误缩放。</li>
+</ul>
+<p>在本文对应的实验中，节点速度直接取自已知速度场，用于隔离速度梯度计算。完整 MPM 中，节点速度还受到动量映射、节点力、边界条件及时间更新顺序的影响，不能把这里的局部检查当作完整求解器验证。</p>
+<h2 id="三、把速度梯度拆成变形率与自旋">三、把速度梯度拆成变形率与自旋</h2>
+<p>速度梯度同时包含拉伸、剪切和旋转的信息。将它拆成对称与反对称部分：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol D=\frac12(\boldsymbol L+\boldsymbol L^{\mathsf T}),
+\qquad
+\boldsymbol W=\frac12(\boldsymbol L-\boldsymbol L^{\mathsf T}),
+\qquad
+\boldsymbol L=\boldsymbol D+\boldsymbol W.
+\tag{3}\label{eq:kin-split}</script>
+</div>
+<p><span class="math inline"><script type="math/tex">\boldsymbol D</script></span> 是变形率张量，常称应变率张量；<span class="math inline"><script type="math/tex">\boldsymbol W</script></span> 是自旋张量。两者单位均为 <span class="math inline"><script type="math/tex">\mathrm{s}^{-1}</script></span>。<strong>它们描述瞬时变化率，不是已经累积的应变和转角</strong>。</p>
+<h3 id="1-为什么材料线的长度变化由-D-决定">1. 为什么材料线的长度变化由 D 决定</h3>
+<p>对无穷小材料线 <span class="math inline"><script type="math/tex">\mathrm d\boldsymbol x</script></span>，随材料运动有 <span class="math inline"><script type="math/tex">\frac{\mathrm D}{\mathrm Dt}\mathrm d\boldsymbol x=\boldsymbol L\,\mathrm d\boldsymbol x</script></span>。这里 <span class="math inline"><script type="math/tex">\mathrm D/\mathrm Dt</script></span> 表示物质导数，不是张量 <span class="math inline"><script type="math/tex">\boldsymbol D</script></span>。于是</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\mathrm D}{\mathrm Dt}\left|\mathrm d\boldsymbol x\right|^2
+=2\,\mathrm d\boldsymbol x^{\mathsf T}\boldsymbol D\,\mathrm d\boldsymbol x.
+\tag{4}\label{eq:kin-line-length}</script>
+</div>
+<p>反对称矩阵满足 <span class="math inline"><script type="math/tex">\mathrm d\boldsymbol x^{\mathsf T}\boldsymbol W\,\mathrm d\boldsymbol x=0</script></span>，因此 <span class="math inline"><script type="math/tex">\boldsymbol W</script></span> 不直接改变这段材料线的长度。<span class="math inline"><script type="math/tex">\boldsymbol D</script></span> 则描述不同方向上的瞬时伸缩；把不同方向的材料线放在一起，也能识别剪切造成的夹角变化。</p>
+<h3 id="2-刚体旋转：L-不为零，但-D-为零">2. 刚体旋转：L 不为零，但 D 为零</h3>
+<p>设绕原点逆时针转动的角速度为常数 <span class="math inline"><script type="math/tex">\Omega</script></span>，单位为 <span class="math inline"><script type="math/tex">\mathrm{rad/s}</script></span>，速度场为 <span class="math inline"><script type="math/tex">v_x=-\Omega y</script></span>、<span class="math inline"><script type="math/tex">v_y=\Omega x</script></span>。此时</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol L=
+\begin{pmatrix}0&-\Omega\\\Omega&0\end{pmatrix},
+\qquad
+\boldsymbol D=\boldsymbol 0,
+\qquad
+\boldsymbol W=\boldsymbol L.</script>
+</div>
+<p>速度随位置变化，所以 <span class="math inline"><script type="math/tex">\boldsymbol L</script></span> 不为零；但相邻材料点之间没有相对伸缩，<span class="math inline"><script type="math/tex">\boldsymbol D</script></span> 为零。不能把整个 <span class="math inline"><script type="math/tex">\boldsymbol L</script></span> 都当成应变率，也不能看到材料线方向变化就认定它被剪切了。</p>
+<h3 id="3-简单剪切：D-与-W-同时存在">3. 简单剪切：D 与 W 同时存在</h3>
+<p>设 <span class="math inline"><script type="math/tex">v_x=\dot\gamma y</script></span>、<span class="math inline"><script type="math/tex">v_y=0</script></span>，其中常数 <span class="math inline"><script type="math/tex">\dot\gamma</script></span> 为工程剪切速率，单位为 <span class="math inline"><script type="math/tex">\mathrm{s}^{-1}</script></span>。则</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol L=
+\begin{pmatrix}0&\dot\gamma\\0&0\end{pmatrix},
+\qquad
+\boldsymbol D=
+\begin{pmatrix}0&\dot\gamma/2\\\dot\gamma/2&0\end{pmatrix},
+\qquad
+\boldsymbol W=
+\begin{pmatrix}0&\dot\gamma/2\\-\dot\gamma/2&0\end{pmatrix}.</script>
+</div>
+<p>因此，<span class="math inline"><script type="math/tex">D_{xy}</script></span> 是工程剪切速率的一半。这不是少算了一项，而是张量分量与工程剪切量的定义不同。</p>
+<p>还要注意：<strong>自旋不等于每一条材料线的角速度，也不能直接积分成任意有限变形下的总转角</strong>。在这个剪切场里，水平材料线始终水平，竖向材料线却会倾斜；它们的方向变化并不相同。有限旋转需要结合完整运动或形变梯度分析。</p>
+<h2 id="四、形变梯度-F-把初始材料线带到当前构形">四、形变梯度 F 把初始材料线带到当前构形</h2>
+<h3 id="1-L-看“此刻怎样变”，F-看“已经变成什么样”">1. L 看“此刻怎样变”，F 看“已经变成什么样”</h3>
+<p>用 <span class="math inline"><script type="math/tex">\boldsymbol X</script></span> 表示材料点在参考构形中的坐标，运动写成 <span class="math inline"><script type="math/tex">\boldsymbol x=\boldsymbol\chi(\boldsymbol X,t)</script></span>。形变梯度定义为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol F=\frac{\partial\boldsymbol x}{\partial\boldsymbol X},
+\qquad
+\mathrm d\boldsymbol x=\boldsymbol F\,\mathrm d\boldsymbol X.
+\tag{5}\label{eq:kin-F}</script>
+</div>
+<p><span class="math inline"><script type="math/tex">\boldsymbol F</script></span> 无量纲，用来变换材料线的相对向量；<strong>它不包含整体平移</strong>。若要画出材料域，还需要知道它的中心位置。</p>
+<p>沿材料运动对 <span class="math inline"><script type="math/tex">\eqref{eq:kin-F}</script></span> 求导，利用链式法则可得</p>
+<div class="math block">
+<script type="math/tex; mode=display">\dot{\boldsymbol F}=\boldsymbol L\boldsymbol F.
+\tag{6}\label{eq:kin-F-rate}</script>
+</div>
+<p>点号表示物质时间导数。注意乘法顺序是 <span class="math inline"><script type="math/tex">\boldsymbol L\boldsymbol F</script></span>，不是一般意义上可以互换的两个矩阵。</p>
+<p>对于本文的空间均匀、时间恒定的 <span class="math inline"><script type="math/tex">\boldsymbol L</script></span>，且初始 <span class="math inline"><script type="math/tex">\boldsymbol F(0)=\boldsymbol I</script></span>，有精确解</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol F(t)=\exp(\boldsymbol L t).</script>
+</div>
+<p><span class="math inline"><script type="math/tex">\boldsymbol I</script></span> 是单位矩阵，<span class="math inline"><script type="math/tex">\exp</script></span> 是矩阵指数，不是把每个矩阵元素分别取指数。若 <span class="math inline"><script type="math/tex">\boldsymbol L</script></span> 随运动和时间变化，一般不能直接套用这个常系数公式。</p>
+<h3 id="2-面积变化只描述变形的一部分">2. 面积变化只描述变形的一部分</h3>
+<p>定义 <span class="math inline"><script type="math/tex">J=\det\boldsymbol F</script></span>。在三维中，<span class="math inline"><script type="math/tex">J</script></span> 是当前体积与参考体积之比；在本文二维示意中，它是面积比。对可逆的 <span class="math inline"><script type="math/tex">\boldsymbol F</script></span>，</p>
+<div class="math block">
+<script type="math/tex; mode=display">\dot J=J\,\operatorname{tr}(\boldsymbol L)
+=J\,\operatorname{tr}(\boldsymbol D).</script>
+</div>
+<p><span class="math inline"><script type="math/tex">\operatorname{tr}</script></span> 表示矩阵的迹，即对角元素之和。简单剪切和刚体旋转都可以有 <span class="math inline"><script type="math/tex">J=1</script></span>，但前者改变形状，后者不改变形状。检查 <span class="math inline"><script type="math/tex">J</script></span> 不能代替对边长、夹角和方向的检查。</p>
+<p>对仿射运动，若材料域的初始中心为 <span class="math inline"><script type="math/tex">\boldsymbol x_{c0}</script></span>、当前中心为 <span class="math inline"><script type="math/tex">\boldsymbol x_c(t)</script></span>，初始角点为 <span class="math inline"><script type="math/tex">\boldsymbol q_0</script></span>，则</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol q(t)=\boldsymbol x_c(t)
++\boldsymbol F(t)(\boldsymbol q_0-\boldsymbol x_{c0}).</script>
+</div>
+<p>这也是文中示意图和实验室里“方块随运动改变”的基本做法。一般非均匀速度场中的有限大小材料域还会发生非仿射变化，不能总用中心处一个 <span class="math inline"><script type="math/tex">\boldsymbol F</script></span> 精确表示整个区域。</p>
+<h2 id="五、为什么一次-Euler-更新会把旋转的方块变大">五、为什么一次 Euler 更新会把旋转的方块变大</h2>
+<p>用显式 Euler 方法离散 <span class="math inline"><script type="math/tex">\eqref{eq:kin-F-rate}</script></span>，得到</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol F^{n+1}
+=(\boldsymbol I+\Delta t\,\boldsymbol L^n)\boldsymbol F^n,</script>
+</div>
+<p>其中上标 <span class="math inline"><script type="math/tex">n</script></span> 表示时间层，<span class="math inline"><script type="math/tex">\Delta t</script></span> 为步长。对于从 <span class="math inline"><script type="math/tex">\boldsymbol F^0=\boldsymbol I</script></span> 出发的一次刚体旋转，令 <span class="math inline"><script type="math/tex">s=\Omega\Delta t</script></span>，精确结果与一次 Euler 近似分别是</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol F_{\mathrm{exact}}=
+\begin{pmatrix}\cos s&-\sin s\\\sin s&\cos s\end{pmatrix},
+\qquad
+\boldsymbol F_{\mathrm{Euler}}=
+\begin{pmatrix}1&-s\\s&1\end{pmatrix}.</script>
+</div>
+<p>精确旋转保持长度与面积，而 Euler 近似满足</p>
+<div class="math block">
+<script type="math/tex; mode=display">\det\boldsymbol F_{\mathrm{Euler}}=1+s^2,
+\qquad
+\boldsymbol F_{\mathrm{Euler}}^{\mathsf T}\boldsymbol F_{\mathrm{Euler}}
+=(1+s^2)\boldsymbol I.
+\tag{7}\label{eq:kin-euler-dilation}</script>
+</div>
+<p>因此，它不只是“转得不准确”，还把所有方向的长度都乘上了 <span class="math inline"><script type="math/tex">\sqrt{1+s^2}</script></span>。取 <span class="math inline"><script type="math/tex">\Omega=1\ \mathrm{rad/s}</script></span>、<span class="math inline"><script type="math/tex">\Delta t=1\ \mathrm{s}</script></span>，精确转角为 <span class="math inline"><script type="math/tex">1\ \mathrm{rad}</script></span>，面积比为 <span class="math inline"><script type="math/tex">1</script></span>；Euler 图形的面积比却达到 <span class="math inline"><script type="math/tex">2</script></span>，边长增至约 <span class="math inline"><script type="math/tex">1.414</script></span> 倍。</p>
+<p><strong>这是时间离散引入的虚假伸长，不是材料突然变得可压缩</strong>。即使节点速度与 <span class="math inline"><script type="math/tex">\boldsymbol L</script></span> 完全正确，也可能出现这一误差。</p>
+<p>若把固定总时长 <span class="math inline"><script type="math/tex">T</script></span> 均分成 <span class="math inline"><script type="math/tex">N</script></span> 个 Euler 小步，在该恒定旋转场中，总面积比为</p>
+<div class="math block">
+<script type="math/tex; mode=display">J_N=\left[1+\left(\frac{\Omega T}{N}\right)^2\right]^N
+\longrightarrow 1\qquad(N\to\infty).</script>
+</div>
+<p>缩小步长能改善这个例子的误差，但有限步长下仍不严格保面积。更适合旋转的更新方法需要另外讨论；不能通过强行把 <span class="math inline"><script type="math/tex">J</script></span> 改回 <span class="math inline"><script type="math/tex">1</script></span>，就认为其他运动误差也得到解决。</p>
+<p>另一个对照是简单剪切：此时 <span class="math inline"><script type="math/tex">\boldsymbol L^2=\boldsymbol 0</script></span>，矩阵指数恰好截断为 <span class="math inline"><script type="math/tex">\boldsymbol I+t\boldsymbol L</script></span>。所以这个特殊场的一次 Euler 图可以与精确图重合，<strong>不代表 Euler 对所有运动都准确</strong>。</p>
+<h2 id="六、在计算实验室完成三个观察任务">六、在计算实验室完成三个观察任务</h2>
+<p>打开<a href="/lab/#kinematics-lab">速度梯度与形变实验</a>。默认只显示初始与当前状态；播放将 1 秒的运动放慢为约 6 秒，视野保持不变。以下任务按默认中心 <span class="math inline"><script type="math/tex">(0.5,0.5)\ \mathrm m</script></span> 和默认速率 <span class="math inline"><script type="math/tex">1</script></span> 进行；若此前修改过参数，可在“计算细节”中恢复。</p>
+<h3 id="任务一：先凭图判断，再看-D-与-W">任务一：先凭图判断，再看 D 与 W</h3>
+<p>分别选择均匀平移、简单剪切和刚体旋转，播放并跟踪橙色角点。先回答：位置变了吗？形状变了吗？面积变了吗？</p>
+<p>然后展开“计算细节”。预期结果是：平移的 <span class="math inline"><script type="math/tex">\boldsymbol L</script></span> 为零；旋转的 <span class="math inline"><script type="math/tex">\boldsymbol D</script></span> 为零、<span class="math inline"><script type="math/tex">\boldsymbol W</script></span> 不为零；剪切的 <span class="math inline"><script type="math/tex">\boldsymbol D</script></span> 与 <span class="math inline"><script type="math/tex">\boldsymbol W</script></span> 都不为零。展开细节会暂停播放，便于对照当前状态。</p>
+<h3 id="任务二：让旋转误差显形">任务二：让旋转误差显形</h3>
+<p>选择刚体旋转，勾选“对比一次 Euler 近似”，把进度移到 <span class="math inline"><script type="math/tex">t=1\ \mathrm s</script></span>。检查精确面积保持 <span class="math inline"><script type="math/tex">100\%</script></span>，而一次 Euler 近似显示 <span class="math inline"><script type="math/tex">200\%</script></span>。</p>
+<p>再把进度移到 <span class="math inline"><script type="math/tex">t=0.1\ \mathrm s</script></span>，Euler 面积比应变成 <span class="math inline"><script type="math/tex">1.01</script></span>。这里改变的是<strong>从起点到当前时刻的一次大步长度</strong>，不是在固定总时长内增加积分步数；不要把进度滑块误认为求解器的时间步细化试验。</p>
+<h3 id="任务三：检查形函数，而不是寻找“更漂亮”的运动">任务三：检查形函数，而不是寻找“更漂亮”的运动</h3>
+<p>展开细节，在双线性、二次 B 样条和 uGIMP 之间切换，也可把初始采样点移到边界。实验给定的是仿射速度场，使用完整支持时，三种形函数都应重构同一个 <span class="math inline"><script type="math/tex">\boldsymbol L</script></span>，只剩浮点量级差异。</p>
+<p>如果只因为切换形函数，均匀旋转就明显变成拉伸，应优先检查梯度方向、物理尺度换算和边界支持是否被截断。这个任务检查的是<strong>仿射再现能力</strong>，不能据此推断三种方法在一般 MPM 动力学问题中的误差完全相同。</p>
+<h2 id="七、如何把这些关系放回-MPM-程序">七、如何把这些关系放回 MPM 程序</h2>
+<p>在实际实现里，可以沿着下面的链条检查，而不是从一张变形图直接判断程序是否正确：</p>
+<ol>
+<li><strong>节点速度是否对应预期时间层与边界条件？</strong> 本文不规定所有算法都采用同一种应力更新顺序。</li>
+<li><strong>粒子处的 <span class="math inline"><script type="math/tex">\boldsymbol L_p</script></span> 是否由物理梯度计算？</strong> 用平移检验零梯度，用简单剪切检验非对角分量。</li>
+<li><strong>分解是否满足 <span class="math inline"><script type="math/tex">\boldsymbol L=\boldsymbol D+\boldsymbol W</script></span>？</strong> 刚体旋转应有 <span class="math inline"><script type="math/tex">\boldsymbol D=0</script></span>。</li>
+<li><strong>更新后的 <span class="math inline"><script type="math/tex">\boldsymbol F</script></span> 是否同时通过长度、方向与面积检查？</strong> 不只检查行列式。</li>
+<li><strong>画出的材料域与实际积分域是否一致？</strong> 为展示 <span class="math inline"><script type="math/tex">\boldsymbol F</script></span> 画出一个旋转方块，不意味着 uGIMP 的固定轴对齐积分域已经随之更新，更不等于实现了 cpGIMP。</li>
+</ol>
+<p>至此，“粒子如何变形”可以分成两个相接但不同的问题：形函数梯度把节点速度变成局部运动信息，时间更新再把这种瞬时信息累积成材料的几何变化。前一环节正确，并不自动保证后一环节正确。</p>
+<p>应力如何响应这些变化，是本构关系与应力更新的问题；PIC 和 FLIP 如何回传速度，则会影响后续时间步的节点速度与能量表现。这些问题都建立在运动学关系之上，但不需要在同一篇文章中一次讲完。</p>
+<h2 id="相关基础与延伸阅读">相关基础与延伸阅读</h2>
+<ul>
+<li><a href="/2024/07/af38f644/">物质点法基础（一）：基本原理与控制方程</a>：参考构形、现时构形与连续体运动描述。</li>
+<li><a href="/2024/07/96d26/">标准 MPM 的控制方程离散与计算流程</a>：将局部运动学放回完整的粒子—网格更新流程。</li>
+<li><a href="/2026/09/1de4dce6/">MPM 形函数对比：双线性插值、二次 B 样条与网格穿越</a>：权重、物理梯度与边界支持。</li>
+</ul>
+<p>本文四种运动、角点示意与 Euler 旋转对照是围绕上述运动学关系构造的教学例子，不是某篇论文的算例复现，也不构成对完整工程求解器的精度认证。</p>
+
+<div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
+  <span class="ai-content-label__icon" aria-hidden="true">
+    <i class="fas fa-wand-magic-sparkles"></i>
+  </span>
+  <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span>
+</div>]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>物质点法（MPM）</category>
+      </categories>
+      <tags>
+        <tag>离散化</tag>
       </tags>
   </entry>
   <entry>
