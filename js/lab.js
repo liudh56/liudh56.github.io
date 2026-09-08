@@ -70,6 +70,7 @@
         if (!panels.some(panel => panel.id === id)) id = 'mpm-lab';
         if (id !== 'mpm-lab') stopP2G();
         if (id !== 'mpm2d-lab') stopMPMScan();
+        if (id !== 'kinematics-lab') stopKinematics();
         tabs.forEach(tab => {
             const active = tab.dataset.labTab === id;
             tab.setAttribute('aria-selected', String(active));
@@ -1112,7 +1113,11 @@
         y: byId('kinematics-y'),
         nodeCount: byId('kinematics-node-count'),
         basis: byId('kinematics-basis'),
-        halfWidthRatio: byId('kinematics-half-width-ratio')
+        halfWidthRatio: byId('kinematics-half-width-ratio'),
+        frame: null,
+        lastFrame: null,
+        boundsKey: '',
+        bounds: null
     };
 
     function renderKinematics() {
@@ -1148,94 +1153,105 @@
         byId('kinematics-field-note').textContent = fieldNotes[options.preset];
         byId('kinematics-domain-note').textContent = `${options.basis === 'gimp' ? '当前' : '保留的'} uGIMP 半宽 ℓp = ${(options.particleHalfWidthRatio * h).toFixed(5)} m，全宽 2ℓp = ${(2 * options.particleHalfWidthRatio * h).toFixed(5)} m；h = ${h.toFixed(3)} m。此固定积分域独立于图示的 0.12 m 初始方域，不随 F 更新。`;
 
-        const { context, width, height } = setupCanvas(kinematics.canvas);
+        const compare = byId('kinematics-compare').checked;
+        const gridView = byId('kinematics-view').value === 'grid';
+        byId('kinematics-euler-scene').hidden = !compare;
+        byId('kinematics-comparison-note').hidden = !compare;
+        byId('kinematics-current-title').textContent = `当前状态 · t = ${options.timeStep.toFixed(2)} s`;
+        const observations = {
+            translation: '看位置：方块整体移动，形状、大小和方向都不变。',
+            extension: '看宽度：方块沿水平方向拉长，高度不变，面积增大。',
+            shear: '看上下两边：上边相对下边向右错动，方块变成平行四边形，面积不变。',
+            rotation: '看橙色角点：方块逆时针转动，方向改变，但形状和面积不变。'
+        };
+        byId('kinematics-observation').textContent = options.rate === 0 ? '当前速率为零，方块保持静止；可在计算细节中调整速率。' : observations[options.preset];
+        const comparisons = {
+            translation: '平移：一次 Euler 近似与精确运动相同。',
+            extension: '拉伸：一次大步 Euler 低估伸长；这里只比较从起点跨到当前时刻的一步。',
+            shear: '剪切：这个特殊速度场下，一次 Euler 近似恰好与精确运动相同。',
+            rotation: `旋转：精确面积保持 100%；一次 Euler 近似为 ${(result.eulerJ * 100).toFixed(1)}%。额外变大是算法误差，不是真实变形。`
+        };
+        byId('kinematics-comparison-note').textContent = comparisons[options.preset];
+        // Fit the entire 0–1 s path once, never auto-zoom as the block moves.
+        const boundsKey = [options.preset, options.rate, options.x, options.y,
+            options.nodeCount, options.basis, options.particleHalfWidthRatio, compare, gridView].join('|');
+        if (kinematics.boundsKey !== boundsKey) {
+            const end = core.kinematics2D({ ...options, timeStep: 1 });
+            const points = [...end.originalCorners, ...end.exactCorners];
+            if (compare) points.push(...end.eulerCorners);
+            if (options.preset === 'rotation') {
+                const radius = Math.max(...end.originalCorners.map(([x, y]) => Math.hypot(x - 0.5, y - 0.5)));
+                points.push([0.5 - radius, 0.5 - radius], [0.5 + radius, 0.5 + radius]);
+            }
+            if (gridView) points.push([-2 * h, -2 * h], [1 + 2 * h, 1 + 2 * h]);
+            kinematics.bounds = [
+                Math.min(...points.map(point => point[0])), Math.max(...points.map(point => point[0])),
+                Math.min(...points.map(point => point[1])), Math.max(...points.map(point => point[1]))
+            ];
+            kinematics.boundsKey = boundsKey;
+        }
         const palette = colors();
-        const maxVelocity = Math.max(...result.nodes.map(node => Math.hypot(node.vx, node.vy)));
-        const arrowScale = maxVelocity > 0 ? 0.5 * h / maxVelocity : 0;
-        const localView = byId('kinematics-view').value === 'domain';
-        // Include every node, arrow endpoint and transformed corner before fitting an equal-axis view.
-        const points = [
-            result.position, result.exactPosition, result.eulerPosition,
-            ...result.originalCorners, ...result.exactCorners, ...result.eulerCorners
+        const [minX, maxX, minY, maxY] = kinematics.bounds;
+        const scenes = [
+            [byId('kinematics-initial-canvas'), result.originalCorners, palette.muted],
+            [kinematics.canvas, result.exactCorners, palette.cyan]
         ];
-        if (!localView) {
-            points.push([0, 0], [1, 1]);
-            result.nodes.forEach(node => {
-                points.push([node.x, node.y], [node.x + node.vx * arrowScale, node.y + node.vy * arrowScale]);
-            });
-        }
-        const minX = Math.min(...points.map(point => point[0]));
-        const maxX = Math.max(...points.map(point => point[0]));
-        const minY = Math.min(...points.map(point => point[1]));
-        const maxY = Math.max(...points.map(point => point[1]));
-        const margin = 36;
-        const scale = Math.min((width - 2 * margin) / (maxX - minX), (height - 2 * margin) / (maxY - minY));
-        const xFor = x => width / 2 + (x - (minX + maxX) / 2) * scale;
-        const yFor = y => height / 2 - (y - (minY + maxY) / 2) * scale;
-        for (let index = -1; index <= options.nodeCount; index += 1) {
-            context.setLineDash(index < 0 || index >= options.nodeCount ? [2, 4] : []);
-            line(context, xFor(index * h), yFor(-h), xFor(index * h), yFor(1 + h), palette.border);
-            line(context, xFor(-h), yFor(index * h), xFor(1 + h), yFor(index * h), palette.border);
-        }
-        context.setLineDash([]);
-        context.strokeStyle = palette.muted;
-        context.lineWidth = 1.5;
-        context.strokeRect(xFor(0), yFor(1), scale, scale);
-        result.nodes.forEach(node => {
-            const active = node.weight !== 0 || node.gx !== 0 || node.gy !== 0;
-            const size = active ? 3 : 2;
-            const px = xFor(node.x);
-            const py = yFor(node.y);
-            context.strokeStyle = active ? palette.blue : palette.muted;
-            context.fillStyle = palette.blue;
-            context.lineWidth = 1;
-            context.setLineDash(node.ghost ? [2, 2] : []);
-            if (active && !node.ghost) context.fillRect(px - size, py - size, size * 2, size * 2);
-            context.strokeRect(px - size, py - size, size * 2, size * 2);
-            context.setLineDash([]);
-            const endX = xFor(node.x + node.vx * arrowScale);
-            const endY = yFor(node.y + node.vy * arrowScale);
-            const length = Math.hypot(endX - px, endY - py);
-            if (length >= 8) arrow(context, px, py, endX, endY, palette.blue, 1.2);
-            else if (length >= 1) line(context, px, py, endX, endY, palette.blue, 1.2);
-        });
-        const drawDomain = (corners, color, dash, thickness) => {
+        if (compare) scenes.push([byId('kinematics-euler-canvas'), result.eulerCorners, palette.violet]);
+        // Equal panel dimensions guarantee the same physical scale in all views.
+        const rectangles = scenes.map(([canvas]) => canvas.getBoundingClientRect());
+        const scale = Math.min(...rectangles.map(rectangle =>
+            Math.min((rectangle.width - 48) / (maxX - minX), (rectangle.height - 48) / (maxY - minY))));
+        scenes.forEach(([canvas, corners, color]) => {
+            const { context, width, height } = setupCanvas(canvas);
+            const xFor = x => width / 2 + (x - (minX + maxX) / 2) * scale;
+            const yFor = y => height / 2 - (y - (minY + maxY) / 2) * scale;
+            if (gridView) {
+                const maxVelocity = Math.max(...result.nodes.map(node => Math.hypot(node.vx, node.vy)));
+                const arrowScale = maxVelocity > 0 ? 0.5 * h / maxVelocity : 0;
+                result.nodes.forEach(node => {
+                    context.fillStyle = palette.border;
+                    context.fillRect(xFor(node.x) - 2, yFor(node.y) - 2, 4, 4);
+                    if (Math.hypot(node.vx, node.vy) * arrowScale * scale >= 8) {
+                        arrow(context, xFor(node.x), yFor(node.y),
+                            xFor(node.x + node.vx * arrowScale), yFor(node.y + node.vy * arrowScale), palette.blue, 1);
+                    }
+                });
+            }
             context.beginPath();
-            corners.forEach((point, index) => {
-                if (index === 0) context.moveTo(xFor(point[0]), yFor(point[1]));
-                else context.lineTo(xFor(point[0]), yFor(point[1]));
+            corners.forEach(([x, y], index) => {
+                if (index === 0) context.moveTo(xFor(x), yFor(y));
+                else context.lineTo(xFor(x), yFor(y));
             });
             context.closePath();
-            context.strokeStyle = color;
-            context.lineWidth = thickness;
-            context.setLineDash(dash);
-            context.stroke();
-            context.setLineDash([]);
-        };
-        drawDomain(result.originalCorners, palette.muted, [2, 3], 2);
-        drawDomain(result.exactCorners, palette.cyan, [], 4);
-        drawDomain(result.eulerCorners, palette.orange, [7, 4], 2);
-        [result.exactPosition, result.eulerPosition].forEach((point, index) => {
-            context.beginPath();
-            context.arc(xFor(point[0]), yFor(point[1]), index === 0 ? 4 : 2, 0, Math.PI * 2);
-            context.fillStyle = index === 0 ? palette.cyan : palette.orange;
+            context.fillStyle = color;
+            context.globalAlpha = 0.12;
             context.fill();
+            context.globalAlpha = 1;
+            context.strokeStyle = color;
+            context.lineWidth = 3;
+            context.stroke();
+            // Internal material lines move with the same affine map as the corners.
+            const interpolate = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+            for (const t of [0.25, 0.5, 0.75]) {
+                for (const [a, b, c, d] of [[0, 1, 3, 2], [0, 3, 1, 2]]) {
+                    const start = interpolate(corners[a], corners[b], t);
+                    const end = interpolate(corners[c], corners[d], t);
+                    line(context, xFor(start[0]), yFor(start[1]), xFor(end[0]), yFor(end[1]), color, 1);
+                }
+            }
+            context.beginPath();
+            context.arc(xFor(corners[2][0]), yFor(corners[2][1]), 5, 0, 2 * Math.PI);
+            context.fillStyle = palette.orange;
+            context.fill();
+            context.fillStyle = palette.muted;
+            context.font = '12px system-ui, sans-serif';
+            context.textAlign = 'left';
+            context.fillText('y ↑', 10, 18);
+            context.textAlign = 'right';
+            context.fillText('x →', width - 10, height - 10);
         });
-        const probeX = xFor(result.position[0]);
-        const probeY = yFor(result.position[1]);
-        line(context, probeX - 7, probeY, probeX + 7, probeY, palette.violet, 2);
-        line(context, probeX, probeY - 7, probeX, probeY + 7, palette.violet, 2);
-        context.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
-        context.fillStyle = palette.text;
-        context.textAlign = 'center';
-        context.fillText('0', xFor(0), yFor(0) + 17);
-        context.fillText('1', xFor(1), yFor(0) + 17);
-        context.fillText('x / m →', width / 2, height - 8);
-        context.textAlign = 'right';
-        context.fillText('1', xFor(0) - 9, yFor(1) + 4);
-        context.textAlign = 'left';
-        context.fillText('y / m ↑', 8, 15);
-        byId('kinematics-scale').textContent = `${localView ? '局部放大' : '完整网格'}，x、y 等比例；域与视野参考范围 x ∈ [${minX.toFixed(3)}, ${maxX.toFixed(3)}] m，y ∈ [${minY.toFixed(3)}, ${maxY.toFixed(3)}] m。网格 h = ${h.toFixed(3)} m。速度箭头每图同比缩放：最长 0.5h 表示 ${maxVelocity.toExponential(3)} m/s；短于 8 像素只画线段，短于 1 像素不画。Δt = ${options.timeStep.toFixed(2)} s 的一次比较，无连续积分。`;
+        if (!byId('kinematics-details').open) return;
+        byId('kinematics-scale').textContent = `每图 x、y 等比例，播放全程固定视野；h = ${h.toFixed(3)} m，初始方块边长 0.12 m。网格模式下速度箭头按最长 0.5h 同比缩放。图示方块不是 uGIMP 的积分域。`;
 
         [['l', result.L], ['d', result.D], ['w', result.W]].forEach(([name, matrix]) => {
             fillMPM2DTable(`kinematics-${name}-body`, [
@@ -1273,9 +1289,63 @@
         ]));
     }
 
-    byId('kinematics-controls').addEventListener('submit', event => event.preventDefault());
-    byId('kinematics-controls').addEventListener('input', renderKinematics);
-    byId('kinematics-controls').addEventListener('change', renderKinematics);
+    function stopKinematics() {
+        if (kinematics.frame !== null) cancelAnimationFrame(kinematics.frame);
+        kinematics.frame = null;
+        kinematics.lastFrame = null;
+        byId('kinematics-play').textContent = '播放运动';
+        byId('kinematics-play').setAttribute('aria-pressed', 'false');
+    }
+
+    function advanceKinematics(timestamp) {
+        if (byId('kinematics-lab').hidden || document.hidden) {
+            stopKinematics();
+            return;
+        }
+        if (kinematics.lastFrame === null) kinematics.lastFrame = timestamp;
+        const elapsed = timestamp - kinematics.lastFrame;
+        if (elapsed >= 32) {
+            kinematics.timeStep.value = Math.min(1, Number(kinematics.timeStep.value) + Math.min(elapsed, 100) / 6000);
+            kinematics.lastFrame = timestamp;
+            renderKinematics();
+        }
+        if (Number(kinematics.timeStep.value) >= 1) stopKinematics();
+        else kinematics.frame = requestAnimationFrame(advanceKinematics);
+    }
+
+    byId('kinematics-play').addEventListener('click', () => {
+        if (kinematics.frame !== null) {
+            stopKinematics();
+            return;
+        }
+        byId('kinematics-details').open = false;
+        if (Number(kinematics.timeStep.value) >= 1) kinematics.timeStep.value = 0;
+        byId('kinematics-play').textContent = '暂停';
+        byId('kinematics-play').setAttribute('aria-pressed', 'true');
+        kinematics.frame = requestAnimationFrame(advanceKinematics);
+        renderKinematics();
+    });
+    byId('kinematics-reset').addEventListener('click', () => {
+        stopKinematics();
+        kinematics.timeStep.value = 0;
+        renderKinematics();
+    });
+    [byId('kinematics-controls'), byId('kinematics-advanced')].forEach(form => {
+        form.addEventListener('submit', event => event.preventDefault());
+        form.addEventListener('input', event => {
+            stopKinematics();
+            if (event.target === kinematics.preset) kinematics.timeStep.value = 0;
+            renderKinematics();
+        });
+    });
+    byId('kinematics-details').addEventListener('toggle', () => {
+        if (byId('kinematics-details').open) stopKinematics();
+        renderKinematics();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopKinematics();
+    });
+    window.addEventListener('pagehide', stopKinematics);
 
     const elasticBar = {
         controls: byId('elastic-bar-controls'),

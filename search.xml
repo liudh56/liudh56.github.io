@@ -150,6 +150,46 @@
       </tags>
   </entry>
   <entry>
+    <title>有限元非饱和土孔压迭代程序修改说明</title>
+    <url>/2024/04/863a85e0/</url>
+    <content><![CDATA[<h2 id="修改内容">修改内容</h2>
+<h3 id="1、输入参数改变">1、输入参数改变</h3>
+<p>t(nl) 每层层底沉积年代(37 行)<br>
+土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)<br>
+内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)<br>
+水位位置（坡顶为 0，y 方向为负值）(58 行)<br>
+非饱和抗剪强度公式中 κ(59 行)</p>
+<h3 id="2、输入所有节点孔压-53-行">2、输入所有节点孔压(53 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">READ(<span class="number">12</span>,*)inpore  <span class="comment">!所有节点孔压</span></span><br></pre></td></tr></table></figure>
+<h3 id="3、输出-prop-nprops-np-types-98-85-行">3、输出 prop(nprops,np_types)(98-85 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">nprops=<span class="number">10</span> <span class="comment">!分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CALL</span> g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;</span><br><span class="line">  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;</span><br><span class="line">  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;</span><br><span class="line">  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，求prop1：一列单元的参数(其中重度为干重度)</span><br><span class="line">其次，求prop：所有单元参数(其中重度为干重度)</span><br><span class="line">之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率</span><br><span class="line">最后，利用含水率计算天然重度</span><br></pre></td></tr></table></figure>
+<h3 id="4、输出-surf-2-nosurf-79-行">4、输出 surf(2,nosurf) (79 行)</h3>
+<p>根据水位计算水位线上各节点坐标</p>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">call</span> WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)</span><br></pre></td></tr></table></figure>
+<h3 id="5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行">5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)</h3>
+<h3 id="6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行">6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> water_loads</span><br></pre></td></tr></table></figure>
+<h3 id="7、对于孔压-inpore-的处理">7、对于孔压 inpore 的处理</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，单元循环内提取该单元所有节点的孔压(172行)</span><br><span class="line">其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)</span><br><span class="line">之后，高斯循环中计算高斯点吸应力pore (181行)</span><br><span class="line">最后，修正正应力(186-188行)</span><br></pre></td></tr></table></figure>
+<h3 id="8、若收敛，对应力进行恢复-193-195-行">8、若收敛，对应力进行恢复(193-195 行)</h3>
+<h3 id="9、奇偶分层下的变形图-224-行">9、奇偶分层下的变形图(224 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> dismsh</span><br></pre></td></tr></table></figure>
+<h2 id="输入说明">输入说明</h2>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">w1   s1   w2   h1   h2   nl <span class="comment">!分层数  用于划分黄土古土壤序列情况</span></span><br><span class="line"><span class="number">8</span>    <span class="number">4</span>     <span class="number">4</span>    <span class="number">14</span>   <span class="number">8</span>    <span class="number">4</span></span><br><span class="line">h(nl) <span class="comment">!每层层底距坡顶距离</span></span><br><span class="line"><span class="number">4</span>   <span class="number">12</span>   <span class="number">16</span>   <span class="number">22</span></span><br><span class="line">ny(nl) <span class="comment">!每层划分网格数</span></span><br><span class="line"><span class="number">2</span>    <span class="number">4</span>    <span class="number">2</span>   <span class="number">3</span></span><br><span class="line">t(nl) <span class="comment">!每层层底沉积年代</span></span><br><span class="line"><span class="number">8</span>   <span class="number">12</span>   <span class="number">18</span>   <span class="number">33</span></span><br><span class="line">nx1    nx2   ny1    ny2</span><br><span class="line"><span class="number">4</span>       <span class="number">2</span>     <span class="number">7</span>    <span class="number">4</span></span><br><span class="line"><span class="comment">!土水特征参数a、m、n随沉积年代模型参数</span></span><br><span class="line"><span class="number">0.044</span>     <span class="number">7.062</span>      -<span class="number">0.0000724</span>      <span class="number">0.3318</span>              -<span class="number">0.000161</span>      <span class="number">1.5092</span></span><br><span class="line"><span class="number">24.4397</span>   -<span class="number">113.0186</span>   <span class="number">0.000000176</span>   -<span class="number">0.0000591</span>   <span class="number">0.2077</span>   <span class="number">0.000000331</span>   -<span class="number">0.000128</span>   <span class="number">1.2664</span></span><br><span class="line"><span class="comment">!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">0.17</span>    <span class="number">0</span>      <span class="number">0.0</span>        <span class="number">1.25</span>   <span class="number">0.018</span>    <span class="number">0.4623</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.71</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">3.56</span>   <span class="number">500</span>     <span class="number">0.0</span>        <span class="number">1.39</span>   <span class="number">0.0035</span>   <span class="number">0.6489</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.72</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">100</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">1.4</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span>   <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">9</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">0.8</span>  <span class="number">0.9</span>  <span class="number">1.0</span>  <span class="number">1.1</span>  <span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
+<hr>
+<p>非本人原创内容</p>
+]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>有限元法（FEM）</category>
+      </categories>
+      <tags>
+        <tag>非饱和土</tag>
+        <tag>孔隙水压力</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>流体力学基本方程（一）：基本概念与质量守恒</title>
     <url>/2024/04/98e90823/</url>
     <content><![CDATA[<h2 id="学习视频">学习视频</h2>
@@ -316,43 +356,516 @@
       </tags>
   </entry>
   <entry>
-    <title>有限元非饱和土孔压迭代程序修改说明</title>
-    <url>/2024/04/863a85e0/</url>
-    <content><![CDATA[<h2 id="修改内容">修改内容</h2>
-<h3 id="1、输入参数改变">1、输入参数改变</h3>
-<p>t(nl) 每层层底沉积年代(37 行)<br>
-土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)<br>
-内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)<br>
-水位位置（坡顶为 0，y 方向为负值）(58 行)<br>
-非饱和抗剪强度公式中 κ(59 行)</p>
-<h3 id="2、输入所有节点孔压-53-行">2、输入所有节点孔压(53 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">READ(<span class="number">12</span>,*)inpore  <span class="comment">!所有节点孔压</span></span><br></pre></td></tr></table></figure>
-<h3 id="3、输出-prop-nprops-np-types-98-85-行">3、输出 prop(nprops,np_types)(98-85 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">nprops=<span class="number">10</span> <span class="comment">!分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CALL</span> g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;</span><br><span class="line">  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;</span><br><span class="line">  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;</span><br><span class="line">  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，求prop1：一列单元的参数(其中重度为干重度)</span><br><span class="line">其次，求prop：所有单元参数(其中重度为干重度)</span><br><span class="line">之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率</span><br><span class="line">最后，利用含水率计算天然重度</span><br></pre></td></tr></table></figure>
-<h3 id="4、输出-surf-2-nosurf-79-行">4、输出 surf(2,nosurf) (79 行)</h3>
-<p>根据水位计算水位线上各节点坐标</p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">call</span> WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)</span><br></pre></td></tr></table></figure>
-<h3 id="5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行">5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)</h3>
-<h3 id="6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行">6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> water_loads</span><br></pre></td></tr></table></figure>
-<h3 id="7、对于孔压-inpore-的处理">7、对于孔压 inpore 的处理</h3>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，单元循环内提取该单元所有节点的孔压(172行)</span><br><span class="line">其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)</span><br><span class="line">之后，高斯循环中计算高斯点吸应力pore (181行)</span><br><span class="line">最后，修正正应力(186-188行)</span><br></pre></td></tr></table></figure>
-<h3 id="8、若收敛，对应力进行恢复-193-195-行">8、若收敛，对应力进行恢复(193-195 行)</h3>
-<h3 id="9、奇偶分层下的变形图-224-行">9、奇偶分层下的变形图(224 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> dismsh</span><br></pre></td></tr></table></figure>
-<h2 id="输入说明">输入说明</h2>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">w1   s1   w2   h1   h2   nl <span class="comment">!分层数  用于划分黄土古土壤序列情况</span></span><br><span class="line"><span class="number">8</span>    <span class="number">4</span>     <span class="number">4</span>    <span class="number">14</span>   <span class="number">8</span>    <span class="number">4</span></span><br><span class="line">h(nl) <span class="comment">!每层层底距坡顶距离</span></span><br><span class="line"><span class="number">4</span>   <span class="number">12</span>   <span class="number">16</span>   <span class="number">22</span></span><br><span class="line">ny(nl) <span class="comment">!每层划分网格数</span></span><br><span class="line"><span class="number">2</span>    <span class="number">4</span>    <span class="number">2</span>   <span class="number">3</span></span><br><span class="line">t(nl) <span class="comment">!每层层底沉积年代</span></span><br><span class="line"><span class="number">8</span>   <span class="number">12</span>   <span class="number">18</span>   <span class="number">33</span></span><br><span class="line">nx1    nx2   ny1    ny2</span><br><span class="line"><span class="number">4</span>       <span class="number">2</span>     <span class="number">7</span>    <span class="number">4</span></span><br><span class="line"><span class="comment">!土水特征参数a、m、n随沉积年代模型参数</span></span><br><span class="line"><span class="number">0.044</span>     <span class="number">7.062</span>      -<span class="number">0.0000724</span>      <span class="number">0.3318</span>              -<span class="number">0.000161</span>      <span class="number">1.5092</span></span><br><span class="line"><span class="number">24.4397</span>   -<span class="number">113.0186</span>   <span class="number">0.000000176</span>   -<span class="number">0.0000591</span>   <span class="number">0.2077</span>   <span class="number">0.000000331</span>   -<span class="number">0.000128</span>   <span class="number">1.2664</span></span><br><span class="line"><span class="comment">!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">0.17</span>    <span class="number">0</span>      <span class="number">0.0</span>        <span class="number">1.25</span>   <span class="number">0.018</span>    <span class="number">0.4623</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.71</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">3.56</span>   <span class="number">500</span>     <span class="number">0.0</span>        <span class="number">1.39</span>   <span class="number">0.0035</span>   <span class="number">0.6489</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.72</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">100</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">1.4</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span>   <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">9</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">0.8</span>  <span class="number">0.9</span>  <span class="number">1.0</span>  <span class="number">1.1</span>  <span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
-<hr>
-<p>非本人原创内容</p>
-]]></content>
+    <title>流体力学基本方程（二）：动量守恒方程的控制体推导</title>
+    <url>/2024/04/7c8cd580/</url>
+    <content><![CDATA[<p>在<a href="/2024/04/98e90823/">上一篇</a>中，我们从固定控制体出发推导了质量守恒方程。本篇继续回答第二个问题：<strong>流体的速度为什么会发生变化？</strong></p>
+<p>答案仍然是牛顿第二定律。困难之处在于，控制体是固定的空间区域，流体却会不断穿过控制面。因此，控制体内动量的变化不只来自外力，还要计入流入和流出所携带的动量。</p>
+<p>本文默认读者已经了解密度、速度场、控制体、控制面和质量守恒方程。为避免一开始陷入分量运算，先建立矢量形式，再展开到直角坐标分量。</p>
+<h2 id="一、先分清系统与控制体">一、先分清系统与控制体</h2>
+<h3 id="1-系统：始终跟随同一批流体质点">1. 系统：始终跟随同一批流体质点</h3>
+<p>对于质量不变的流体系统，牛顿第二定律写为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{d}{dt}\int_{\mathrm{sys}}\rho\boldsymbol{v}\,dV
+=\sum\boldsymbol{F}</script>
+</div>
+<p>其中，<span class="math inline"><script type="math/tex">\rho</script></span> 是密度，<span class="math inline"><script type="math/tex">\boldsymbol{v}</script></span> 是速度，积分项是系统的总动量。这个式子非常直观：<strong>同一批流体的总动量变化率等于它受到的合外力。</strong></p>
+<h3 id="2-控制体：研究固定空间中的流动">2. 控制体：研究固定空间中的流动</h3>
+<p>工程中更常观察一段管道、一个叶轮通道或一块计算网格，也就是控制体。由于流体会穿过控制面，系统的动量变化必须拆成两部分：</p>
+<ul>
+<li>控制体内部的动量积累；</li>
+<li>穿过控制面的净动量流出。</li>
+</ul>
+<img src="/2024/04/7c8cd580/control-volume-momentum.webp" alt="固定控制体中的动量积累、动量通量与外力" style="zoom:33%;">
+<p>雷诺输运定理把系统描述转换为固定控制体描述：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{d}{dt}\int_{\mathrm{sys}}\rho\boldsymbol{v}\,dV
+=
+\frac{\partial}{\partial t}\int_{CV}\rho\boldsymbol{v}\,dV
++\oint_{CS}\rho\boldsymbol{v}
+(\boldsymbol{v}\cdot\boldsymbol{n})\,dA</script>
+</div>
+<p>因此，控制体形式的动量守恒方程为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boxed{
+\frac{\partial}{\partial t}\int_{CV}\rho\boldsymbol{v}\,dV
++\oint_{CS}\rho\boldsymbol{v}
+(\boldsymbol{v}\cdot\boldsymbol{n})\,dA
+=\sum\boldsymbol{F}
+}</script>
+</div>
+<p>这就是后续所有动量方程的出发点。</p>
+<h2 id="二、控制体方程的每一项表示什么">二、控制体方程的每一项表示什么</h2>
+<h3 id="1-动量积累项">1. 动量积累项</h3>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial}{\partial t}\int_{CV}\rho\boldsymbol{v}\,dV</script>
+</div>
+<p>它描述固定控制体内部总动量随时间的变化。定常流动中，各空间点的物理量不随时间变化，因此该项为零；但流体仍可能因为空间位置改变而加速。</p>
+<h3 id="2-动量通量项">2. 动量通量项</h3>
+<div class="math block">
+<script type="math/tex; mode=display">\oint_{CS}\rho\boldsymbol{v}
+(\boldsymbol{v}\cdot\boldsymbol{n})\,dA</script>
+</div>
+<p>先看 <span class="math inline"><script type="math/tex">\rho(\boldsymbol{v}\cdot\boldsymbol{n})dA</script></span>：它是单位时间穿过面积微元 <span class="math inline"><script type="math/tex">dA</script></span> 的质量。再乘以速度 <span class="math inline"><script type="math/tex">\boldsymbol{v}</script></span>，就得到这股质量携带的动量。</p>
+<p>规定 <span class="math inline"><script type="math/tex">\boldsymbol{n}</script></span> 为控制面的外法向量：</p>
+<ul>
+<li><span class="math inline"><script type="math/tex">\boldsymbol{v}\cdot\boldsymbol{n}>0</script></span> 表示流出；</li>
+<li><span class="math inline"><script type="math/tex">\boldsymbol{v}\cdot\boldsymbol{n}<0</script></span> 表示流入。</li>
+</ul>
+<p>所以曲面积分自动完成了“流出动量减去流入动量”的计算。<strong>动量通量不是额外的力，而是流体穿过控制面造成的动量输运。</strong></p>
+<h3 id="3-外力项">3. 外力项</h3>
+<p>流体受到的外力分为体积力和表面力：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\sum\boldsymbol{F}
+=\int_{CV}\rho\boldsymbol{b}\,dV
++\oint_{CS}\boldsymbol{\sigma}\cdot\boldsymbol{n}\,dA</script>
+</div>
+<p>其中，<span class="math inline"><script type="math/tex">\boldsymbol{b}</script></span> 是单位质量体积力，常见情况为重力加速度 <span class="math inline"><script type="math/tex">\boldsymbol{g}</script></span>；<span class="math inline"><script type="math/tex">\boldsymbol{\sigma}</script></span> 是应力张量，<span class="math inline"><script type="math/tex">\boldsymbol{\sigma}\cdot\boldsymbol{n}</script></span> 是控制面上的应力矢量。</p>
+<p>应力可以拆成压强和黏性应力：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol{\sigma}=-p\boldsymbol{I}+\boldsymbol{\tau}</script>
+</div>
+<p>负号来自压强的方向：压强总是沿表面法线的反方向挤压流体。<span class="math inline"><script type="math/tex">\boldsymbol{\tau}</script></span> 则包含法向黏性应力和切向剪应力。</p>
+<img src="/2024/04/7c8cd580/fluid-element-forces.webp" alt="流体微元上的压强、黏性应力与重力" style="zoom:33%;">
+<h2 id="三、从积分形式到微分形式">三、从积分形式到微分形式</h2>
+<p>把体积力和表面力代入控制体方程：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial}{\partial t}\int_{CV}\rho\boldsymbol{v}\,dV
++\oint_{CS}\rho\boldsymbol{v}
+(\boldsymbol{v}\cdot\boldsymbol{n})\,dA
+=\int_{CV}\rho\boldsymbol{b}\,dV
++\oint_{CS}\boldsymbol{\sigma}\cdot\boldsymbol{n}\,dA</script>
+</div>
+<p>利用高斯散度定理，把两个面积分转换为体积分：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\int_{CV}
+\left[
+\frac{\partial(\rho\boldsymbol{v})}{\partial t}
++\boldsymbol{\nabla}\cdot
+(\rho\boldsymbol{v}\otimes\boldsymbol{v})
+-\rho\boldsymbol{b}
+-\boldsymbol{\nabla}\cdot\boldsymbol{\sigma}
+\right]dV=0</script>
+</div>
+<p>由于控制体可以任意选取，被积函数必须处处为零：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boxed{
+\frac{\partial(\rho\boldsymbol{v})}{\partial t}
++\boldsymbol{\nabla}\cdot
+(\rho\boldsymbol{v}\otimes\boldsymbol{v})
+=\rho\boldsymbol{b}
++\boldsymbol{\nabla}\cdot\boldsymbol{\sigma}
+}</script>
+</div>
+<p>这就是守恒形式的柯西动量方程。结合连续方程</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial\rho}{\partial t}
++\boldsymbol{\nabla}\cdot(\rho\boldsymbol{v})=0</script>
+</div>
+<p>可以把左侧化为 <span class="math inline"><script type="math/tex">\rho D\boldsymbol{v}/Dt</script></span>，得到非守恒形式：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boxed{
+\rho\frac{D\boldsymbol{v}}{Dt}
+=\rho\boldsymbol{b}
++\boldsymbol{\nabla}\cdot\boldsymbol{\sigma}
+}</script>
+</div>
+<p>其中，随体导数为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{D\boldsymbol{v}}{Dt}
+=\underbrace{\frac{\partial\boldsymbol{v}}{\partial t}}_{\text{当地加速度}}
++\underbrace{(\boldsymbol{v}\cdot\boldsymbol{\nabla})
+\boldsymbol{v}}_{\text{对流加速度}}</script>
+</div>
+<img src="/2024/04/7c8cd580/material-acceleration.webp" alt="流体质点的当地加速度与对流加速度" style="zoom:33%;">
+<p>当地加速度表示同一空间点的速度随时间变化；对流加速度表示流体质点运动到速度不同的位置而产生的速度变化。因此，<strong>定常流动只能说明当地加速度为零，不能说明总加速度为零</strong>。渐缩管中的定常流动就是典型例子。</p>
+<h2 id="四、直角坐标中的-x-方向动量方程">四、直角坐标中的 <span class="math inline"><script type="math/tex">x</script></span> 方向动量方程</h2>
+<p>为了看清每一项，把守恒形式展开到 <span class="math inline"><script type="math/tex">x</script></span> 方向。令 <span class="math inline"><script type="math/tex">\boldsymbol{v}=(u,v,w)</script></span>，则</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial(\rho u)}{\partial t}
++\frac{\partial(\rho u^2)}{\partial x}
++\frac{\partial(\rho uv)}{\partial y}
++\frac{\partial(\rho uw)}{\partial z}
+=\rho b_x
++\frac{\partial\sigma_{xx}}{\partial x}
++\frac{\partial\tau_{xy}}{\partial y}
++\frac{\partial\tau_{xz}}{\partial z}</script>
+</div>
+<p>左侧依次表示：</p>
+<ol>
+<li>控制体内 <span class="math inline"><script type="math/tex">x</script></span> 方向动量的当地变化；</li>
+<li><span class="math inline"><script type="math/tex">x</script></span> 方向流动输运的 <span class="math inline"><script type="math/tex">x</script></span> 动量；</li>
+<li><span class="math inline"><script type="math/tex">y</script></span> 方向流动输运的 <span class="math inline"><script type="math/tex">x</script></span> 动量；</li>
+<li><span class="math inline"><script type="math/tex">z</script></span> 方向流动输运的 <span class="math inline"><script type="math/tex">x</script></span> 动量。</li>
+</ol>
+<p>右侧则是 <span class="math inline"><script type="math/tex">x</script></span> 方向体积力与各表面应力的合力。注意 <span class="math inline"><script type="math/tex">\rho uv</script></span> 并不是“两个速度相乘后产生的力”，而是沿 <span class="math inline"><script type="math/tex">y</script></span> 方向穿过控制面的质量所携带的 <span class="math inline"><script type="math/tex">x</script></span> 方向动量。</p>
+<p>使用连续方程后，也可以写成更直观的加速度形式：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\rho\left(
+\frac{\partial u}{\partial t}
++u\frac{\partial u}{\partial x}
++v\frac{\partial u}{\partial y}
++w\frac{\partial u}{\partial z}
+\right)
+=\rho b_x
+-\frac{\partial p}{\partial x}
++\frac{\partial\tau_{xx}}{\partial x}
++\frac{\partial\tau_{xy}}{\partial y}
++\frac{\partial\tau_{xz}}{\partial z}</script>
+</div>
+<h2 id="五、从柯西动量方程到-Navier–Stokes-方程">五、从柯西动量方程到 Navier–Stokes 方程</h2>
+<p>对牛顿流体，黏性应力与速度梯度线性相关：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol{\tau}
+=\mu\left[
+\boldsymbol{\nabla}\boldsymbol{v}
++(\boldsymbol{\nabla}\boldsymbol{v})^{T}
+\right]
++\lambda(\boldsymbol{\nabla}\cdot\boldsymbol{v})\boldsymbol{I}</script>
+</div>
+<p>把 <span class="math inline"><script type="math/tex">\boldsymbol{\sigma}=-p\boldsymbol{I}+\boldsymbol{\tau}</script></span> 代入柯西动量方程，可得一般形式的 Navier–Stokes 方程：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\rho\frac{D\boldsymbol{v}}{Dt}
+=-\boldsymbol{\nabla}p
++\boldsymbol{\nabla}\cdot\boldsymbol{\tau}
++\rho\boldsymbol{b}</script>
+</div>
+<p>对于密度不变、动力黏度 <span class="math inline"><script type="math/tex">\mu</script></span> 为常数的不可压缩牛顿流体，<span class="math inline"><script type="math/tex">\boldsymbol{\nabla}\cdot\boldsymbol{v}=0</script></span>，方程简化为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boxed{
+\rho\left[
+\frac{\partial\boldsymbol{v}}{\partial t}
++(\boldsymbol{v}\cdot\boldsymbol{\nabla})\boldsymbol{v}
+\right]
+=-\boldsymbol{\nabla}p
++\mu\nabla^2\boldsymbol{v}
++\rho\boldsymbol{g}
+}</script>
+</div>
+<p>可以把它理解为一张“受力—加速度”清单：</p>
+<table>
+<thead>
+<tr>
+<th>方程项</th>
+<th>物理意义</th>
+<th>单位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="math inline"><script type="math/tex">\rho\,\partial\boldsymbol{v}/\partial t</script></span></td>
+<td>当地惯性</td>
+<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
+</tr>
+<tr>
+<td><span class="math inline"><script type="math/tex">\rho(\boldsymbol{v}\cdot\boldsymbol{\nabla})\boldsymbol{v}</script></span></td>
+<td>对流惯性</td>
+<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
+</tr>
+<tr>
+<td><span class="math inline"><script type="math/tex">-\boldsymbol{\nabla}p</script></span></td>
+<td>压强梯度力</td>
+<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
+</tr>
+<tr>
+<td><span class="math inline"><script type="math/tex">\mu\nabla^2\boldsymbol{v}</script></span></td>
+<td>黏性扩散</td>
+<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
+</tr>
+<tr>
+<td><span class="math inline"><script type="math/tex">\rho\boldsymbol{g}</script></span></td>
+<td>重力</td>
+<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
+</tr>
+</tbody>
+</table>
+<p>方程两边的每一项都是单位体积上的力。左侧是产生加速度所需的惯性项，右侧是压强、黏性和重力共同提供的驱动力。</p>
+<h2 id="六、三个常见特例">六、三个常见特例</h2>
+<h3 id="1-静止流体">1. 静止流体</h3>
+<p>当 <span class="math inline"><script type="math/tex">\boldsymbol{v}=0</script></span> 时，惯性项和黏性项均为零：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boldsymbol{\nabla}p=\rho\boldsymbol{g}</script>
+</div>
+<p>这就是流体静力学平衡方程。</p>
+<h3 id="2-无黏流动">2. 无黏流动</h3>
+<p>忽略黏性应力后，得到欧拉方程：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\rho\frac{D\boldsymbol{v}}{Dt}
+=-\boldsymbol{\nabla}p+\rho\boldsymbol{g}</script>
+</div>
+<p>在额外满足定常、不可压缩，并沿流线积分等条件时，可以进一步得到伯努利方程。</p>
+<h3 id="3-充分发展管流">3. 充分发展管流</h3>
+<p>对于水平直管中的定常、充分发展流动，对流加速度可以为零，但压强梯度仍需与黏性阻力平衡。由此可见，“速度不随时间变化”不等于“流体不受力”。</p>
+<h2 id="七、容易混淆的四个问题">七、容易混淆的四个问题</h2>
+<ol>
+<li><strong>为什么定常流动仍会加速？</strong> 因为当地加速度为零时，对流加速度仍可能存在。</li>
+<li><strong>为什么压强项前面有负号？</strong> 因为流体受到的压强作用方向与控制面的外法线相反。</li>
+<li><strong>动量通量是不是一种力？</strong> 它不是新的相互作用力，而是质量跨越控制面时携带的动量；量纲与力相同，因此会出现在同一个平衡式中。</li>
+<li><strong>守恒形式和非守恒形式哪个更正确？</strong> 两者在场光滑且满足连续方程时等价；存在激波或间断时，守恒形式更基本，也更适合有限体积离散。</li>
+</ol>
+<h2 id="八、推导主线回顾">八、推导主线回顾</h2>
+<p>本文的逻辑可以压缩成四步：</p>
+<ol>
+<li>对流体系统应用牛顿第二定律；</li>
+<li>用雷诺输运定理转换到固定控制体；</li>
+<li>把外力拆为体积力、压强和黏性应力；</li>
+<li>用高斯散度定理得到局部微分方程，再代入牛顿流体本构关系得到 Navier–Stokes 方程。</li>
+</ol>
+<p>最需要记住的不是最后一行公式，而是它背后的平衡关系：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\boxed{
+\text{动量积累}
++\text{净动量流出}
+=\text{体积力}
++\text{表面力}
+}</script>
+</div>
+<p>后续讨论能量守恒时仍会沿用同样的“系统定律—雷诺输运定理—控制体方程”路线。</p>
+
+<div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
+  <span class="ai-content-label__icon" aria-hidden="true">
+    <i class="fas fa-wand-magic-sparkles"></i>
+  </span>
+  <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span>
+</div>]]></content>
       <categories>
-        <category>数值模拟</category>
-        <category>有限元法（FEM）</category>
+        <category>理论基础</category>
+        <category>流体力学</category>
       </categories>
       <tags>
-        <tag>非饱和土</tag>
-        <tag>孔隙水压力</tag>
+        <tag>动量守恒</tag>
+        <tag>Navier–Stokes 方程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git 撤销操作：按工作区、暂存区和提交历史安全回退</title>
+    <url>/2024/05/a2778edb/</url>
+    <content><![CDATA[<p>Git 中的“撤销”不是一个动作：有时只是取消暂存，有时要丢弃文件修改，有时需要撤回本地提交，还有时错误已经推送到多人使用的分支。命令选错，轻则改动仍在，重则覆盖尚未备份的工作。</p>
+<p>安全选择命令只需先回答两个问题：</p>
+<ol>
+<li>改动现在位于工作区、暂存区、本地提交，还是远程历史？</li>
+<li>这段历史是否已经推送并被他人共享？</li>
+</ol>
+<blockquote>
+<p>操作前先运行 <code>git status</code>。涉及 <code>reset --hard</code> 或强制推送时，再用 <code>git log --oneline --graph --decorate -n 10</code> 确认目标提交。未提交的修改通常没有可靠备份。</p>
+</blockquote>
+<h2 id="1-看懂-Git-的四个位置">1. 看懂 Git 的四个位置</h2>
+<p>文件从编辑到协作，通常依次经过以下位置：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[工作区&lt;br&#x2F;&gt;编辑后的文件] --&gt;|git add| B[暂存区&lt;br&#x2F;&gt;下一次提交快照]
+    B --&gt;|git commit| C[本地仓库&lt;br&#x2F;&gt;HEAD 与提交历史]
+    C --&gt;|git push| D[远程仓库&lt;br&#x2F;&gt;共享历史]
+    B -. restore --staged .-&gt; A
+    C -. reset .-&gt; B
+    C -. restore .-&gt; A
+    D -. revert 后 push .-&gt; D
+  </pre></div>
+<p>先用三个命令定位改动：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br><span class="line">git diff</span><br><span class="line">git diff --staged</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>git diff</code> 显示工作区相对暂存区的变化；</li>
+<li><code>git diff --staged</code> 显示暂存区相对 <code>HEAD</code> 的变化；</li>
+<li><code>git log --oneline</code> 显示已经提交的历史。</li>
+</ul>
+<h2 id="2-先用决策图选择命令">2. 先用决策图选择命令</h2>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[我想撤销一项改动] --&gt; B{已经 commit 了吗}
+    B -- 否 --&gt; C{已经 git add 了吗}
+    C -- 否 --&gt; D[保留则不操作&lt;br&#x2F;&gt;丢弃则 git restore file]
+    C -- 是 --&gt; E[取消暂存&lt;br&#x2F;&gt;git restore --staged file]
+    E --&gt; F{还要丢弃工作区修改吗}
+    F -- 是 --&gt; D
+    F -- 否 --&gt; G[修改仍保留在工作区]
+    B -- 是 --&gt; H{已经推送到共享分支了吗}
+    H -- 否 --&gt; I{要保留文件修改吗}
+    I -- 是 --&gt; J[git reset --soft 或默认 mixed]
+    I -- 否 --&gt; K[确认后 git reset --hard]
+    H -- 是 --&gt; L[git revert commit&lt;br&#x2F;&gt;再 git push]
+  </pre></div>
+<p>最重要的原则是：<strong>未共享的历史可以整理，已经共享的历史优先追加修正，而不是改写过去。</strong></p>
+<h2 id="3-还没有提交：使用-git-restore">3. 还没有提交：使用 <code>git restore</code></h2>
+<h3 id="3-1-丢弃未暂存的文件修改">3.1 丢弃未暂存的文件修改</h3>
+<p>如果文件只在工作区中修改，想恢复到暂存区记录的状态：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore &lt;file&gt;</span><br></pre></td></tr></table></figure>
+<p>例如：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore src/config.js</span><br></pre></td></tr></table></figure>
+<p>这会覆盖该文件当前的工作区内容。<strong>确认修改不再需要后再执行</strong>，因为普通 Git 历史通常无法找回从未提交、也未暂存为对象的内容。</p>
+<p>如果只想恢复文件中的部分改动，可以交互式选择：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore -p &lt;file&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="3-2-取消暂存，但保留文件修改">3.2 取消暂存，但保留文件修改</h3>
+<p>文件已经执行过 <code>git add</code>，但暂时不想把它放入下一次提交：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore --staged &lt;file&gt;</span><br></pre></td></tr></table></figure>
+<p>效果是把文件从暂存区取出，工作区修改仍然存在。可以继续编辑、拆分提交或稍后重新暂存。</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">执行前：HEAD ── 文件已暂存，工作区也有修改</span><br><span class="line">执行后：HEAD ── 暂存被取消，修改仍留在工作区</span><br></pre></td></tr></table></figure>
+<p>如果既要取消暂存，又要丢弃文件修改，应分两步执行，让每一步都清楚可见：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore --staged &lt;file&gt;</span><br><span class="line">git restore &lt;file&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="3-3-从指定提交恢复文件">3.3 从指定提交恢复文件</h3>
+<p>只想把某个文件恢复到旧版本，而不移动整个分支：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore --<span class="built_in">source</span>=&lt;commit&gt; -- &lt;file&gt;</span><br></pre></td></tr></table></figure>
+<p>例如恢复到上一次提交中的版本：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore --<span class="built_in">source</span>=HEAD~1 -- README.md</span><br></pre></td></tr></table></figure>
+<p>此命令只是把旧内容写入工作区，之后仍需检查并创建新提交。<code>--</code> 用来明确分隔“提交名”和“文件路径”，可避免歧义。</p>
+<h2 id="4-已经提交但尚未共享：使用-commit-amend-或-reset">4. 已经提交但尚未共享：使用 <code>commit --amend</code> 或 <code>reset</code></h2>
+<h3 id="4-1-修正最近一次提交">4.1 修正最近一次提交</h3>
+<p>如果只是漏了文件，或提交说明写错，并且该提交还没有被他人使用：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 暂存遗漏的修改</span></span><br><span class="line">git add &lt;file&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改最近一次提交；编辑器会打开提交说明</span></span><br><span class="line">git commit --amend</span><br></pre></td></tr></table></figure>
+<p>只修改提交说明可使用：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git commit --amend -m <span class="string">&quot;fix: correct validation logic&quot;</span></span><br></pre></td></tr></table></figure>
+<p><code>--amend</code> 会生成一个新的提交来替换原提交，因此已经推送到共享分支后不要随意使用。</p>
+<h3 id="4-2-理解-reset-的三个模式">4.2 理解 <code>reset</code> 的三个模式</h3>
+<p>假设当前历史为 <code>A → B → C</code>，<code>HEAD</code> 指向错误提交 <code>C</code>。执行 <code>git reset &lt;mode&gt; HEAD~1</code> 后，分支指针回到 <code>B</code>，差别在于是否保留 <code>C</code> 的文件内容：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[A] --&gt; B[B]
+    B --&gt; C[C&lt;br&#x2F;&gt;当前 HEAD]
+    C --&gt; S[--soft&lt;br&#x2F;&gt;改动保留在暂存区]
+    C --&gt; M[--mixed&lt;br&#x2F;&gt;改动保留在工作区]
+    C --&gt; H[--hard&lt;br&#x2F;&gt;工作区与暂存区一起丢弃]
+  </pre></div>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>分支指针</th>
+<th>暂存区</th>
+<th>工作区</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>git reset --soft HEAD~1</code></td>
+<td>回到前一提交</td>
+<td>保留改动</td>
+<td>保留改动</td>
+<td>重新组织或合并提交</td>
+</tr>
+<tr>
+<td><code>git reset --mixed HEAD~1</code></td>
+<td>回到前一提交</td>
+<td>取消暂存</td>
+<td>保留改动</td>
+<td>重新选择要提交的文件</td>
+</tr>
+<tr>
+<td><code>git reset --hard HEAD~1</code></td>
+<td>回到前一提交</td>
+<td>丢弃改动</td>
+<td>丢弃改动</td>
+<td>完全放弃提交及其文件变化</td>
+</tr>
+</tbody>
+</table>
+<p><code>--mixed</code> 是默认模式，因此下面两条命令等价：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git reset HEAD~1</span><br><span class="line">git reset --mixed HEAD~1</span><br></pre></td></tr></table></figure>
+<p><code>HEAD~1</code> 表示当前提交的第一父提交，也就是通常所说的“上一个提交”。如果目标不是最近一次提交，应先运行 <code>git log --oneline</code>，再使用明确的提交哈希。</p>
+<blockquote>
+<p><code>git reset --hard</code> 会直接覆盖已跟踪文件的工作区和暂存区内容，但通常不会清理普通的未跟踪文件；清理未跟踪文件是 <code>git clean</code> 的职责。若只是想整理提交，优先从 <code>--soft</code> 或默认的 <code>--mixed</code> 开始。</p>
+</blockquote>
+<h2 id="5-已经推送到共享分支：使用-git-revert">5. 已经推送到共享分支：使用 <code>git revert</code></h2>
+<p><code>reset</code> 通过移动分支指针来改写历史；<code>revert</code> 则保留原提交，并新增一个内容相反的提交。对于 <code>main</code> 等多人使用的分支，后者通常更安全。</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">原历史： A ── B ── C（C 引入错误）</span><br><span class="line">revert：  A ── B ── C ── C&#x27;（C&#x27; 抵消 C，但历史仍完整）</span><br></pre></td></tr></table></figure>
+<p>撤销最近一次提交：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git revert HEAD</span><br><span class="line">git push origin main</span><br></pre></td></tr></table></figure>
+<p>撤销指定提交：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">log</span> --oneline</span><br><span class="line">git revert &lt;commit-hash&gt;</span><br><span class="line">git push</span><br></pre></td></tr></table></figure>
+<p>如果后续提交修改了同一位置，<code>revert</code> 可能产生冲突。处理方法与普通冲突类似：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br><span class="line"><span class="comment"># 编辑并解决冲突</span></span><br><span class="line">git add &lt;resolved-file&gt;</span><br><span class="line">git revert --<span class="built_in">continue</span></span><br></pre></td></tr></table></figure>
+<p>想取消正在进行的撤销操作：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git revert --abort</span><br></pre></td></tr></table></figure>
+<p>撤销较早提交时，Git 只尝试反转该提交引入的差异，不会自动删除它之后的所有提交。完成后必须运行测试，确认当前组合仍然正确。</p>
+<h2 id="6-个人远程分支：确需改写时使用安全强推">6. 个人远程分支：确需改写时使用安全强推</h2>
+<p>如果提交只位于自己的功能分支、没有其他人基于它开发，可以先在本地 <code>reset</code> 或 <code>rebase</code>，再更新远程分支：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git reset --soft HEAD~1</span><br><span class="line"><span class="comment"># 重新整理并提交</span></span><br><span class="line">git push --force-with-lease</span><br></pre></td></tr></table></figure>
+<p>不要直接使用 <code>git push --force</code>。<code>--force-with-lease</code> 会检查远程分支是否仍是你预期的状态；如果他人刚推送了新提交，它会拒绝覆盖。</p>
+<p>即便如此，也不要对 <code>main</code>、发布分支或多人共同开发的分支强制推送。共享分支出现错误时，优先使用 <code>revert</code>。</p>
+<h2 id="7-后悔执行了-reset：使用-reflog-找回提交">7. 后悔执行了 <code>reset</code>：使用 <code>reflog</code> 找回提交</h2>
+<p>提交被 <code>reset</code> 移出当前分支后，通常不会立刻从仓库消失。<code>reflog</code> 记录了本地 <code>HEAD</code> 和分支引用近期移动的位置：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git reflog</span><br></pre></td></tr></table></figure>
+<p>找到误操作前的提交哈希后，先创建救援分支是更稳妥的做法：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git branch rescue/&lt;name&gt; &lt;commit-hash&gt;</span><br><span class="line">git switch rescue/&lt;name&gt;</span><br></pre></td></tr></table></figure>
+<p>确认内容无误后，再决定合并、挑选提交或移动原分支。不要一上来再次执行 <code>reset --hard</code>，否则会让排查更复杂。</p>
+<p><code>reflog</code> 主要是<strong>本地</strong>记录，而且有过期与清理机制；它不是备份方案。未提交的工作区修改也不保证能通过 <code>reflog</code> 找回。</p>
+<h2 id="8-常见场景速查">8. 常见场景速查</h2>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>推荐命令</th>
+<th>文件修改是否保留</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>丢弃某文件未暂存的修改</td>
+<td><code>git restore &lt;file&gt;</code></td>
+<td>否</td>
+</tr>
+<tr>
+<td>取消某文件暂存</td>
+<td><code>git restore --staged &lt;file&gt;</code></td>
+<td>是，留在工作区</td>
+</tr>
+<tr>
+<td>从旧提交取回某文件</td>
+<td><code>git restore --source=&lt;commit&gt; -- &lt;file&gt;</code></td>
+<td>旧内容写入工作区</td>
+</tr>
+<tr>
+<td>修正尚未共享的最近提交</td>
+<td><code>git commit --amend</code></td>
+<td>是，进入替换后的提交</td>
+</tr>
+<tr>
+<td>撤销本地提交并保留暂存</td>
+<td><code>git reset --soft HEAD~1</code></td>
+<td>是，留在暂存区</td>
+</tr>
+<tr>
+<td>撤销本地提交并取消暂存</td>
+<td><code>git reset HEAD~1</code></td>
+<td>是，留在工作区</td>
+</tr>
+<tr>
+<td>完全丢弃本地提交与修改</td>
+<td><code>git reset --hard HEAD~1</code></td>
+<td>否</td>
+</tr>
+<tr>
+<td>撤销已经共享的提交</td>
+<td><code>git revert &lt;commit&gt;</code></td>
+<td>以新提交反向修改</td>
+</tr>
+<tr>
+<td>找回被移动出分支的提交</td>
+<td><code>git reflog</code></td>
+<td>取决于目标提交内容</td>
+</tr>
+</tbody>
+</table>
+<p>最后记住一句话：<strong><code>restore</code> 处理文件和暂存状态，<code>reset</code> 移动本地历史，<code>revert</code> 安全撤销共享历史，<code>reflog</code> 为本地误操作提供救援线索。</strong></p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="https://git-scm.com/docs/git-restore">Git 文档：git restore</a></li>
+<li><a href="https://git-scm.com/docs/git-reset">Git 文档：git reset</a></li>
+<li><a href="https://git-scm.com/docs/git-revert">Git 文档：git revert</a></li>
+<li><a href="https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E9%87%8D%E7%BD%AE%E6%8F%AD%E5%AF%86">Pro Git：重置揭密</a></li>
+<li>原学习视频：<a href="https://www.bilibili.com/video/BV1ne4y1S7S9/">十分钟学会常用 Git 撤销操作</a></li>
+</ul>
+
+<div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
+  <span class="ai-content-label__icon" aria-hidden="true">
+    <i class="fas fa-wand-magic-sparkles"></i>
+  </span>
+  <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span>
+</div>]]></content>
+      <categories>
+        <category>计算机技术</category>
+        <category>版本控制</category>
+      </categories>
+      <tags>
+        <tag>版本回退</tag>
       </tags>
   </entry>
   <entry>
@@ -622,238 +1135,6 @@
       <tags>
         <tag>安装配置</tag>
         <tag>Windows</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Git 撤销操作：按工作区、暂存区和提交历史安全回退</title>
-    <url>/2024/05/a2778edb/</url>
-    <content><![CDATA[<p>Git 中的“撤销”不是一个动作：有时只是取消暂存，有时要丢弃文件修改，有时需要撤回本地提交，还有时错误已经推送到多人使用的分支。命令选错，轻则改动仍在，重则覆盖尚未备份的工作。</p>
-<p>安全选择命令只需先回答两个问题：</p>
-<ol>
-<li>改动现在位于工作区、暂存区、本地提交，还是远程历史？</li>
-<li>这段历史是否已经推送并被他人共享？</li>
-</ol>
-<blockquote>
-<p>操作前先运行 <code>git status</code>。涉及 <code>reset --hard</code> 或强制推送时，再用 <code>git log --oneline --graph --decorate -n 10</code> 确认目标提交。未提交的修改通常没有可靠备份。</p>
-</blockquote>
-<h2 id="1-看懂-Git-的四个位置">1. 看懂 Git 的四个位置</h2>
-<p>文件从编辑到协作，通常依次经过以下位置：</p>
-<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
-  flowchart LR
-    A[工作区&lt;br&#x2F;&gt;编辑后的文件] --&gt;|git add| B[暂存区&lt;br&#x2F;&gt;下一次提交快照]
-    B --&gt;|git commit| C[本地仓库&lt;br&#x2F;&gt;HEAD 与提交历史]
-    C --&gt;|git push| D[远程仓库&lt;br&#x2F;&gt;共享历史]
-    B -. restore --staged .-&gt; A
-    C -. reset .-&gt; B
-    C -. restore .-&gt; A
-    D -. revert 后 push .-&gt; D
-  </pre></div>
-<p>先用三个命令定位改动：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br><span class="line">git diff</span><br><span class="line">git diff --staged</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>git diff</code> 显示工作区相对暂存区的变化；</li>
-<li><code>git diff --staged</code> 显示暂存区相对 <code>HEAD</code> 的变化；</li>
-<li><code>git log --oneline</code> 显示已经提交的历史。</li>
-</ul>
-<h2 id="2-先用决策图选择命令">2. 先用决策图选择命令</h2>
-<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
-  flowchart TD
-    A[我想撤销一项改动] --&gt; B{已经 commit 了吗}
-    B -- 否 --&gt; C{已经 git add 了吗}
-    C -- 否 --&gt; D[保留则不操作&lt;br&#x2F;&gt;丢弃则 git restore file]
-    C -- 是 --&gt; E[取消暂存&lt;br&#x2F;&gt;git restore --staged file]
-    E --&gt; F{还要丢弃工作区修改吗}
-    F -- 是 --&gt; D
-    F -- 否 --&gt; G[修改仍保留在工作区]
-    B -- 是 --&gt; H{已经推送到共享分支了吗}
-    H -- 否 --&gt; I{要保留文件修改吗}
-    I -- 是 --&gt; J[git reset --soft 或默认 mixed]
-    I -- 否 --&gt; K[确认后 git reset --hard]
-    H -- 是 --&gt; L[git revert commit&lt;br&#x2F;&gt;再 git push]
-  </pre></div>
-<p>最重要的原则是：<strong>未共享的历史可以整理，已经共享的历史优先追加修正，而不是改写过去。</strong></p>
-<h2 id="3-还没有提交：使用-git-restore">3. 还没有提交：使用 <code>git restore</code></h2>
-<h3 id="3-1-丢弃未暂存的文件修改">3.1 丢弃未暂存的文件修改</h3>
-<p>如果文件只在工作区中修改，想恢复到暂存区记录的状态：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore &lt;file&gt;</span><br></pre></td></tr></table></figure>
-<p>例如：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore src/config.js</span><br></pre></td></tr></table></figure>
-<p>这会覆盖该文件当前的工作区内容。<strong>确认修改不再需要后再执行</strong>，因为普通 Git 历史通常无法找回从未提交、也未暂存为对象的内容。</p>
-<p>如果只想恢复文件中的部分改动，可以交互式选择：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore -p &lt;file&gt;</span><br></pre></td></tr></table></figure>
-<h3 id="3-2-取消暂存，但保留文件修改">3.2 取消暂存，但保留文件修改</h3>
-<p>文件已经执行过 <code>git add</code>，但暂时不想把它放入下一次提交：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore --staged &lt;file&gt;</span><br></pre></td></tr></table></figure>
-<p>效果是把文件从暂存区取出，工作区修改仍然存在。可以继续编辑、拆分提交或稍后重新暂存。</p>
-<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">执行前：HEAD ── 文件已暂存，工作区也有修改</span><br><span class="line">执行后：HEAD ── 暂存被取消，修改仍留在工作区</span><br></pre></td></tr></table></figure>
-<p>如果既要取消暂存，又要丢弃文件修改，应分两步执行，让每一步都清楚可见：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore --staged &lt;file&gt;</span><br><span class="line">git restore &lt;file&gt;</span><br></pre></td></tr></table></figure>
-<h3 id="3-3-从指定提交恢复文件">3.3 从指定提交恢复文件</h3>
-<p>只想把某个文件恢复到旧版本，而不移动整个分支：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore --<span class="built_in">source</span>=&lt;commit&gt; -- &lt;file&gt;</span><br></pre></td></tr></table></figure>
-<p>例如恢复到上一次提交中的版本：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git restore --<span class="built_in">source</span>=HEAD~1 -- README.md</span><br></pre></td></tr></table></figure>
-<p>此命令只是把旧内容写入工作区，之后仍需检查并创建新提交。<code>--</code> 用来明确分隔“提交名”和“文件路径”，可避免歧义。</p>
-<h2 id="4-已经提交但尚未共享：使用-commit-amend-或-reset">4. 已经提交但尚未共享：使用 <code>commit --amend</code> 或 <code>reset</code></h2>
-<h3 id="4-1-修正最近一次提交">4.1 修正最近一次提交</h3>
-<p>如果只是漏了文件，或提交说明写错，并且该提交还没有被他人使用：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 暂存遗漏的修改</span></span><br><span class="line">git add &lt;file&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改最近一次提交；编辑器会打开提交说明</span></span><br><span class="line">git commit --amend</span><br></pre></td></tr></table></figure>
-<p>只修改提交说明可使用：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git commit --amend -m <span class="string">&quot;fix: correct validation logic&quot;</span></span><br></pre></td></tr></table></figure>
-<p><code>--amend</code> 会生成一个新的提交来替换原提交，因此已经推送到共享分支后不要随意使用。</p>
-<h3 id="4-2-理解-reset-的三个模式">4.2 理解 <code>reset</code> 的三个模式</h3>
-<p>假设当前历史为 <code>A → B → C</code>，<code>HEAD</code> 指向错误提交 <code>C</code>。执行 <code>git reset &lt;mode&gt; HEAD~1</code> 后，分支指针回到 <code>B</code>，差别在于是否保留 <code>C</code> 的文件内容：</p>
-<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
-  flowchart LR
-    A[A] --&gt; B[B]
-    B --&gt; C[C&lt;br&#x2F;&gt;当前 HEAD]
-    C --&gt; S[--soft&lt;br&#x2F;&gt;改动保留在暂存区]
-    C --&gt; M[--mixed&lt;br&#x2F;&gt;改动保留在工作区]
-    C --&gt; H[--hard&lt;br&#x2F;&gt;工作区与暂存区一起丢弃]
-  </pre></div>
-<table>
-<thead>
-<tr>
-<th>命令</th>
-<th>分支指针</th>
-<th>暂存区</th>
-<th>工作区</th>
-<th>典型用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>git reset --soft HEAD~1</code></td>
-<td>回到前一提交</td>
-<td>保留改动</td>
-<td>保留改动</td>
-<td>重新组织或合并提交</td>
-</tr>
-<tr>
-<td><code>git reset --mixed HEAD~1</code></td>
-<td>回到前一提交</td>
-<td>取消暂存</td>
-<td>保留改动</td>
-<td>重新选择要提交的文件</td>
-</tr>
-<tr>
-<td><code>git reset --hard HEAD~1</code></td>
-<td>回到前一提交</td>
-<td>丢弃改动</td>
-<td>丢弃改动</td>
-<td>完全放弃提交及其文件变化</td>
-</tr>
-</tbody>
-</table>
-<p><code>--mixed</code> 是默认模式，因此下面两条命令等价：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git reset HEAD~1</span><br><span class="line">git reset --mixed HEAD~1</span><br></pre></td></tr></table></figure>
-<p><code>HEAD~1</code> 表示当前提交的第一父提交，也就是通常所说的“上一个提交”。如果目标不是最近一次提交，应先运行 <code>git log --oneline</code>，再使用明确的提交哈希。</p>
-<blockquote>
-<p><code>git reset --hard</code> 会直接覆盖已跟踪文件的工作区和暂存区内容，但通常不会清理普通的未跟踪文件；清理未跟踪文件是 <code>git clean</code> 的职责。若只是想整理提交，优先从 <code>--soft</code> 或默认的 <code>--mixed</code> 开始。</p>
-</blockquote>
-<h2 id="5-已经推送到共享分支：使用-git-revert">5. 已经推送到共享分支：使用 <code>git revert</code></h2>
-<p><code>reset</code> 通过移动分支指针来改写历史；<code>revert</code> 则保留原提交，并新增一个内容相反的提交。对于 <code>main</code> 等多人使用的分支，后者通常更安全。</p>
-<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">原历史： A ── B ── C（C 引入错误）</span><br><span class="line">revert：  A ── B ── C ── C&#x27;（C&#x27; 抵消 C，但历史仍完整）</span><br></pre></td></tr></table></figure>
-<p>撤销最近一次提交：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git revert HEAD</span><br><span class="line">git push origin main</span><br></pre></td></tr></table></figure>
-<p>撤销指定提交：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">log</span> --oneline</span><br><span class="line">git revert &lt;commit-hash&gt;</span><br><span class="line">git push</span><br></pre></td></tr></table></figure>
-<p>如果后续提交修改了同一位置，<code>revert</code> 可能产生冲突。处理方法与普通冲突类似：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br><span class="line"><span class="comment"># 编辑并解决冲突</span></span><br><span class="line">git add &lt;resolved-file&gt;</span><br><span class="line">git revert --<span class="built_in">continue</span></span><br></pre></td></tr></table></figure>
-<p>想取消正在进行的撤销操作：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git revert --abort</span><br></pre></td></tr></table></figure>
-<p>撤销较早提交时，Git 只尝试反转该提交引入的差异，不会自动删除它之后的所有提交。完成后必须运行测试，确认当前组合仍然正确。</p>
-<h2 id="6-个人远程分支：确需改写时使用安全强推">6. 个人远程分支：确需改写时使用安全强推</h2>
-<p>如果提交只位于自己的功能分支、没有其他人基于它开发，可以先在本地 <code>reset</code> 或 <code>rebase</code>，再更新远程分支：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git reset --soft HEAD~1</span><br><span class="line"><span class="comment"># 重新整理并提交</span></span><br><span class="line">git push --force-with-lease</span><br></pre></td></tr></table></figure>
-<p>不要直接使用 <code>git push --force</code>。<code>--force-with-lease</code> 会检查远程分支是否仍是你预期的状态；如果他人刚推送了新提交，它会拒绝覆盖。</p>
-<p>即便如此，也不要对 <code>main</code>、发布分支或多人共同开发的分支强制推送。共享分支出现错误时，优先使用 <code>revert</code>。</p>
-<h2 id="7-后悔执行了-reset：使用-reflog-找回提交">7. 后悔执行了 <code>reset</code>：使用 <code>reflog</code> 找回提交</h2>
-<p>提交被 <code>reset</code> 移出当前分支后，通常不会立刻从仓库消失。<code>reflog</code> 记录了本地 <code>HEAD</code> 和分支引用近期移动的位置：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git reflog</span><br></pre></td></tr></table></figure>
-<p>找到误操作前的提交哈希后，先创建救援分支是更稳妥的做法：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git branch rescue/&lt;name&gt; &lt;commit-hash&gt;</span><br><span class="line">git switch rescue/&lt;name&gt;</span><br></pre></td></tr></table></figure>
-<p>确认内容无误后，再决定合并、挑选提交或移动原分支。不要一上来再次执行 <code>reset --hard</code>，否则会让排查更复杂。</p>
-<p><code>reflog</code> 主要是<strong>本地</strong>记录，而且有过期与清理机制；它不是备份方案。未提交的工作区修改也不保证能通过 <code>reflog</code> 找回。</p>
-<h2 id="8-常见场景速查">8. 常见场景速查</h2>
-<table>
-<thead>
-<tr>
-<th>目标</th>
-<th>推荐命令</th>
-<th>文件修改是否保留</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>丢弃某文件未暂存的修改</td>
-<td><code>git restore &lt;file&gt;</code></td>
-<td>否</td>
-</tr>
-<tr>
-<td>取消某文件暂存</td>
-<td><code>git restore --staged &lt;file&gt;</code></td>
-<td>是，留在工作区</td>
-</tr>
-<tr>
-<td>从旧提交取回某文件</td>
-<td><code>git restore --source=&lt;commit&gt; -- &lt;file&gt;</code></td>
-<td>旧内容写入工作区</td>
-</tr>
-<tr>
-<td>修正尚未共享的最近提交</td>
-<td><code>git commit --amend</code></td>
-<td>是，进入替换后的提交</td>
-</tr>
-<tr>
-<td>撤销本地提交并保留暂存</td>
-<td><code>git reset --soft HEAD~1</code></td>
-<td>是，留在暂存区</td>
-</tr>
-<tr>
-<td>撤销本地提交并取消暂存</td>
-<td><code>git reset HEAD~1</code></td>
-<td>是，留在工作区</td>
-</tr>
-<tr>
-<td>完全丢弃本地提交与修改</td>
-<td><code>git reset --hard HEAD~1</code></td>
-<td>否</td>
-</tr>
-<tr>
-<td>撤销已经共享的提交</td>
-<td><code>git revert &lt;commit&gt;</code></td>
-<td>以新提交反向修改</td>
-</tr>
-<tr>
-<td>找回被移动出分支的提交</td>
-<td><code>git reflog</code></td>
-<td>取决于目标提交内容</td>
-</tr>
-</tbody>
-</table>
-<p>最后记住一句话：<strong><code>restore</code> 处理文件和暂存状态，<code>reset</code> 移动本地历史，<code>revert</code> 安全撤销共享历史，<code>reflog</code> 为本地误操作提供救援线索。</strong></p>
-<h2 id="参考资料">参考资料</h2>
-<ul>
-<li><a href="https://git-scm.com/docs/git-restore">Git 文档：git restore</a></li>
-<li><a href="https://git-scm.com/docs/git-reset">Git 文档：git reset</a></li>
-<li><a href="https://git-scm.com/docs/git-revert">Git 文档：git revert</a></li>
-<li><a href="https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E9%87%8D%E7%BD%AE%E6%8F%AD%E5%AF%86">Pro Git：重置揭密</a></li>
-<li>原学习视频：<a href="https://www.bilibili.com/video/BV1ne4y1S7S9/">十分钟学会常用 Git 撤销操作</a></li>
-</ul>
-
-<div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
-  <span class="ai-content-label__icon" aria-hidden="true">
-    <i class="fas fa-wand-magic-sparkles"></i>
-  </span>
-  <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span>
-</div>]]></content>
-      <categories>
-        <category>计算机技术</category>
-        <category>版本控制</category>
-      </categories>
-      <tags>
-        <tag>版本回退</tag>
       </tags>
   </entry>
   <entry>
@@ -1201,287 +1482,6 @@ C(\psi)\boldsymbol{N}\,d\Omega
       </tags>
   </entry>
   <entry>
-    <title>流体力学基本方程（二）：动量守恒方程的控制体推导</title>
-    <url>/2024/04/7c8cd580/</url>
-    <content><![CDATA[<p>在<a href="/2024/04/98e90823/">上一篇</a>中，我们从固定控制体出发推导了质量守恒方程。本篇继续回答第二个问题：<strong>流体的速度为什么会发生变化？</strong></p>
-<p>答案仍然是牛顿第二定律。困难之处在于，控制体是固定的空间区域，流体却会不断穿过控制面。因此，控制体内动量的变化不只来自外力，还要计入流入和流出所携带的动量。</p>
-<p>本文默认读者已经了解密度、速度场、控制体、控制面和质量守恒方程。为避免一开始陷入分量运算，先建立矢量形式，再展开到直角坐标分量。</p>
-<h2 id="一、先分清系统与控制体">一、先分清系统与控制体</h2>
-<h3 id="1-系统：始终跟随同一批流体质点">1. 系统：始终跟随同一批流体质点</h3>
-<p>对于质量不变的流体系统，牛顿第二定律写为</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{d}{dt}\int_{\mathrm{sys}}\rho\boldsymbol{v}\,dV
-=\sum\boldsymbol{F}</script>
-</div>
-<p>其中，<span class="math inline"><script type="math/tex">\rho</script></span> 是密度，<span class="math inline"><script type="math/tex">\boldsymbol{v}</script></span> 是速度，积分项是系统的总动量。这个式子非常直观：<strong>同一批流体的总动量变化率等于它受到的合外力。</strong></p>
-<h3 id="2-控制体：研究固定空间中的流动">2. 控制体：研究固定空间中的流动</h3>
-<p>工程中更常观察一段管道、一个叶轮通道或一块计算网格，也就是控制体。由于流体会穿过控制面，系统的动量变化必须拆成两部分：</p>
-<ul>
-<li>控制体内部的动量积累；</li>
-<li>穿过控制面的净动量流出。</li>
-</ul>
-<img src="/2024/04/7c8cd580/control-volume-momentum.webp" alt="固定控制体中的动量积累、动量通量与外力" style="zoom:33%;">
-<p>雷诺输运定理把系统描述转换为固定控制体描述：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{d}{dt}\int_{\mathrm{sys}}\rho\boldsymbol{v}\,dV
-=
-\frac{\partial}{\partial t}\int_{CV}\rho\boldsymbol{v}\,dV
-+\oint_{CS}\rho\boldsymbol{v}
-(\boldsymbol{v}\cdot\boldsymbol{n})\,dA</script>
-</div>
-<p>因此，控制体形式的动量守恒方程为</p>
-<div class="math block">
-<script type="math/tex; mode=display">\boxed{
-\frac{\partial}{\partial t}\int_{CV}\rho\boldsymbol{v}\,dV
-+\oint_{CS}\rho\boldsymbol{v}
-(\boldsymbol{v}\cdot\boldsymbol{n})\,dA
-=\sum\boldsymbol{F}
-}</script>
-</div>
-<p>这就是后续所有动量方程的出发点。</p>
-<h2 id="二、控制体方程的每一项表示什么">二、控制体方程的每一项表示什么</h2>
-<h3 id="1-动量积累项">1. 动量积累项</h3>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial}{\partial t}\int_{CV}\rho\boldsymbol{v}\,dV</script>
-</div>
-<p>它描述固定控制体内部总动量随时间的变化。定常流动中，各空间点的物理量不随时间变化，因此该项为零；但流体仍可能因为空间位置改变而加速。</p>
-<h3 id="2-动量通量项">2. 动量通量项</h3>
-<div class="math block">
-<script type="math/tex; mode=display">\oint_{CS}\rho\boldsymbol{v}
-(\boldsymbol{v}\cdot\boldsymbol{n})\,dA</script>
-</div>
-<p>先看 <span class="math inline"><script type="math/tex">\rho(\boldsymbol{v}\cdot\boldsymbol{n})dA</script></span>：它是单位时间穿过面积微元 <span class="math inline"><script type="math/tex">dA</script></span> 的质量。再乘以速度 <span class="math inline"><script type="math/tex">\boldsymbol{v}</script></span>，就得到这股质量携带的动量。</p>
-<p>规定 <span class="math inline"><script type="math/tex">\boldsymbol{n}</script></span> 为控制面的外法向量：</p>
-<ul>
-<li><span class="math inline"><script type="math/tex">\boldsymbol{v}\cdot\boldsymbol{n}>0</script></span> 表示流出；</li>
-<li><span class="math inline"><script type="math/tex">\boldsymbol{v}\cdot\boldsymbol{n}<0</script></span> 表示流入。</li>
-</ul>
-<p>所以曲面积分自动完成了“流出动量减去流入动量”的计算。<strong>动量通量不是额外的力，而是流体穿过控制面造成的动量输运。</strong></p>
-<h3 id="3-外力项">3. 外力项</h3>
-<p>流体受到的外力分为体积力和表面力：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\sum\boldsymbol{F}
-=\int_{CV}\rho\boldsymbol{b}\,dV
-+\oint_{CS}\boldsymbol{\sigma}\cdot\boldsymbol{n}\,dA</script>
-</div>
-<p>其中，<span class="math inline"><script type="math/tex">\boldsymbol{b}</script></span> 是单位质量体积力，常见情况为重力加速度 <span class="math inline"><script type="math/tex">\boldsymbol{g}</script></span>；<span class="math inline"><script type="math/tex">\boldsymbol{\sigma}</script></span> 是应力张量，<span class="math inline"><script type="math/tex">\boldsymbol{\sigma}\cdot\boldsymbol{n}</script></span> 是控制面上的应力矢量。</p>
-<p>应力可以拆成压强和黏性应力：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\boldsymbol{\sigma}=-p\boldsymbol{I}+\boldsymbol{\tau}</script>
-</div>
-<p>负号来自压强的方向：压强总是沿表面法线的反方向挤压流体。<span class="math inline"><script type="math/tex">\boldsymbol{\tau}</script></span> 则包含法向黏性应力和切向剪应力。</p>
-<img src="/2024/04/7c8cd580/fluid-element-forces.webp" alt="流体微元上的压强、黏性应力与重力" style="zoom:33%;">
-<h2 id="三、从积分形式到微分形式">三、从积分形式到微分形式</h2>
-<p>把体积力和表面力代入控制体方程：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial}{\partial t}\int_{CV}\rho\boldsymbol{v}\,dV
-+\oint_{CS}\rho\boldsymbol{v}
-(\boldsymbol{v}\cdot\boldsymbol{n})\,dA
-=\int_{CV}\rho\boldsymbol{b}\,dV
-+\oint_{CS}\boldsymbol{\sigma}\cdot\boldsymbol{n}\,dA</script>
-</div>
-<p>利用高斯散度定理，把两个面积分转换为体积分：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\int_{CV}
-\left[
-\frac{\partial(\rho\boldsymbol{v})}{\partial t}
-+\boldsymbol{\nabla}\cdot
-(\rho\boldsymbol{v}\otimes\boldsymbol{v})
--\rho\boldsymbol{b}
--\boldsymbol{\nabla}\cdot\boldsymbol{\sigma}
-\right]dV=0</script>
-</div>
-<p>由于控制体可以任意选取，被积函数必须处处为零：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\boxed{
-\frac{\partial(\rho\boldsymbol{v})}{\partial t}
-+\boldsymbol{\nabla}\cdot
-(\rho\boldsymbol{v}\otimes\boldsymbol{v})
-=\rho\boldsymbol{b}
-+\boldsymbol{\nabla}\cdot\boldsymbol{\sigma}
-}</script>
-</div>
-<p>这就是守恒形式的柯西动量方程。结合连续方程</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial\rho}{\partial t}
-+\boldsymbol{\nabla}\cdot(\rho\boldsymbol{v})=0</script>
-</div>
-<p>可以把左侧化为 <span class="math inline"><script type="math/tex">\rho D\boldsymbol{v}/Dt</script></span>，得到非守恒形式：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\boxed{
-\rho\frac{D\boldsymbol{v}}{Dt}
-=\rho\boldsymbol{b}
-+\boldsymbol{\nabla}\cdot\boldsymbol{\sigma}
-}</script>
-</div>
-<p>其中，随体导数为</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{D\boldsymbol{v}}{Dt}
-=\underbrace{\frac{\partial\boldsymbol{v}}{\partial t}}_{\text{当地加速度}}
-+\underbrace{(\boldsymbol{v}\cdot\boldsymbol{\nabla})
-\boldsymbol{v}}_{\text{对流加速度}}</script>
-</div>
-<img src="/2024/04/7c8cd580/material-acceleration.webp" alt="流体质点的当地加速度与对流加速度" style="zoom:33%;">
-<p>当地加速度表示同一空间点的速度随时间变化；对流加速度表示流体质点运动到速度不同的位置而产生的速度变化。因此，<strong>定常流动只能说明当地加速度为零，不能说明总加速度为零</strong>。渐缩管中的定常流动就是典型例子。</p>
-<h2 id="四、直角坐标中的-x-方向动量方程">四、直角坐标中的 <span class="math inline"><script type="math/tex">x</script></span> 方向动量方程</h2>
-<p>为了看清每一项，把守恒形式展开到 <span class="math inline"><script type="math/tex">x</script></span> 方向。令 <span class="math inline"><script type="math/tex">\boldsymbol{v}=(u,v,w)</script></span>，则</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial(\rho u)}{\partial t}
-+\frac{\partial(\rho u^2)}{\partial x}
-+\frac{\partial(\rho uv)}{\partial y}
-+\frac{\partial(\rho uw)}{\partial z}
-=\rho b_x
-+\frac{\partial\sigma_{xx}}{\partial x}
-+\frac{\partial\tau_{xy}}{\partial y}
-+\frac{\partial\tau_{xz}}{\partial z}</script>
-</div>
-<p>左侧依次表示：</p>
-<ol>
-<li>控制体内 <span class="math inline"><script type="math/tex">x</script></span> 方向动量的当地变化；</li>
-<li><span class="math inline"><script type="math/tex">x</script></span> 方向流动输运的 <span class="math inline"><script type="math/tex">x</script></span> 动量；</li>
-<li><span class="math inline"><script type="math/tex">y</script></span> 方向流动输运的 <span class="math inline"><script type="math/tex">x</script></span> 动量；</li>
-<li><span class="math inline"><script type="math/tex">z</script></span> 方向流动输运的 <span class="math inline"><script type="math/tex">x</script></span> 动量。</li>
-</ol>
-<p>右侧则是 <span class="math inline"><script type="math/tex">x</script></span> 方向体积力与各表面应力的合力。注意 <span class="math inline"><script type="math/tex">\rho uv</script></span> 并不是“两个速度相乘后产生的力”，而是沿 <span class="math inline"><script type="math/tex">y</script></span> 方向穿过控制面的质量所携带的 <span class="math inline"><script type="math/tex">x</script></span> 方向动量。</p>
-<p>使用连续方程后，也可以写成更直观的加速度形式：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\rho\left(
-\frac{\partial u}{\partial t}
-+u\frac{\partial u}{\partial x}
-+v\frac{\partial u}{\partial y}
-+w\frac{\partial u}{\partial z}
-\right)
-=\rho b_x
--\frac{\partial p}{\partial x}
-+\frac{\partial\tau_{xx}}{\partial x}
-+\frac{\partial\tau_{xy}}{\partial y}
-+\frac{\partial\tau_{xz}}{\partial z}</script>
-</div>
-<h2 id="五、从柯西动量方程到-Navier–Stokes-方程">五、从柯西动量方程到 Navier–Stokes 方程</h2>
-<p>对牛顿流体，黏性应力与速度梯度线性相关：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\boldsymbol{\tau}
-=\mu\left[
-\boldsymbol{\nabla}\boldsymbol{v}
-+(\boldsymbol{\nabla}\boldsymbol{v})^{T}
-\right]
-+\lambda(\boldsymbol{\nabla}\cdot\boldsymbol{v})\boldsymbol{I}</script>
-</div>
-<p>把 <span class="math inline"><script type="math/tex">\boldsymbol{\sigma}=-p\boldsymbol{I}+\boldsymbol{\tau}</script></span> 代入柯西动量方程，可得一般形式的 Navier–Stokes 方程：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\rho\frac{D\boldsymbol{v}}{Dt}
-=-\boldsymbol{\nabla}p
-+\boldsymbol{\nabla}\cdot\boldsymbol{\tau}
-+\rho\boldsymbol{b}</script>
-</div>
-<p>对于密度不变、动力黏度 <span class="math inline"><script type="math/tex">\mu</script></span> 为常数的不可压缩牛顿流体，<span class="math inline"><script type="math/tex">\boldsymbol{\nabla}\cdot\boldsymbol{v}=0</script></span>，方程简化为</p>
-<div class="math block">
-<script type="math/tex; mode=display">\boxed{
-\rho\left[
-\frac{\partial\boldsymbol{v}}{\partial t}
-+(\boldsymbol{v}\cdot\boldsymbol{\nabla})\boldsymbol{v}
-\right]
-=-\boldsymbol{\nabla}p
-+\mu\nabla^2\boldsymbol{v}
-+\rho\boldsymbol{g}
-}</script>
-</div>
-<p>可以把它理解为一张“受力—加速度”清单：</p>
-<table>
-<thead>
-<tr>
-<th>方程项</th>
-<th>物理意义</th>
-<th>单位</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><span class="math inline"><script type="math/tex">\rho\,\partial\boldsymbol{v}/\partial t</script></span></td>
-<td>当地惯性</td>
-<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
-</tr>
-<tr>
-<td><span class="math inline"><script type="math/tex">\rho(\boldsymbol{v}\cdot\boldsymbol{\nabla})\boldsymbol{v}</script></span></td>
-<td>对流惯性</td>
-<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
-</tr>
-<tr>
-<td><span class="math inline"><script type="math/tex">-\boldsymbol{\nabla}p</script></span></td>
-<td>压强梯度力</td>
-<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
-</tr>
-<tr>
-<td><span class="math inline"><script type="math/tex">\mu\nabla^2\boldsymbol{v}</script></span></td>
-<td>黏性扩散</td>
-<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
-</tr>
-<tr>
-<td><span class="math inline"><script type="math/tex">\rho\boldsymbol{g}</script></span></td>
-<td>重力</td>
-<td><span class="math inline"><script type="math/tex">\mathrm{N/m^3}</script></span></td>
-</tr>
-</tbody>
-</table>
-<p>方程两边的每一项都是单位体积上的力。左侧是产生加速度所需的惯性项，右侧是压强、黏性和重力共同提供的驱动力。</p>
-<h2 id="六、三个常见特例">六、三个常见特例</h2>
-<h3 id="1-静止流体">1. 静止流体</h3>
-<p>当 <span class="math inline"><script type="math/tex">\boldsymbol{v}=0</script></span> 时，惯性项和黏性项均为零：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\boldsymbol{\nabla}p=\rho\boldsymbol{g}</script>
-</div>
-<p>这就是流体静力学平衡方程。</p>
-<h3 id="2-无黏流动">2. 无黏流动</h3>
-<p>忽略黏性应力后，得到欧拉方程：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\rho\frac{D\boldsymbol{v}}{Dt}
-=-\boldsymbol{\nabla}p+\rho\boldsymbol{g}</script>
-</div>
-<p>在额外满足定常、不可压缩，并沿流线积分等条件时，可以进一步得到伯努利方程。</p>
-<h3 id="3-充分发展管流">3. 充分发展管流</h3>
-<p>对于水平直管中的定常、充分发展流动，对流加速度可以为零，但压强梯度仍需与黏性阻力平衡。由此可见，“速度不随时间变化”不等于“流体不受力”。</p>
-<h2 id="七、容易混淆的四个问题">七、容易混淆的四个问题</h2>
-<ol>
-<li><strong>为什么定常流动仍会加速？</strong> 因为当地加速度为零时，对流加速度仍可能存在。</li>
-<li><strong>为什么压强项前面有负号？</strong> 因为流体受到的压强作用方向与控制面的外法线相反。</li>
-<li><strong>动量通量是不是一种力？</strong> 它不是新的相互作用力，而是质量跨越控制面时携带的动量；量纲与力相同，因此会出现在同一个平衡式中。</li>
-<li><strong>守恒形式和非守恒形式哪个更正确？</strong> 两者在场光滑且满足连续方程时等价；存在激波或间断时，守恒形式更基本，也更适合有限体积离散。</li>
-</ol>
-<h2 id="八、推导主线回顾">八、推导主线回顾</h2>
-<p>本文的逻辑可以压缩成四步：</p>
-<ol>
-<li>对流体系统应用牛顿第二定律；</li>
-<li>用雷诺输运定理转换到固定控制体；</li>
-<li>把外力拆为体积力、压强和黏性应力；</li>
-<li>用高斯散度定理得到局部微分方程，再代入牛顿流体本构关系得到 Navier–Stokes 方程。</li>
-</ol>
-<p>最需要记住的不是最后一行公式，而是它背后的平衡关系：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\boxed{
-\text{动量积累}
-+\text{净动量流出}
-=\text{体积力}
-+\text{表面力}
-}</script>
-</div>
-<p>后续讨论能量守恒时仍会沿用同样的“系统定律—雷诺输运定理—控制体方程”路线。</p>
-
-<div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
-  <span class="ai-content-label__icon" aria-hidden="true">
-    <i class="fas fa-wand-magic-sparkles"></i>
-  </span>
-  <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span>
-</div>]]></content>
-      <categories>
-        <category>理论基础</category>
-        <category>流体力学</category>
-      </categories>
-      <tags>
-        <tag>动量守恒</tag>
-        <tag>Navier–Stokes 方程</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Fortran 转 C++：语法差异与迁移要点</title>
     <url>/2024/05/5a883584/</url>
     <content><![CDATA[<h2 id="一、命名">一、命名</h2>
@@ -1707,57 +1707,169 @@ C(\psi)\boldsymbol{N}\,d\Omega
       </tags>
   </entry>
   <entry>
-    <title>DJI Mavic 3 Classic 航点飞行指南</title>
-    <url>/2024/08/78788d45/</url>
-    <content><![CDATA[<h2 id="准备工作">准备工作</h2>
-<p>遥控手柄(带屏)</p>
-<p>航线规划软件(网页) - Rainbow Cloud</p>
-<p>SD卡, 读卡器, 电脑</p>
-<h2 id="1-创建航线">1. 创建航线</h2>
-<p>首先, 打开<a href="https://app.flydji.cn/">Rainbow Cloud网站</a>.</p>
-<p>网页界面如下:</p>
-<img src="/2024/08/78788d45/20240907103046.webp" alt="DJI Pilot 2 航线规划地图界面" style="zoom: 33%;">
-<p>点击左侧新建任务.</p>
-<img src="/2024/08/78788d45/20240907103203.png" alt="DJI Pilot 2 新建任务入口" style="zoom:33%;">
-<p>选择正射</p>
-<img src="/2024/08/78788d45/20240907103355.png" alt="DJI Pilot 2 航点任务类型" style="zoom: 33%;">
-<p>输入任务名称</p>
-<img src="/2024/08/78788d45/20240907103444.png" alt="DJI Pilot 2 航点任务命名" style="zoom:50%;">
-<p>确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围.</p>
-<img src="/2024/08/78788d45/20240907103635.webp" alt="在地图上绘制矩形航区" style="zoom:33%;">
-<p>然后, 调整这个范围至合适位置. 可以移动和添加顶点</p>
-<img src="/2024/08/78788d45/20240907104233.webp" alt="调整航区边界控制点" style="zoom:33%;">
-<p>然后, 调整右侧参数栏的参数.</p>
-<img src="/2024/08/78788d45/20240907104901.webp" alt="航线高度与航向参数设置" style="zoom:33%;">
-<img src="/2024/08/78788d45/20240907105200.webp" alt="航线参数调整后的覆盖范围" style="zoom:33%;">
-<p>其余设置与上图保持一致, 保存任务</p>
-<img src="/2024/08/78788d45/20240907105605.png" alt="在航线上添加航点" style="zoom:50%;">
-<p>点击右上角任务导出</p>
-<img src="/2024/08/78788d45/20240907105752.webp" alt="自动生成的航点飞行路线" style="zoom:33%;">
-<p>选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.</p>
-<img src="/2024/08/78788d45/20240907110020.png" alt="Mavic 3 Classic 飞行参数设置" style="zoom:50%;">
-<p>点击下载, 将文件下载并导入到SD卡中.</p>
-<h2 id="2-导入航线">2. 导入航线</h2>
-<p>根据导入教程导入文件<a href="https://docs.qq.com/doc/DWWNyWkxjaURLU05G">Mavic3系列屏控手动导入Kmz航点任务</a></p>
-<h3 id="2-1-创建并备份航线">2.1 创建并备份航线</h3>
-<p>创建任意数量的航点, 保存.</p>
-<p>航点文件保存位置如下</p>
-<img src="/2024/08/78788d45/20240913182709.png" alt="遥控器中的 waypoint 航线文件夹" style="zoom:33%;">
-<p>一串英文字符的文件夹内存放的就是航线文件(kmz格式)</p>
-<p>将整个waypoint文件夹复制至SD卡中</p>
-<h3 id="2-2-替换kmz文件">2.2 替换kmz文件</h3>
-<p>将已经下载好的Kmz文件同样导入到SD卡的该文件夹内</p>
-<p>注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).</p>
-<p>将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)</p>
-<p>最后将替换好的waypoint文件夹替换回去</p>
+    <title>Hexo 与 GitHub Actions 博客部署指南</title>
+    <url>/2024/06/4a79202d/</url>
+    <content><![CDATA[<h2 id="安装流程">安装流程</h2>
+<ol>
+<li>
+<p>安装node.js</p>
+</li>
+<li>
+<p><a href="https://fireflye.asia/2024/05/cbf708ce.html">安装Git</a></p>
+</li>
+<li>
+<p>安装Hexo</p>
+</li>
+<li>
+<p>创建Github仓库</p>
+</li>
+<li>
+<p>安装上传插件</p>
+</li>
+<li>
+<p>更改配置</p>
+</li>
+<li>
+<p>上传网页</p>
+</li>
+</ol>
+<h2 id="1-安装node-js">1. 安装node.js</h2>
+<p>打开node.js官网<a href="https://nodejs.org/en">Node.js — Run JavaScript Everywhere (nodejs.org)</a>点击下载</p>
+<img src="/2024/06/4a79202d/20240616123133.png" alt="Node.js 官网 Windows 安装包下载入口" style="zoom: 25%;">
+<p>打开安装至<strong>默认位置</strong>即可</p>
+<img src="/2024/06/4a79202d/20240616133443.png" alt="Node.js 安装向导欢迎页面" style="zoom:50%;">
+<img src="/2024/06/4a79202d/20240616133515.png" alt="Node.js 安装许可协议" style="zoom: 50%;">
+<img src="/2024/06/4a79202d/20240616134516.png" alt="Node.js 安装目录选择" style="zoom:50%;">
+<img src="/2024/06/4a79202d/20240616134543.png" alt="Node.js 安装组件选择" style="zoom:50%;">
+<img src="/2024/06/4a79202d/20240616134642.png" alt="Node.js 原生模块工具安装选项" style="zoom:50%;">
+<p>自动安装一些工具, 可以选上, 然后安装. 等待安装完成</p>
+<img src="/2024/06/4a79202d/20240616134808.png" alt="Node.js 安装进度" style="zoom:50%;">
+<p>点击完成, 会弹出一些窗口</p>
+<img src="/2024/06/4a79202d/20240616134924.png" alt="Node.js 原生模块工具安装终端" style="zoom:50%;">
+<p>按<strong>任意键</strong>继续即可, 等待安装完成.</p>
+<img src="/2024/06/4a79202d/20240616135112.png" alt="Node.js 附加工具安装提示" style="zoom:33%;">
+<p>过程较长, 耐心等待安装完成.</p>
+<img src="/2024/06/4a79202d/20240616214419.png" alt="Node.js 附加工具安装完成" style="zoom: 33%;">
+<h2 id="2-安装Git">2. 安装Git</h2>
+<p>查看往期教程<a href="https://fireflye.asia/2024/05/cbf708ce.html">Git 安装及配置教程 | Firefly Blog | 萤火虫博客 (fireflye.asia)</a></p>
+<h2 id="3-安装Hexo">3. 安装Hexo</h2>
+<p>完成上面的安装后, 可以使用以下命令检查是否安装成功.</p>
+<p>打开<code>git bash</code>,输入</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">node -v</span><br><span class="line">npm -v</span><br><span class="line">git -v</span><br></pre></td></tr></table></figure>
+<p>显示版本信息, 说明安装成功.</p>
+<p><img src="/2024/06/4a79202d/20240630103342.png" alt="Node.js、npm 与 Git 版本检查"></p>
+<p>如果没有代理, 可用下面的淘宝镜像源:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm config <span class="built_in">set</span> registry https://registry.npmmirror.com/</span><br></pre></td></tr></table></figure>
+<p>之后再输入以下命令安装hexo</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install -g hexo-cli</span><br></pre></td></tr></table></figure>
+<p>等待安装完成显示以下信息说明安装完成</p>
+<img src="/2024/06/4a79202d/20240630103804.png" alt="npm 安装 Hexo CLI 完成" style="zoom:50%;">
+<p>还可以使用以下命令来查看安装情况</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo -v</span><br></pre></td></tr></table></figure>
+<p>若显示版本信息, 说明已成功安装</p>
+<p>打开一个要存放网站文件的位置, 例如<code>F:\web\</code>. 打开此文件夹, 右键选择<code>open git bash here</code></p>
+<blockquote>
+<p>或者 直接打开<code>git bash</code> 输入<code>cd f:\web</code>. 路径替换为自己的路径.</p>
+</blockquote>
+<p>打开后会显示(我使用的虚拟机放在了桌面. 不建议这样做. 文件夹需要妥善保存.)</p>
+<img src="/2024/06/4a79202d/20240630111136.png" alt="在 Hexo 工作目录中打开 Git Bash" style="zoom:50%;">
+<p>输入以下命令初始化hexo(一定要在刚刚的文件夹内-路径显示)</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo init</span><br></pre></td></tr></table></figure>
+<p>保证网络畅通, 耐心等待初始化完成.</p>
+<img src="/2024/06/4a79202d/20240630111546.png" alt="Hexo 初始化完成的终端输出" style="zoom: 67%;">
+<p>到此, hexo初始化完成. 下面配置github仓库.</p>
+<h2 id="4-创建Github仓库">4. 创建Github仓库</h2>
+<p>打开<a href="https://github.com/">Github</a>注册一个自己的账号</p>
+<img src="/2024/06/4a79202d/20240630135454.png" alt="GitHub 账号注册入口" style="zoom: 33%;">
+<p>输入自己的邮箱, 密码等</p>
+<img src="/2024/06/4a79202d/20240630105025.png" alt="GitHub 注册邮箱填写" style="zoom:50%;">
+<p>用户名建议设置简单易记一些, 待会创建的网站域名与自己的用户名有关</p>
+<img src="/2024/06/4a79202d/20240630105356.png" alt="GitHub 注册用户名填写" style="zoom:50%;">
+<p>总览</p>
+<img src="/2024/06/4a79202d/20240630105538.png" alt="GitHub 注册信息确认" style="zoom:50%;">
+<p>点击继续, 通过验证码和邮箱数字验证就可以注册成功.</p>
+<img src="/2024/06/4a79202d/20240630110321.png" alt="GitHub 控制台新建仓库入口" style="zoom: 25%;">
+<p>点击左侧的绿色按钮新建仓库<code>Create repository</code>.</p>
+<img src="/2024/06/4a79202d/20240630112222.png" alt="GitHub 新建仓库参数设置" style="zoom: 33%;">
+<p>到此, 仓库已经创建完成</p>
+<hr>
+<p>接下来还需要配置一下上传的密钥对</p>
+<p>打开<code>git bash</code>, 输入以下命令 (&quot;email&quot;替换为自己的邮箱)</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -b 4096 -C <span class="string">&quot;email&quot;</span></span><br></pre></td></tr></table></figure>
+<p>然后按三下回车键, 即均保持默认不设置密码. 也可根据自己需要修改</p>
+<img src="/2024/06/4a79202d/20240630113042.png" alt="使用 ssh-keygen 创建 SSH 密钥" style="zoom: 67%;">
+<blockquote>
+<p>第一次是保存位置</p>
+<p>第二次是密码</p>
+<p>第三次是重复密码</p>
+</blockquote>
+<p>创建完成后, 打开保存的目录. 默认在<code>C:\Users\用户名\.ssh</code></p>
+<img src="/2024/06/4a79202d/20240630113309.png" alt="Windows 用户目录中的 SSH 密钥文件" style="zoom: 50%;">
+<p>第一个是私钥, 自己一定要保存好, 不能给别人.</p>
+<p>将第二个pub结尾的用<code>记事本</code>打开, 将里面的内容复制出来.</p>
+<img src="/2024/06/4a79202d/20240630113557.png" alt="使用记事本查看 SSH 公钥" style="zoom:50%;">
+<p>复制好后, 返回Github</p>
+<img src="/2024/06/4a79202d/20240630113804.png" alt="GitHub 个人设置入口" style="zoom: 33%;">
+<img src="/2024/06/4a79202d/20240630113926.png" alt="GitHub SSH and GPG keys 设置页" style="zoom:33%;">
+<img src="/2024/06/4a79202d/20240630114019.png" alt="GitHub 新建 SSH 密钥入口" style="zoom:33%;">
+<img src="/2024/06/4a79202d/20240630114156.png" alt="GitHub SSH 公钥填写界面" style="zoom:33%;">
+<p>密钥添加完成</p>
+<h2 id="5-安装上传插件">5. 安装上传插件</h2>
+<p>打开上文初始化的hexo目录, 右键选择<code>open git bash here</code></p>
+<blockquote>
+<p>或者 直接打开<code>git bash</code> 输入<code>cd f:\web</code>. 路径替换为自己的路径.</p>
+</blockquote>
+<p>然后输入下面的命令安装插件到目录下</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+<img src="/2024/06/4a79202d/20240630125113.png" alt="安装 hexo-deployer-git 插件" style="zoom:50%;">
+<p>安装完成</p>
+<h2 id="6-更改配置">6. 更改配置</h2>
+<p>打开网站文件夹</p>
+<img src="/2024/06/4a79202d/20240630125231.png" alt="Hexo 项目目录结构" style="zoom:50%;">
+<p>用记事本或VSCode等编辑软件打开<code>_config.yml</code></p>
+<img src="/2024/06/4a79202d/20240630125343.png" alt="编辑 Hexo 配置文件" style="zoom: 33%;">
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 配置说明, 不要复制. 按说明修改</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Hexo Configuration</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/configuration.html</span></span><br><span class="line"><span class="comment">## Source: https://github.com/hexojs/hexo/</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Site</span></span><br><span class="line"><span class="attr">title:</span> <span class="string">Hexo</span>  <span class="comment"># 网站的大标题</span></span><br><span class="line"><span class="attr">subtitle:</span> <span class="string">&#x27;&#x27;</span>  <span class="comment"># 副标题</span></span><br><span class="line"><span class="attr">description:</span> <span class="string">&#x27;&#x27;</span> <span class="comment"># 描述</span></span><br><span class="line"><span class="attr">keywords:</span>  <span class="comment"># 网站的关键词</span></span><br><span class="line"><span class="attr">author:</span> <span class="string">John</span> <span class="string">Doe</span> <span class="comment"># 作者</span></span><br><span class="line"><span class="attr">language:</span> <span class="string">en</span>  <span class="comment"># 语言 中文 zh-CN</span></span><br><span class="line"><span class="attr">timezone:</span> <span class="string">&#x27;&#x27;</span> <span class="comment"># 时区 Asia/Shanghai</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># URL</span></span><br><span class="line"><span class="comment">## Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;</span></span><br><span class="line"><span class="attr">url:</span> <span class="string">https://fireflyblog.github.io</span> <span class="comment"># 改成自己网址 https://用户名.github.io # 注意是https</span></span><br><span class="line"><span class="attr">permalink:</span> <span class="string">:year/:month/:day/:title/</span>  <span class="comment"># 其他默认转到最后一项</span></span><br><span class="line"><span class="attr">permalink_defaults:</span></span><br><span class="line"><span class="attr">pretty_urls:</span></span><br><span class="line">  <span class="attr">trailing_index:</span> <span class="literal">true</span> <span class="comment"># Set to false to remove trailing &#x27;index.html&#x27; from permalinks</span></span><br><span class="line">  <span class="attr">trailing_html:</span> <span class="literal">true</span> <span class="comment"># Set to false to remove trailing &#x27;.html&#x27; from permalinks</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Directory</span></span><br><span class="line"><span class="attr">source_dir:</span> <span class="string">source</span></span><br><span class="line"><span class="attr">public_dir:</span> <span class="string">public</span></span><br><span class="line"><span class="attr">tag_dir:</span> <span class="string">tags</span></span><br><span class="line"><span class="attr">archive_dir:</span> <span class="string">archives</span></span><br><span class="line"><span class="attr">category_dir:</span> <span class="string">categories</span></span><br><span class="line"><span class="attr">code_dir:</span> <span class="string">downloads/code</span></span><br><span class="line"><span class="attr">i18n_dir:</span> <span class="string">:lang</span></span><br><span class="line"><span class="attr">skip_render:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Writing</span></span><br><span class="line"><span class="attr">new_post_name:</span> <span class="string">:title.md</span> <span class="comment"># File name of new posts</span></span><br><span class="line"><span class="attr">default_layout:</span> <span class="string">post</span></span><br><span class="line"><span class="attr">titlecase:</span> <span class="literal">false</span> <span class="comment"># Transform title into titlecase</span></span><br><span class="line"><span class="attr">external_link:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span> <span class="comment"># Open external links in new tab</span></span><br><span class="line">  <span class="attr">field:</span> <span class="string">site</span> <span class="comment"># Apply to the whole site</span></span><br><span class="line">  <span class="attr">exclude:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="attr">filename_case:</span> <span class="number">0</span></span><br><span class="line"><span class="attr">render_drafts:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">post_asset_folder:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">relative_link:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">future:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">syntax_highlighter:</span> <span class="string">highlight.js</span></span><br><span class="line"><span class="attr">highlight:</span></span><br><span class="line">  <span class="attr">line_number:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">auto_detect:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">tab_replace:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line">  <span class="attr">wrap:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">hljs:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">prismjs:</span></span><br><span class="line">  <span class="attr">preprocess:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">line_number:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">tab_replace:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Home page setting</span></span><br><span class="line"><span class="comment"># path: Root path for your blogs index page. (default = &#x27;&#x27;)</span></span><br><span class="line"><span class="comment"># per_page: Posts displayed per page. (0 = disable pagination)</span></span><br><span class="line"><span class="comment"># order_by: Posts order. (Order by date descending by default)</span></span><br><span class="line"><span class="attr">index_generator:</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line">  <span class="attr">per_page:</span> <span class="number">10</span></span><br><span class="line">  <span class="attr">order_by:</span> <span class="string">-date</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Category &amp; Tag</span></span><br><span class="line"><span class="attr">default_category:</span> <span class="string">uncategorized</span></span><br><span class="line"><span class="attr">category_map:</span></span><br><span class="line"><span class="attr">tag_map:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Metadata elements</span></span><br><span class="line"><span class="comment">## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta</span></span><br><span class="line"><span class="attr">meta_generator:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Date / Time format</span></span><br><span class="line"><span class="comment">## Hexo uses Moment.js to parse and display date</span></span><br><span class="line"><span class="comment">## You can customize the date format as defined in</span></span><br><span class="line"><span class="comment">## http://momentjs.com/docs/#/displaying/format/</span></span><br><span class="line"><span class="attr">date_format:</span> <span class="string">YYYY-MM-DD</span></span><br><span class="line"><span class="attr">time_format:</span> <span class="string">HH:mm:ss</span></span><br><span class="line"><span class="comment">## updated_option supports &#x27;mtime&#x27;, &#x27;date&#x27;, &#x27;empty&#x27;</span></span><br><span class="line"><span class="attr">updated_option:</span> <span class="string">&#x27;mtime&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Pagination</span></span><br><span class="line"><span class="comment">## Set per_page to 0 to disable pagination</span></span><br><span class="line"><span class="attr">per_page:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">pagination_dir:</span> <span class="string">page</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Include / Exclude file(s)</span></span><br><span class="line"><span class="comment">## include:/exclude: options only apply to the &#x27;source/&#x27; folder</span></span><br><span class="line"><span class="attr">include:</span></span><br><span class="line"><span class="attr">exclude:</span></span><br><span class="line"><span class="attr">ignore:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Extensions</span></span><br><span class="line"><span class="comment">## Plugins: https://hexo.io/plugins/</span></span><br><span class="line"><span class="comment">## Themes: https://hexo.io/themes/</span></span><br><span class="line"><span class="attr">theme:</span> <span class="string">landscape</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/one-command-deployment</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这一部分单拿出来修改(注意缩进为2个空格, 冒号后面一个空格)</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/one-command-deployment</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repository:</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">main</span></span><br></pre></td></tr></table></figure>
+<p>仓库地址在<a href="https://github.com/dashboard">Github</a>, 打开找到自己的仓库</p>
+<img src="/2024/06/4a79202d/20240630131332.png" alt="复制 GitHub 仓库 SSH 地址" style="zoom: 33%;">
+<p>复制好后粘贴到仓库参数后面, 完整的配置修改如下</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/one-command-deployment</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repository:</span> <span class="string">git@github.com:fireflyblog/fireflyblog.github.io.git</span> <span class="comment">#替换为自己的链接</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">main</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果无法上传或分支报错可以使用以下样式:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/one-command-deployment</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span></span><br><span class="line">    <span class="attr">github:</span> <span class="string">git@github.com:fireflyblog/fireflyblog.github.io.git,main</span> <span class="comment">#替换为自己的链接</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="7-上传网页">7. 上传网页</h2>
+<p>一切配置好之后, 打开网站文件夹. 右键选择<code>open git bash here</code></p>
+<p>输入以下命令生成和上传网页</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+<img src="/2024/06/4a79202d/20240630132526.png" alt="Hexo 生成静态站点的终端输出" style="zoom:50%;">
+<img src="/2024/06/4a79202d/20240630132738.png" alt="首次通过 SSH 部署时确认主机指纹" style="zoom:50%;">
+<p>上传成功之后, 等待一会. 就可以打开自己网页查看了(替换自己的用户名)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://fireflyblog.github.io</span><br></pre></td></tr></table></figure>
+<img src="/2024/06/4a79202d/20240630133040.png" alt="部署完成后的 Hexo 示例网站" style="zoom:33%;">
+<p>至此, 网站已经搭建完成</p>
+<hr>
+<p>还有一些其他常使用的命令</p>
+<p>新建文章</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo new <span class="string">&quot;title&quot;</span></span><br></pre></td></tr></table></figure>
+<p>本地部署预览</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+<p>清理生成文件(一般切换主题需要先清理再生成. 新建文章之类的不需要此操作.)</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br></pre></td></tr></table></figure>
+<hr>
+<p>文章保存在</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">网站文件夹\source\_posts</span><br></pre></td></tr></table></figure>
+<hr>
+<p>文章格式说明以及主题美化待更新…</p>
 ]]></content>
       <categories>
-        <category>地理空间技术</category>
-        <category>无人机测绘</category>
+        <category>计算机技术</category>
+        <category>网站建设</category>
       </categories>
       <tags>
-        <tag>DJI Mavic 3 Classic</tag>
-        <tag>航点飞行</tag>
+        <tag>Hexo</tag>
+        <tag>GitHub Actions</tag>
       </tags>
   </entry>
   <entry>
@@ -1971,652 +2083,6 @@ dx_1  &dx_2  &dx_3\\
       </categories>
       <tags>
         <tag>控制方程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hexo 与 GitHub Actions 博客部署指南</title>
-    <url>/2024/06/4a79202d/</url>
-    <content><![CDATA[<h2 id="安装流程">安装流程</h2>
-<ol>
-<li>
-<p>安装node.js</p>
-</li>
-<li>
-<p><a href="https://fireflye.asia/2024/05/cbf708ce.html">安装Git</a></p>
-</li>
-<li>
-<p>安装Hexo</p>
-</li>
-<li>
-<p>创建Github仓库</p>
-</li>
-<li>
-<p>安装上传插件</p>
-</li>
-<li>
-<p>更改配置</p>
-</li>
-<li>
-<p>上传网页</p>
-</li>
-</ol>
-<h2 id="1-安装node-js">1. 安装node.js</h2>
-<p>打开node.js官网<a href="https://nodejs.org/en">Node.js — Run JavaScript Everywhere (nodejs.org)</a>点击下载</p>
-<img src="/2024/06/4a79202d/20240616123133.png" alt="Node.js 官网 Windows 安装包下载入口" style="zoom: 25%;">
-<p>打开安装至<strong>默认位置</strong>即可</p>
-<img src="/2024/06/4a79202d/20240616133443.png" alt="Node.js 安装向导欢迎页面" style="zoom:50%;">
-<img src="/2024/06/4a79202d/20240616133515.png" alt="Node.js 安装许可协议" style="zoom: 50%;">
-<img src="/2024/06/4a79202d/20240616134516.png" alt="Node.js 安装目录选择" style="zoom:50%;">
-<img src="/2024/06/4a79202d/20240616134543.png" alt="Node.js 安装组件选择" style="zoom:50%;">
-<img src="/2024/06/4a79202d/20240616134642.png" alt="Node.js 原生模块工具安装选项" style="zoom:50%;">
-<p>自动安装一些工具, 可以选上, 然后安装. 等待安装完成</p>
-<img src="/2024/06/4a79202d/20240616134808.png" alt="Node.js 安装进度" style="zoom:50%;">
-<p>点击完成, 会弹出一些窗口</p>
-<img src="/2024/06/4a79202d/20240616134924.png" alt="Node.js 原生模块工具安装终端" style="zoom:50%;">
-<p>按<strong>任意键</strong>继续即可, 等待安装完成.</p>
-<img src="/2024/06/4a79202d/20240616135112.png" alt="Node.js 附加工具安装提示" style="zoom:33%;">
-<p>过程较长, 耐心等待安装完成.</p>
-<img src="/2024/06/4a79202d/20240616214419.png" alt="Node.js 附加工具安装完成" style="zoom: 33%;">
-<h2 id="2-安装Git">2. 安装Git</h2>
-<p>查看往期教程<a href="https://fireflye.asia/2024/05/cbf708ce.html">Git 安装及配置教程 | Firefly Blog | 萤火虫博客 (fireflye.asia)</a></p>
-<h2 id="3-安装Hexo">3. 安装Hexo</h2>
-<p>完成上面的安装后, 可以使用以下命令检查是否安装成功.</p>
-<p>打开<code>git bash</code>,输入</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">node -v</span><br><span class="line">npm -v</span><br><span class="line">git -v</span><br></pre></td></tr></table></figure>
-<p>显示版本信息, 说明安装成功.</p>
-<p><img src="/2024/06/4a79202d/20240630103342.png" alt="Node.js、npm 与 Git 版本检查"></p>
-<p>如果没有代理, 可用下面的淘宝镜像源:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm config <span class="built_in">set</span> registry https://registry.npmmirror.com/</span><br></pre></td></tr></table></figure>
-<p>之后再输入以下命令安装hexo</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install -g hexo-cli</span><br></pre></td></tr></table></figure>
-<p>等待安装完成显示以下信息说明安装完成</p>
-<img src="/2024/06/4a79202d/20240630103804.png" alt="npm 安装 Hexo CLI 完成" style="zoom:50%;">
-<p>还可以使用以下命令来查看安装情况</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo -v</span><br></pre></td></tr></table></figure>
-<p>若显示版本信息, 说明已成功安装</p>
-<p>打开一个要存放网站文件的位置, 例如<code>F:\web\</code>. 打开此文件夹, 右键选择<code>open git bash here</code></p>
-<blockquote>
-<p>或者 直接打开<code>git bash</code> 输入<code>cd f:\web</code>. 路径替换为自己的路径.</p>
-</blockquote>
-<p>打开后会显示(我使用的虚拟机放在了桌面. 不建议这样做. 文件夹需要妥善保存.)</p>
-<img src="/2024/06/4a79202d/20240630111136.png" alt="在 Hexo 工作目录中打开 Git Bash" style="zoom:50%;">
-<p>输入以下命令初始化hexo(一定要在刚刚的文件夹内-路径显示)</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo init</span><br></pre></td></tr></table></figure>
-<p>保证网络畅通, 耐心等待初始化完成.</p>
-<img src="/2024/06/4a79202d/20240630111546.png" alt="Hexo 初始化完成的终端输出" style="zoom: 67%;">
-<p>到此, hexo初始化完成. 下面配置github仓库.</p>
-<h2 id="4-创建Github仓库">4. 创建Github仓库</h2>
-<p>打开<a href="https://github.com/">Github</a>注册一个自己的账号</p>
-<img src="/2024/06/4a79202d/20240630135454.png" alt="GitHub 账号注册入口" style="zoom: 33%;">
-<p>输入自己的邮箱, 密码等</p>
-<img src="/2024/06/4a79202d/20240630105025.png" alt="GitHub 注册邮箱填写" style="zoom:50%;">
-<p>用户名建议设置简单易记一些, 待会创建的网站域名与自己的用户名有关</p>
-<img src="/2024/06/4a79202d/20240630105356.png" alt="GitHub 注册用户名填写" style="zoom:50%;">
-<p>总览</p>
-<img src="/2024/06/4a79202d/20240630105538.png" alt="GitHub 注册信息确认" style="zoom:50%;">
-<p>点击继续, 通过验证码和邮箱数字验证就可以注册成功.</p>
-<img src="/2024/06/4a79202d/20240630110321.png" alt="GitHub 控制台新建仓库入口" style="zoom: 25%;">
-<p>点击左侧的绿色按钮新建仓库<code>Create repository</code>.</p>
-<img src="/2024/06/4a79202d/20240630112222.png" alt="GitHub 新建仓库参数设置" style="zoom: 33%;">
-<p>到此, 仓库已经创建完成</p>
-<hr>
-<p>接下来还需要配置一下上传的密钥对</p>
-<p>打开<code>git bash</code>, 输入以下命令 (&quot;email&quot;替换为自己的邮箱)</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -b 4096 -C <span class="string">&quot;email&quot;</span></span><br></pre></td></tr></table></figure>
-<p>然后按三下回车键, 即均保持默认不设置密码. 也可根据自己需要修改</p>
-<img src="/2024/06/4a79202d/20240630113042.png" alt="使用 ssh-keygen 创建 SSH 密钥" style="zoom: 67%;">
-<blockquote>
-<p>第一次是保存位置</p>
-<p>第二次是密码</p>
-<p>第三次是重复密码</p>
-</blockquote>
-<p>创建完成后, 打开保存的目录. 默认在<code>C:\Users\用户名\.ssh</code></p>
-<img src="/2024/06/4a79202d/20240630113309.png" alt="Windows 用户目录中的 SSH 密钥文件" style="zoom: 50%;">
-<p>第一个是私钥, 自己一定要保存好, 不能给别人.</p>
-<p>将第二个pub结尾的用<code>记事本</code>打开, 将里面的内容复制出来.</p>
-<img src="/2024/06/4a79202d/20240630113557.png" alt="使用记事本查看 SSH 公钥" style="zoom:50%;">
-<p>复制好后, 返回Github</p>
-<img src="/2024/06/4a79202d/20240630113804.png" alt="GitHub 个人设置入口" style="zoom: 33%;">
-<img src="/2024/06/4a79202d/20240630113926.png" alt="GitHub SSH and GPG keys 设置页" style="zoom:33%;">
-<img src="/2024/06/4a79202d/20240630114019.png" alt="GitHub 新建 SSH 密钥入口" style="zoom:33%;">
-<img src="/2024/06/4a79202d/20240630114156.png" alt="GitHub SSH 公钥填写界面" style="zoom:33%;">
-<p>密钥添加完成</p>
-<h2 id="5-安装上传插件">5. 安装上传插件</h2>
-<p>打开上文初始化的hexo目录, 右键选择<code>open git bash here</code></p>
-<blockquote>
-<p>或者 直接打开<code>git bash</code> 输入<code>cd f:\web</code>. 路径替换为自己的路径.</p>
-</blockquote>
-<p>然后输入下面的命令安装插件到目录下</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
-<img src="/2024/06/4a79202d/20240630125113.png" alt="安装 hexo-deployer-git 插件" style="zoom:50%;">
-<p>安装完成</p>
-<h2 id="6-更改配置">6. 更改配置</h2>
-<p>打开网站文件夹</p>
-<img src="/2024/06/4a79202d/20240630125231.png" alt="Hexo 项目目录结构" style="zoom:50%;">
-<p>用记事本或VSCode等编辑软件打开<code>_config.yml</code></p>
-<img src="/2024/06/4a79202d/20240630125343.png" alt="编辑 Hexo 配置文件" style="zoom: 33%;">
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 配置说明, 不要复制. 按说明修改</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Hexo Configuration</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/configuration.html</span></span><br><span class="line"><span class="comment">## Source: https://github.com/hexojs/hexo/</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Site</span></span><br><span class="line"><span class="attr">title:</span> <span class="string">Hexo</span>  <span class="comment"># 网站的大标题</span></span><br><span class="line"><span class="attr">subtitle:</span> <span class="string">&#x27;&#x27;</span>  <span class="comment"># 副标题</span></span><br><span class="line"><span class="attr">description:</span> <span class="string">&#x27;&#x27;</span> <span class="comment"># 描述</span></span><br><span class="line"><span class="attr">keywords:</span>  <span class="comment"># 网站的关键词</span></span><br><span class="line"><span class="attr">author:</span> <span class="string">John</span> <span class="string">Doe</span> <span class="comment"># 作者</span></span><br><span class="line"><span class="attr">language:</span> <span class="string">en</span>  <span class="comment"># 语言 中文 zh-CN</span></span><br><span class="line"><span class="attr">timezone:</span> <span class="string">&#x27;&#x27;</span> <span class="comment"># 时区 Asia/Shanghai</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># URL</span></span><br><span class="line"><span class="comment">## Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;</span></span><br><span class="line"><span class="attr">url:</span> <span class="string">https://fireflyblog.github.io</span> <span class="comment"># 改成自己网址 https://用户名.github.io # 注意是https</span></span><br><span class="line"><span class="attr">permalink:</span> <span class="string">:year/:month/:day/:title/</span>  <span class="comment"># 其他默认转到最后一项</span></span><br><span class="line"><span class="attr">permalink_defaults:</span></span><br><span class="line"><span class="attr">pretty_urls:</span></span><br><span class="line">  <span class="attr">trailing_index:</span> <span class="literal">true</span> <span class="comment"># Set to false to remove trailing &#x27;index.html&#x27; from permalinks</span></span><br><span class="line">  <span class="attr">trailing_html:</span> <span class="literal">true</span> <span class="comment"># Set to false to remove trailing &#x27;.html&#x27; from permalinks</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Directory</span></span><br><span class="line"><span class="attr">source_dir:</span> <span class="string">source</span></span><br><span class="line"><span class="attr">public_dir:</span> <span class="string">public</span></span><br><span class="line"><span class="attr">tag_dir:</span> <span class="string">tags</span></span><br><span class="line"><span class="attr">archive_dir:</span> <span class="string">archives</span></span><br><span class="line"><span class="attr">category_dir:</span> <span class="string">categories</span></span><br><span class="line"><span class="attr">code_dir:</span> <span class="string">downloads/code</span></span><br><span class="line"><span class="attr">i18n_dir:</span> <span class="string">:lang</span></span><br><span class="line"><span class="attr">skip_render:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Writing</span></span><br><span class="line"><span class="attr">new_post_name:</span> <span class="string">:title.md</span> <span class="comment"># File name of new posts</span></span><br><span class="line"><span class="attr">default_layout:</span> <span class="string">post</span></span><br><span class="line"><span class="attr">titlecase:</span> <span class="literal">false</span> <span class="comment"># Transform title into titlecase</span></span><br><span class="line"><span class="attr">external_link:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span> <span class="comment"># Open external links in new tab</span></span><br><span class="line">  <span class="attr">field:</span> <span class="string">site</span> <span class="comment"># Apply to the whole site</span></span><br><span class="line">  <span class="attr">exclude:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="attr">filename_case:</span> <span class="number">0</span></span><br><span class="line"><span class="attr">render_drafts:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">post_asset_folder:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">relative_link:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">future:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">syntax_highlighter:</span> <span class="string">highlight.js</span></span><br><span class="line"><span class="attr">highlight:</span></span><br><span class="line">  <span class="attr">line_number:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">auto_detect:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">tab_replace:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line">  <span class="attr">wrap:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">hljs:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">prismjs:</span></span><br><span class="line">  <span class="attr">preprocess:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">line_number:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">tab_replace:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Home page setting</span></span><br><span class="line"><span class="comment"># path: Root path for your blogs index page. (default = &#x27;&#x27;)</span></span><br><span class="line"><span class="comment"># per_page: Posts displayed per page. (0 = disable pagination)</span></span><br><span class="line"><span class="comment"># order_by: Posts order. (Order by date descending by default)</span></span><br><span class="line"><span class="attr">index_generator:</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line">  <span class="attr">per_page:</span> <span class="number">10</span></span><br><span class="line">  <span class="attr">order_by:</span> <span class="string">-date</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Category &amp; Tag</span></span><br><span class="line"><span class="attr">default_category:</span> <span class="string">uncategorized</span></span><br><span class="line"><span class="attr">category_map:</span></span><br><span class="line"><span class="attr">tag_map:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Metadata elements</span></span><br><span class="line"><span class="comment">## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta</span></span><br><span class="line"><span class="attr">meta_generator:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Date / Time format</span></span><br><span class="line"><span class="comment">## Hexo uses Moment.js to parse and display date</span></span><br><span class="line"><span class="comment">## You can customize the date format as defined in</span></span><br><span class="line"><span class="comment">## http://momentjs.com/docs/#/displaying/format/</span></span><br><span class="line"><span class="attr">date_format:</span> <span class="string">YYYY-MM-DD</span></span><br><span class="line"><span class="attr">time_format:</span> <span class="string">HH:mm:ss</span></span><br><span class="line"><span class="comment">## updated_option supports &#x27;mtime&#x27;, &#x27;date&#x27;, &#x27;empty&#x27;</span></span><br><span class="line"><span class="attr">updated_option:</span> <span class="string">&#x27;mtime&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Pagination</span></span><br><span class="line"><span class="comment">## Set per_page to 0 to disable pagination</span></span><br><span class="line"><span class="attr">per_page:</span> <span class="number">10</span></span><br><span class="line"><span class="attr">pagination_dir:</span> <span class="string">page</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Include / Exclude file(s)</span></span><br><span class="line"><span class="comment">## include:/exclude: options only apply to the &#x27;source/&#x27; folder</span></span><br><span class="line"><span class="attr">include:</span></span><br><span class="line"><span class="attr">exclude:</span></span><br><span class="line"><span class="attr">ignore:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Extensions</span></span><br><span class="line"><span class="comment">## Plugins: https://hexo.io/plugins/</span></span><br><span class="line"><span class="comment">## Themes: https://hexo.io/themes/</span></span><br><span class="line"><span class="attr">theme:</span> <span class="string">landscape</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/one-command-deployment</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>这一部分单拿出来修改(注意缩进为2个空格, 冒号后面一个空格)</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/one-command-deployment</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repository:</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">main</span></span><br></pre></td></tr></table></figure>
-<p>仓库地址在<a href="https://github.com/dashboard">Github</a>, 打开找到自己的仓库</p>
-<img src="/2024/06/4a79202d/20240630131332.png" alt="复制 GitHub 仓库 SSH 地址" style="zoom: 33%;">
-<p>复制好后粘贴到仓库参数后面, 完整的配置修改如下</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/one-command-deployment</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repository:</span> <span class="string">git@github.com:fireflyblog/fireflyblog.github.io.git</span> <span class="comment">#替换为自己的链接</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">main</span></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>如果无法上传或分支报错可以使用以下样式:</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/one-command-deployment</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span></span><br><span class="line">    <span class="attr">github:</span> <span class="string">git@github.com:fireflyblog/fireflyblog.github.io.git,main</span> <span class="comment">#替换为自己的链接</span></span><br></pre></td></tr></table></figure>
-</blockquote>
-<h2 id="7-上传网页">7. 上传网页</h2>
-<p>一切配置好之后, 打开网站文件夹. 右键选择<code>open git bash here</code></p>
-<p>输入以下命令生成和上传网页</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-<img src="/2024/06/4a79202d/20240630132526.png" alt="Hexo 生成静态站点的终端输出" style="zoom:50%;">
-<img src="/2024/06/4a79202d/20240630132738.png" alt="首次通过 SSH 部署时确认主机指纹" style="zoom:50%;">
-<p>上传成功之后, 等待一会. 就可以打开自己网页查看了(替换自己的用户名)</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://fireflyblog.github.io</span><br></pre></td></tr></table></figure>
-<img src="/2024/06/4a79202d/20240630133040.png" alt="部署完成后的 Hexo 示例网站" style="zoom:33%;">
-<p>至此, 网站已经搭建完成</p>
-<hr>
-<p>还有一些其他常使用的命令</p>
-<p>新建文章</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo new <span class="string">&quot;title&quot;</span></span><br></pre></td></tr></table></figure>
-<p>本地部署预览</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-<p>清理生成文件(一般切换主题需要先清理再生成. 新建文章之类的不需要此操作.)</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br></pre></td></tr></table></figure>
-<hr>
-<p>文章保存在</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">网站文件夹\source\_posts</span><br></pre></td></tr></table></figure>
-<hr>
-<p>文章格式说明以及主题美化待更新…</p>
-]]></content>
-      <categories>
-        <category>计算机技术</category>
-        <category>网站建设</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>GitHub Actions</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>深度平均法论文研读：二维泥沙输运模型</title>
-    <url>/2024/12/3e16e77c/</url>
-    <content><![CDATA[<h2 id="原文">原文</h2>
-<p><a href="https://www.sciencedirect.com/science/article/pii/S0924796313000833">A depth-averaged two-dimensional sediment transport model for environmental studies in the Scheldt Estuary and tidal river network - ScienceDirect</a></p>
-<p><a href="https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh">附PDF: https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh</a></p>
-<h2 id="工作内容">工作内容</h2>
-<p>针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。</p>
-<h2 id="流体力学和盐度模型">流体力学和盐度模型</h2>
-<p>河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程</p>
-<h3 id="浅水方程-Shallow-water-equations">浅水方程(Shallow water equations)</h3>
-<div class="math block">
-<script type="math/tex; mode=display">\frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) = 0</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u = -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}</script>
-</div>
-<p>其中 t 是时间, <span class="math inline"><script type="math/tex">H=h+\eta</script></span> 是水深, h 是水柱参考高度; <span class="math inline"><script type="math/tex">f=2\omega\sin \phi</script></span>为科里奥利参数, 以<span class="math inline"><script type="math/tex">\omega</script></span>为地球角速度, 以<span class="math inline"><script type="math/tex">\phi</script></span>为纬度; k为单位向上矢量; G为重力加速度; <span class="math inline"><script type="math/tex">\rho</script></span> 是水的密度, 假设水的密度是恒定的, <span class="math inline"><script type="math/tex">P_a</script></span> 是水面的大气压力; <span class="math inline"><script type="math/tex">\nu</script></span> 为水平涡动粘度; <span class="math inline"><script type="math/tex">\tau_s</script></span>和<span class="math inline"><script type="math/tex">\tau_b</script></span>分别为表面和底部应力矢量.</p>
-<h3 id="深度平均盐度运输方程">深度平均盐度运输方程</h3>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial (HS)}{\partial t} + \nabla\cdot (HuS) = \nabla \cdot (Hk\nabla S)</script>
-</div>
-<p>其中k为扩散系数</p>
-<h3 id="水平涡粘性系数">水平涡粘性系数</h3>
-<p>根据 Smagorinsky（1963）的工作，水平涡粘性系数 <span class="math inline"><script type="math/tex">\nu</script></span> 通常按照以下形式给出：</p>
-<div class="math block">
-<script type="math/tex; mode=display">ν = C_s^2 * Δx * |S|</script>
-</div>
-<p>这里，</p>
-<p><span class="math inline"><script type="math/tex">C_s</script></span> 是 Smagorinsky 常数，一般取值在 0.1 到 0.2 之间；<br>
-<span class="math inline"><script type="math/tex">Δx</script></span> 是网格间距，代表了模型分辨率；<br>
-<span class="math inline"><script type="math/tex">|S|</script></span> 是应变率张量 S 的模，它描述了速度场的空间变化，具体为：</p>
-<div class="math block">
-<script type="math/tex; mode=display">S = (∇u + (∇u)^T) / 2</script>
-</div>
-<p>其中 <span class="math inline"><script type="math/tex">∇u</script></span> 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：</p>
-<div class="math block">
-<script type="math/tex; mode=display">|S| = sqrt(2 * S_{ij} * S_{ij})</script>
-</div>
-<p>这里的 <span class="math inline"><script type="math/tex">S_ij</script></span> 表示应变率张量的分量。</p>
-<h3 id="曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation">曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)</h3>
-<div class="math block">
-<script type="math/tex; mode=display">\tau_b = \rho g n^2 \frac{u \begin{Vmatrix} u \end{Vmatrix} }{H^{1/3}}</script>
-</div>
-<p>其中 n 是曼宁系数. 在大陆架等于<span class="math inline"><script type="math/tex">0.0235\ s\ m^{-1/3}</script></span> , 在Antwerp附近, 从河口线性增加到<span class="math inline"><script type="math/tex">0.028\ s\ m^{-1/3}</script></span></p>
-<h3 id="扩散系数-k-Okubo">扩散系数 k (Okubo)</h3>
-<div class="math block">
-<script type="math/tex; mode=display">k = c_k \Delta^{1.15}</script>
-</div>
-<p>其中 <span class="math inline"><script type="math/tex">c_k</script></span> 为常数, <span class="math inline"><script type="math/tex">\Delta</script></span> 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 <span class="math inline"><script type="math/tex">c_k = 150\ m^{0.85}s^{-1}</script></span>.</p>
-<h2 id="泥沙模型">泥沙模型</h2>
-<p>泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即<span class="math inline"><script type="math/tex">C_{ss}</script></span>, 悬浮沉积物的深度平均浓度[<span class="math inline"><script type="math/tex">kg\ m^{−3}</script></span>], 以及<span class="math inline"><script type="math/tex">C_{sb}</script></span>, 新鲜层中底层沉积物的浓度[<span class="math inline"><script type="math/tex">kg\ m^{−2}</script></span>]。母层是沉积物的无限来源, 只有当<span class="math inline"><script type="math/tex">C_{sb}</script></span>局部为零时才会被侵蚀。</p>
-<p>悬浮中的沉积物是通过平流和扩散输送的, 而底部的沉积物则不是。在区域的二维部分, 悬浮泥沙浓度和新沉积泥沙浓度服从如下方程:</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial (HC_{ss})}{\partial t} + \nabla \cdot (HuC_{ss}) = \nabla \cdot (Hk\nabla C_{ss}) + E_f + E_p - D</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial C_{sb}}{\partial t} = D - E_f</script>
-</div>
-<img src="/2024/12/3e16e77c/image-20241208170632962.png" alt="泥沙侵蚀沉积与悬沙输运示意图" style="zoom:50%;">
-<p>式中<span class="math inline"><script type="math/tex">E_f</script></span>为新鲜层沉积物的侵蚀速率, <span class="math inline"><script type="math/tex">E_p</script></span>为母层沉积物的侵蚀速率, <span class="math inline"><script type="math/tex">D</script></span>为新鲜层沉积物的沉积速率。</p>
-<p><strong>假设母层从未供应, 并且两个底层之间没有交换。此外, 也没有考虑床质输运。</strong></p>
-<h3 id="侵蚀速率-Partheniades-1965">侵蚀速率 (Partheniades(1965))</h3>
-<div class="math block">
-<script type="math/tex; mode=display">E_f = \begin{cases}
-M\left( \dfrac{\tau_b}{\tau_e} - 1 \right),
-    & \text{if } \tau_b > \tau_e \text{ and } C_{sb} > 0, \\
-0,  & \text{otherwise}.
-\end{cases}</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">E_p = \begin{cases}
-M\left( \dfrac{\tau_b}{\tau_{e,p}} - 1 \right),
-    & \text{if } \tau_b > \tau_{e,p} \text{ and } C_{sb} = 0, \\
-0,  & \text{otherwise}.
-\end{cases}</script>
-</div>
-<p>当<span class="math inline"><script type="math/tex">\tau_b</script></span>(底部应力向量的范数<span class="math inline"><script type="math/tex">\tau_b</script></span>) 高于一个阈值<span class="math inline"><script type="math/tex">\tau_e</script></span>时, 沉积物从新鲜层被侵蚀, 或者, 如果新鲜层局部是空的, 当<span class="math inline"><script type="math/tex">\tau_b</script></span>高于另一个阈值<span class="math inline"><script type="math/tex">\tau_{e,p}</script></span>; M被称为侵蚀速率参数。</p>
-<h3 id="沉积速率-Einstein和Krone-1962">沉积速率(Einstein和Krone (1962))</h3>
-<div class="math block">
-<script type="math/tex; mode=display">D=w_sC_{ss}</script>
-</div>
-<p>其中 <span class="math inline"><script type="math/tex">w_s</script></span> 为沉降速度.</p>
-<div class="math block">
-<script type="math/tex; mode=display">w_S = w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m</script>
-</div>
-<p>其中 <span class="math inline"><script type="math/tex">C_{ss,0}=0.1\ kg m^{-3}</script></span> 是 Scheldt SSC的参考值, <span class="math inline"><script type="math/tex">w_{s,0}</script></span> 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999).</p>
-<h3 id="连续方程的推导">连续方程的推导</h3>
-<p><img src="/2024/12/3e16e77c/image-20241211171404424.png" alt="深度平均模型的水深与基准面定义"></p>
-<p>引入自由表面的运动学条件和底部运动学条件</p>
-<div class="math block">
-<script type="math/tex; mode=display">u_z|_{z=z_s} = \frac{dz_s}{dt} = \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x} u_x + \frac{\partial z_s}{\partial y} u_y</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">u_z|_{z=z_b} = \frac{dz_b}{dt} = \frac{\partial z_b}{\partial t} + \frac{\partial z_b}{\partial x} u_x + \frac{\partial z_b}{\partial y} u_y</script>
-</div>
-<p>对连续性方程沿水深方向进行积分</p>
-<div class="math block">
-<script type="math/tex; mode=display">\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j} dz = 0 \ (j=1,2,3)</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j}dz + u_z|_{z_s} - u_z|_{u_b} = 0 \ (j=1,2)</script>
-</div>
-<p>由牛顿-莱布尼兹公式</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial}{\partial x_j} \int_a^b f dz = \int_a^b \frac{\partial f}{\partial x_j} dz + f|_b \frac{\partial b}{\partial x_j} - f|_a \frac{\partial a}{\partial x_j}</script>
-</div>
-<p>将上式第一项展开，可得</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + u_z|_{z_s} - u_z|_{z_b} = 0 \ (j=1,2)</script>
-</div>
-<p>代入两个运动学条件，可得</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x_j} u_j|_{z_s} - \frac{\partial z_b}{\partial t} - \frac{\partial z_b}{\partial x_j} u_j|_{z_b} = 0 \ (j=1,2)</script>
-</div>
-<p>化简，得</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz + \frac{\partial z_s}{\partial x_j} - \frac{\partial z_b}{\partial x_j} = 0 \ (j=1,2)</script>
-</div>
-<p>由 <span class="math inline"><script type="math/tex">H=z_s-z_b</script></span>, 进一步化简为</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz = 0 \ (j=1,2)</script>
-</div>
-<p>又有</p>
-<div class="math block">
-<script type="math/tex; mode=display">\int_{z_b}^{z_s} u_j dz = HU_j \ (j=1,2)</script>
-</div>
-<p>代入上式，得</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial HU_j}{\partial x_j} = 0 \ (j=1,2)</script>
-</div>
-<p>即</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial HU_x}{\partial x} + \frac{\partial HU_y}{\partial y} = 0</script>
-</div>
-<p>本篇文章中 <span class="math inline"><script type="math/tex">H = h + \eta</script></span>, <span class="math inline"><script type="math/tex">H</script></span> 为水深，<span class="math inline"><script type="math/tex">h</script></span> 为参考水柱高度（河床到基准面的高度），<span class="math inline"><script type="math/tex">\eta</script></span> 为水面相对于基准面的高度，是一个瞬时变化量。</p>
-<p>因此，第一项水深随时间的变化率写为 <span class="math inline"><script type="math/tex">\frac{\partial \eta}{\partial t}</script></span>，第二三项的为水平方向的水流通量，其通过面积可表示为 <span class="math inline"><script type="math/tex">H</script></span>, 因此此项应写为 <span class="math inline"><script type="math/tex">\frac{\partial Hu_j}{\partial x_j}</script></span>.</p>
-<p>综上</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial \eta}{\partial t} + \frac{\partial Hu_j}{\partial x_j} = 0 \ (j=1,2)</script>
-</div>
-<p>使用哈密顿算子可以表示为</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial \eta}{\partial t} + \nabla \cdot (Hu) = 0</script>
-</div>
-]]></content>
-      <categories>
-        <category>数值模拟</category>
-        <category>深度平均法</category>
-      </categories>
-      <tags>
-        <tag>泥沙输运</tag>
-        <tag>盐度输运</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Git 分支工作流：从本地开发到 Pull Request 合并</title>
-    <url>/2024/04/5dbdb580/</url>
-    <content><![CDATA[<p>直接在 <code>main</code> 分支修改代码，短期看似省事，却会让未完成的功能、紧急修复和稳定版本混在一起。更稳妥的做法是：<strong>每项任务使用独立分支，在分支上完成小步提交，通过 Pull Request（PR）审查后再合并到 <code>main</code></strong>。</p>
-<p>本文以 GitHub 为例，完整演示一次功能开发。读完后，你将能独立完成“更新主分支 → 创建功能分支 → 修改并提交 → 同步上游 → 发起 PR → 合并与清理”的循环。</p>
-<blockquote>
-<p>前提：本地已经安装并配置 Git，拥有一个设置了 <code>origin</code> 远程仓库的项目，并且团队将 <code>main</code> 作为稳定主分支。</p>
-</blockquote>
-<h2 id="1-先建立正确的心智模型">1. 先建立正确的心智模型</h2>
-<p>一次常规开发会经过四个位置。Git 命令的作用，本质上就是让改动在这些位置之间移动。</p>
-<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
-  flowchart LR
-    A[工作区&lt;br&#x2F;&gt;正在编辑的文件] --&gt;|git add| B[暂存区&lt;br&#x2F;&gt;准备提交的快照]
-    B --&gt;|git commit| C[本地仓库&lt;br&#x2F;&gt;提交历史]
-    C --&gt;|git push| D[GitHub 远程分支]
-    D --&gt;|Pull Request| E[main 主分支]
-    C -. 查看差异 .-&gt; A
-    D -. fetch &#x2F; pull .-&gt; C
-  </pre></div>
-<table>
-<thead>
-<tr>
-<th>位置</th>
-<th>可以把它理解为</th>
-<th>常用检查命令</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>工作区（Working Tree）</td>
-<td>当前磁盘中正在修改的文件</td>
-<td><code>git diff</code></td>
-</tr>
-<tr>
-<td>暂存区（Index）</td>
-<td>下一次提交准备包含的内容</td>
-<td><code>git diff --staged</code></td>
-</tr>
-<tr>
-<td>本地仓库</td>
-<td>已提交、可回退的版本历史</td>
-<td><code>git log --oneline --graph</code></td>
-</tr>
-<tr>
-<td>远程仓库</td>
-<td>GitHub 上供协作和备份的分支</td>
-<td><code>git branch -vv</code></td>
-</tr>
-</tbody>
-</table>
-<p>最常用的完整循环如下。无需一次记住所有命令，先记住每一步的目的。</p>
-<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
-  flowchart TD
-    A[更新本地 main] --&gt; B[创建并切换到功能分支]
-    B --&gt; C[修改与自测]
-    C --&gt; D[检查并暂存改动]
-    D --&gt; E[提交到本地仓库]
-    E --&gt; F{任务完成了吗}
-    F -- 否 --&gt; C
-    F -- 是 --&gt; G[推送功能分支]
-    G --&gt; H[创建 Pull Request]
-    H --&gt; I{main 是否有新提交}
-    I -- 是 --&gt; J[同步 main 并解决冲突]
-    J --&gt; H
-    I -- 否 --&gt; K[审查并合并]
-    K --&gt; L[更新本地 main 并删除旧分支]
-  </pre></div>
-<h2 id="2-从最新的-main-创建功能分支">2. 从最新的 <code>main</code> 创建功能分支</h2>
-<h3 id="2-1-更新本地主分支">2.1 更新本地主分支</h3>
-<p>先确认当前没有遗漏的修改：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br></pre></td></tr></table></figure>
-<p>切换到 <code>main</code>，再以“只允许快进”的方式拉取远程更新：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git switch main</span><br><span class="line">git pull --ff-only origin main</span><br></pre></td></tr></table></figure>
-<p><code>--ff-only</code> 会在本地和远程历史已经分叉时停止，而不是自动生成一个意外的合并提交。此时应先检查分支状态，再决定如何处理。</p>
-<h3 id="2-2-创建语义清楚的分支">2.2 创建语义清楚的分支</h3>
-<p>假设本次任务是增加登录页：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git switch -c feat/login-page</span><br></pre></td></tr></table></figure>
-<p>推荐使用“类型/简短任务”的命名方式：</p>
-<ul>
-<li><code>feat/login-page</code>：新增功能；</li>
-<li><code>fix/navbar-overflow</code>：修复缺陷；</li>
-<li><code>docs/install-guide</code>：修改文档；</li>
-<li><code>refactor/user-service</code>：重构但不改变外部行为。</li>
-</ul>
-<p><code>git switch -c</code> 会同时创建并切换分支。运行 <code>git branch --show-current</code>，应看到 <code>feat/login-page</code>。</p>
-<h2 id="3-在功能分支上小步开发">3. 在功能分支上小步开发</h2>
-<h3 id="3-1-修改前先确认位置">3.1 修改前先确认位置</h3>
-<p>每次开始工作前都运行：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br></pre></td></tr></table></figure>
-<p>重点确认两件事：当前位于正确的功能分支；工作区没有来自其他任务的无关修改。</p>
-<h3 id="3-2-修改、检查、暂存">3.2 修改、检查、暂存</h3>
-<p>完成一小部分修改并自测后，先查看差异：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git diff</span><br></pre></td></tr></table></figure>
-<p>只暂存属于本次提交的文件：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git add src/login.html src/login.css</span><br><span class="line">git diff --staged</span><br></pre></td></tr></table></figure>
-<p>不建议初学时无条件使用 <code>git add .</code>。逐个选择文件并用 <code>git diff --staged</code> 复核，可以避免把日志、密钥或临时文件提交进去。</p>
-<h3 id="3-3-创建一个含义完整的提交">3.3 创建一个含义完整的提交</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git commit -m <span class="string">&quot;feat: add login page layout&quot;</span></span><br></pre></td></tr></table></figure>
-<p>一个好提交应当只完成一个可描述的目标。例如，“增加登录页布局”和“修复导航栏溢出”最好拆成两个提交。小而完整的提交更容易审查，也更容易单独撤销。</p>
-<p>如果任务尚未完成，就继续重复“修改 → 自测 → 暂存 → 提交”：</p>
-<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">工作区修改 ──git add──&gt; 暂存区 ──git commit──&gt; 本地功能分支</span><br><span class="line">    ↑                                              │</span><br><span class="line">    └──────────────── 下一轮小步开发 ───────────────┘</span><br></pre></td></tr></table></figure>
-<h2 id="4-推送分支并创建-Pull-Request">4. 推送分支并创建 Pull Request</h2>
-<p>首次推送时建立本地分支与远程分支的跟踪关系：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git push -u origin feat/login-page</span><br></pre></td></tr></table></figure>
-<p>以后在该分支上只需运行 <code>git push</code>。然后进入 GitHub：</p>
-<ol>
-<li>以 <code>feat/login-page</code> 为源分支、<code>main</code> 为目标分支创建 PR；</li>
-<li>标题说明结果，正文说明改动原因、验证方法和影响范围；</li>
-<li>检查自动化任务是否通过；</li>
-<li>邀请成员审查，根据意见继续提交和推送。</li>
-</ol>
-<p>PR 不是“任务完成后的上传按钮”，而是围绕一组改动进行检查、讨论和合并的协作界面。审查期间新增的提交会自动进入同一个 PR。</p>
-<h2 id="5-当-main-在开发期间发生变化">5. 当 <code>main</code> 在开发期间发生变化</h2>
-<p>你开发功能时，其他成员可能已经向 <code>main</code> 合并了新提交。可先获取远程状态，但不立即修改本地文件：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git fetch origin</span><br><span class="line">git <span class="built_in">log</span> --oneline --graph --decorate --all -n 20</span><br></pre></td></tr></table></figure>
-<p>对于<strong>只有自己使用的功能分支</strong>，可以把功能提交变基到最新的 <code>origin/main</code>：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git switch feat/login-page</span><br><span class="line">git rebase origin/main</span><br></pre></td></tr></table></figure>
-<p>变基前后的历史可以这样理解：</p>
-<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
-  flowchart LR
-    subgraph 变基前
-        A1[main: A] --&gt; B1[main: B]
-        A1 --&gt; F1[feature: F1]
-        F1 --&gt; F2[feature: F2]
-    end
-    subgraph 变基后
-        A2[main: A] --&gt; B2[main: B]
-        B2 --&gt; G1[feature: F1&#39;]
-        G1 --&gt; G2[feature: F2&#39;]
-    end
-    F2 -. git rebase origin&#x2F;main .-&gt; G1
-  </pre></div>
-<p><code>rebase</code> 会重写功能分支提交，使历史更线性，因此<strong>不要对多人共同开发的分支随意变基</strong>。共享分支应遵循团队约定，通常使用 <code>git merge origin/main</code> 更稳妥。</p>
-<h3 id="5-1-解决变基冲突">5.1 解决变基冲突</h3>
-<p>出现冲突时不要慌，Git 会暂停并列出冲突文件：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br></pre></td></tr></table></figure>
-<p>打开文件，结合上下文处理 <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>、<code>=======</code> 和 <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> 标记；完成后继续：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git add &lt;已解决的文件&gt;</span><br><span class="line">git rebase --<span class="built_in">continue</span></span><br></pre></td></tr></table></figure>
-<p>如果发现方向不对，可以完整取消本次变基：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git rebase --abort</span><br></pre></td></tr></table></figure>
-<p>解决冲突后重新运行项目测试。由于变基改变了提交 ID，已经推送过的个人功能分支需要安全地更新远程历史：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git push --force-with-lease</span><br></pre></td></tr></table></figure>
-<p>使用 <code>--force-with-lease</code>，不要直接使用 <code>--force</code>。前者会在远程分支出现你尚未获取的新提交时拒绝覆盖，能降低误删他人工作的风险。</p>
-<h2 id="6-合并-PR-与清理分支">6. 合并 PR 与清理分支</h2>
-<p>审查和检查通过后，在 GitHub 按团队规则选择合并方式：</p>
-<table>
-<thead>
-<tr>
-<th>方式</th>
-<th>结果</th>
-<th>适用情况</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Squash and merge</td>
-<td>将 PR 压缩为 <code>main</code> 上的一个提交</td>
-<td>功能分支有较多修正型小提交</td>
-</tr>
-<tr>
-<td>Rebase and merge</td>
-<td>保留各提交但形成线性历史</td>
-<td>每个提交都清晰、可独立理解</td>
-</tr>
-<tr>
-<td>Merge commit</td>
-<td>保留分支结构并增加合并提交</td>
-<td>团队希望明确记录分支边界</td>
-</tr>
-</tbody>
-</table>
-<p>合并并删除 GitHub 上的功能分支后，清理本地环境：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git switch main</span><br><span class="line">git pull --ff-only origin main</span><br><span class="line">git branch -d feat/login-page</span><br><span class="line">git fetch --prune</span><br></pre></td></tr></table></figure>
-<p>优先使用安全删除参数 <code>-d</code>。如果 PR 使用 Squash and merge，原功能提交不会直接成为 <code>main</code> 的祖先，因此 Git 可能仍拒绝删除。先在 GitHub 确认 PR 已合并、再检查分支内容；只有确认不再需要时，才使用 <code>git branch -D &lt;branch&gt;</code>。</p>
-<p>至此，一个开发循环结束。下一项任务再从最新的 <code>main</code> 创建新分支，不要继续复用已经合并的旧功能分支。</p>
-<h2 id="7-一份可直接复用的命令清单">7. 一份可直接复用的命令清单</h2>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 从最新主分支开始</span></span><br><span class="line">git switch main</span><br><span class="line">git pull --ff-only origin main</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 创建任务分支</span></span><br><span class="line">git switch -c feat/login-page</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 小步开发与提交</span></span><br><span class="line">git status</span><br><span class="line">git diff</span><br><span class="line">git add &lt;file...&gt;</span><br><span class="line">git diff --staged</span><br><span class="line">git commit -m <span class="string">&quot;feat: add login page layout&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 首次推送并创建 PR</span></span><br><span class="line">git push -u origin feat/login-page</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 必要时同步最新主分支（仅个人功能分支使用 rebase）</span></span><br><span class="line">git fetch origin</span><br><span class="line">git rebase origin/main</span><br><span class="line">git push --force-with-lease</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. PR 合并后清理</span></span><br><span class="line">git switch main</span><br><span class="line">git pull --ff-only origin main</span><br><span class="line">git branch -d feat/login-page</span><br><span class="line">git fetch --prune</span><br></pre></td></tr></table></figure>
-<h2 id="8-常见错误与排查顺序">8. 常见错误与排查顺序</h2>
-<ul>
-<li><strong>改错分支</strong>：先不要提交，用 <code>git status</code> 确认改动，再通过 <code>git switch -c &lt;new-branch&gt;</code> 从当前位置创建正确分支。</li>
-<li><strong>提交混入无关文件</strong>：提交前固定运行 <code>git diff --staged</code>；敏感文件应加入 <code>.gitignore</code>，泄露的密钥还必须立即作废。</li>
-<li><strong>拉取后出现意外合并提交</strong>：开始任务时使用 <code>git pull --ff-only</code>，历史分叉后先查看日志，不要盲目继续。</li>
-<li><strong>冲突时不知道保留哪一边</strong>：先理解两边修改的目的，再编辑最终结果并测试；冲突标记不是让你机械地任选一边。</li>
-<li><strong>在共享分支强制推送</strong>：不要这样做。公共历史需要撤销时，通常使用 <code>git revert</code> 创建反向提交。</li>
-</ul>
-<h2 id="参考资料">参考资料</h2>
-<ul>
-<li><a href="https://git-scm.com/book/zh/v2/Git-%E5%88%86%E6%94%AF-%E5%88%86%E6%94%AF%E7%AE%80%E4%BB%8B">Pro Git：Git 分支</a></li>
-<li><a href="https://git-scm.com/docs/git-switch">Git 文档：git switch</a></li>
-<li><a href="https://git-scm.com/docs/git-rebase">Git 文档：git rebase</a></li>
-<li><a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/getting-started/about-pull-requests">GitHub Docs：About pull requests</a></li>
-<li>原学习视频：<a href="https://www.bilibili.com/video/BV19e4y1q7JJ/">十分钟学会正确的 GitHub 工作流</a></li>
-</ul>
-
-<div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
-  <span class="ai-content-label__icon" aria-hidden="true">
-    <i class="fas fa-wand-magic-sparkles"></i>
-  </span>
-  <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span>
-</div>]]></content>
-      <categories>
-        <category>计算机技术</category>
-        <category>版本控制</category>
-      </categories>
-      <tags>
-        <tag>分支管理</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Nginx 反向代理配置指南</title>
-    <url>/2025/03/4bc19655/</url>
-    <content><![CDATA[<h2 id="准备工作">准备工作</h2>
-<ul>
-<li>Ubuntu系统</li>
-<li>Nginx</li>
-</ul>
-<h2 id="配置教程">配置教程</h2>
-<h3 id="1-备份配置文件">1.备份配置文件</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default</span><br></pre></td></tr></table></figure>
-<h3 id="2-编辑配置文件">2.编辑配置文件</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/nginx/nginx.conf</span><br></pre></td></tr></table></figure>
-<p>找到<code>http&#123;&#125;</code>块中的<code>server&#123;&#125;</code>块，注释掉原有的<code>server&#123;&#125;</code></p>
-<img src="/2025/03/4bc19655/PixPin_2025-03-08_22-13-27.png" alt="Nginx HTTPS 反向代理配置示例" style="zoom:50%;">
-<h3 id="3-按原有配置添加新的server块">3.按原有配置添加新的server块</h3>
-<h4 id="1-默认的错误界面">(1) 默认的错误界面</h4>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 443 ssl default_server;</span><br><span class="line">    server_name _;</span><br><span class="line"></span><br><span class="line">    ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">    ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line"></span><br><span class="line">    return 404;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="2-主域名">(2) 主域名</h4>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">     listen 443 ssl;</span><br><span class="line">     server_name fireflye.top;</span><br><span class="line">     ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">     ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line">     ssl_session_timeout 5m;</span><br><span class="line">     ssl_protocols TLSv1.2 TLSv1.3;</span><br><span class="line">     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;</span><br><span class="line">     ssl_prefer_server_ciphers on;</span><br><span class="line"></span><br><span class="line">     location / &#123;</span><br><span class="line">         root /home/www/website;</span><br><span class="line">         index  index.html index.htm;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>其中<code>root</code>改为自己本地的网站目录</p>
-<h4 id="3-主域名转发">(3) 主域名转发</h4>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name fireflye.top;</span><br><span class="line">        return 301 https://$host$request_uri;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
-<h4 id="4-二级域名端口转发示例">(4) 二级域名端口转发示例</h4>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">     listen 443 ssl;</span><br><span class="line">     server_name xxx.fireflye.top;</span><br><span class="line">     ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">     ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line">     ssl_session_timeout 5m;</span><br><span class="line">     ssl_protocols TLSv1.2 TLSv1.3;</span><br><span class="line">     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;</span><br><span class="line">     ssl_prefer_server_ciphers on;</span><br><span class="line"></span><br><span class="line">     location / &#123;</span><br><span class="line">       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">       proxy_set_header X-Forwarded-Proto $scheme;</span><br><span class="line">       proxy_set_header Host $host;</span><br><span class="line">       proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">       proxy_set_header Range $http_range;</span><br><span class="line">       proxy_set_header If-Range $http_if_range;</span><br><span class="line">       proxy_redirect off;</span><br><span class="line">       proxy_pass https://127.0.0.1:xxx;</span><br><span class="line">       client_max_body_size 20000m;</span><br><span class="line">       &#125;</span><br><span class="line">&#125;</span><br><span class="line"> server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name xxx.fireflye.top;</span><br><span class="line">        return 301 https://$host$request_uri;</span><br><span class="line">				&#125;</span><br></pre></td></tr></table></figure>
-<p>其他均可套此模版</p>
-<blockquote>
-<p>注意http{}需要闭合，最后的大括号容易被误删</p>
-</blockquote>
-<h4 id="5-检验配置并重启nginx">(5) 检验配置并重启nginx</h4>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -t</span><br></pre></td></tr></table></figure>
-<img src="/2025/03/4bc19655/PixPin_2025-03-08_22-34-47.png" alt="Nginx 配置检查与重载结果" style="zoom:67%;">
-<p>证明无错误，重启nginx</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -s reload</span><br></pre></td></tr></table></figure>
-<h3 id="4-SSL证书">4.SSL证书</h3>
-<p>可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器</p>
-<blockquote>
-<p>每个证书有效期三个月</p>
-<p>除www外的二级域名需要单独申请</p>
-<p>总有效证书最多50个(到期会释放个数)</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>计算机技术</category>
-        <category>服务器运维</category>
-      </categories>
-      <tags>
-        <tag>反向代理</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ArcGIS Pro 分水岭提取指南</title>
-    <url>/2025/05/2ef32537/</url>
-    <content><![CDATA[<h2 id="准备工具">准备工具</h2>
-<ul>
-<li>
-<p>Arcgis Pro</p>
-</li>
-<li>
-<p>ArcMap</p>
-</li>
-<li>
-<p>完整的DEM数据（如果有缺失，需要提前补缺（填补空缺值））</p>
-</li>
-</ul>
-<h2 id="开始教程">开始教程</h2>
-<h3 id="1-填洼（Fill）">1. 填洼（Fill）</h3>
-<p>通过填充表面栅格中的汇来移除数据中的小缺陷。</p>
-<p>地理处理工具 -&gt; 搜索填洼 -&gt; 输入栅格 -&gt; 输出栅格</p>
-<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Fill</strong></p>
-<img src="/2025/05/2ef32537/PixPin_2025-05-06_10-47-10.png" alt="ArcGIS Pro 填洼工具参数" style="zoom: 67%;">
-<h3 id="2-流向-（FLow-Direction）">2. 流向 （FLow Direction）</h3>
-<p>使用 D8、多流向 (MFD) 或 D-Infinity (DINF) 方法创建从每个像元到其下坡相邻点的流向的栅格。</p>
-<p>地理处理工具 -&gt; 搜索流向 -&gt; 输入处理后的栅格数据 -&gt; 输出流向栅格</p>
-<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Flow Direction</strong></p>
-<img src="/2025/05/2ef32537/PixPin_2025-05-06_10-58-18.png" alt="ArcGIS Pro 流向工具参数" style="zoom:67%;">
-<p>这里类型一般使用默认的D8即可，具体类型区别请查看<a href="https://pro.arcgis.com/zh-cn/pro-app/3.1/tool-reference/spatial-analyst/flow-direction.htm">帮助文档</a>。</p>
-<h3 id="3-计算河流网络（计算流量（Flow-Accumulation））（可选）">3. 计算河流网络（计算流量（Flow Accumulation））（可选）</h3>
-<p>此部计算是为了下一步更好的选点做准备。如果地形不复杂，也可直接使用D8流向栅格做参考。</p>
-<p>地理处理工具 -&gt; 搜索流量 -&gt; 输入流向栅格数据 -&gt; 输出流量栅格</p>
-<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Flow Accumulation</strong></p>
-<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-06-24.png" alt="ArcGIS Pro 流量工具参数" style="zoom:67%;">
-<p>创建之后，修改符号系统（可以按示例修改为拉伸-标准差）</p>
-<img src="/2025/05/2ef32537/file-20260402190910106.png" alt="流量栅格的标准差拉伸显示设置" style="zoom: 67%;">
-<p>为下一步创建点要素做参考，将点创建在各处水流汇聚位置。</p>
-<h3 id="4-创建点要素文件">4. 创建点要素文件</h3>
-<p>找到目录窗口，打开到需要保存到的文件夹，右键文件夹，选择新建，选择Shapefile</p>
-<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-10-22.png" alt="ArcGIS Pro 新建要素类菜单" style="zoom:50%;">
-<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-15-40.png" alt="ArcGIS Pro 创建点要素类参数" style="zoom:50%;">
-<p>创建完成之后，找到<strong>编辑</strong>工具栏；选择<strong>创建</strong>选项。打开的窗口中选择刚刚创建的文件。</p>
-<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-18-55.png" alt="ArcGIS Pro 编辑工具栏" style="zoom:50%;">
-<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-19-50.png" alt="ArcGIS Pro 创建汇水点要素" style="zoom:50%;">
-<p>然后，在河流的上游和下游选点（至少各一个）。不要求完全选到源头，但汇出口尽量选到。</p>
-<blockquote>
-<p>根据创建的河网和流向栅格创建，之后生成的效果不好就回来修改这个文件</p>
-</blockquote>
-<h3 id="5-提取分水岭（Watershed）">5. 提取分水岭（Watershed）</h3>
-<p>地理处理工具 -&gt; 搜索集水区 -&gt; 输入流向栅格数据 -&gt; 输入点要素文件 -&gt; 输出集水区栅格</p>
-<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Watershed</strong></p>
-<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-29-44.png" alt="ArcGIS Pro 集水区工具参数" style="zoom:50%;">
-<p>字段默认id即可</p>
-<blockquote>
-<p>集水区生成与点的位置有关，它会把每一个点的上游集水区域选择上，但由于地形数据原因会导致有些连续的流域选择不上，使用多个点可尽量保证选择全部区域；</p>
-<p>字段的作用是区分该点对应的集水区，这些点的id都相同，因此只会创建一个集水区；如果需要创建多个集水区，需要使用不同的id区分。</p>
-</blockquote>
-<p>反复调整点要素文件，即可得到该区域的一个集水区栅格文件。将栅格转为面（地理处理工具 -&gt; 栅格转面）即可得到集水区的要素文件。</p>
-]]></content>
-      <categories>
-        <category>地理空间技术</category>
-        <category>地理信息系统（GIS）</category>
-      </categories>
-      <tags>
-        <tag>DEM</tag>
-        <tag>水文分析</tag>
-        <tag>分水岭</tag>
       </tags>
   </entry>
   <entry>
@@ -3130,44 +2596,420 @@ V_p^{n+1}=J_p^{n+1}V_p^0.
       </tags>
   </entry>
   <entry>
-    <title>ASF ALOS PALSAR 12.5 m DEM 数据下载指南</title>
-    <url>/2025/11/a648a944/</url>
+    <title>DJI Mavic 3 Classic 航点飞行指南</title>
+    <url>/2024/08/78788d45/</url>
     <content><![CDATA[<h2 id="准备工作">准备工作</h2>
-<ul>
-<li>ASF账号（下载必须，免费注册）</li>
-<li>良好的网络连接</li>
-<li>ArcGis</li>
-</ul>
-<h2 id="下载教程">下载教程</h2>
-<h3 id="1-打开ASF网站">1. 打开<a href="https://search.asf.alaska.edu/#/?dataset=ALOS">ASF网站</a></h3>
-<p>或网址：<a href="https://search.asf.alaska.edu/#/?dataset=ALOS">https://search.asf.alaska.edu/#/?dataset=ALOS</a></p>
-<h3 id="2-右上角注册并登录账号">2. 右上角注册并登录账号</h3>
-<h3 id="3-下载数据">3. 下载数据</h3>
-<p>(1) 如果使用上面的超链接或网址进入网站，那当前的数据来源应当为ALOS PALSAR，如果不是，下拉选择该选项</p>
-<img src="/2025/11/a648a944/image-20251109230642877.webp" alt="ASF Vertex 数据集和处理级别选择" style="zoom:33%;">
-<p>(2) 框选需要下载的范围</p>
-<img src="/2025/11/a648a944/image-20251109231901774.webp" alt="在 ASF Vertex 地图上框选研究区域" style="zoom:50%;">
-<p>(3) 筛选数据</p>
-<img src="/2025/11/a648a944/image-20251109232034162.webp" alt="ASF Vertex 搜索区域与结果数量" style="zoom:50%;">
-<img src="/2025/11/a648a944/image-20251109232319249.png" alt="ASF Vertex 地形校正搜索条件" style="zoom: 50%;">
-<p>点击搜索查找数据</p>
-<img src="/2025/11/a648a944/image-20251109232958644.webp" alt="ASF Vertex DEM 搜索结果与场景预览" style="zoom:50%;">
-<p>打开右上角购物车(下载列表)</p>
-<img src="/2025/11/a648a944/image-20251109233221741.png" alt="ASF Vertex 批量下载列表" style="zoom:50%;">
-<p>即可下载相关数据</p>
-<h3 id="4-合并数据">4. 合并数据</h3>
-<p>将下载好的数据导入到ArcMap(或ArcGis Pro)中，下图为ArcGis Pro的示例(ArcMap操作相同仅界面不同)</p>
-<p>在地理处理中搜索”镶嵌至新栅格“</p>
-<img src="/2025/11/a648a944/PixPin_2025-11-09_23-42-31.png" alt="ArcGIS Pro 镶嵌至新栅格参数设置" style="zoom: 50%;">
-<p>这样就可以把多个栅格文件合并成一个栅格文件。</p>
+<p>遥控手柄(带屏)</p>
+<p>航线规划软件(网页) - Rainbow Cloud</p>
+<p>SD卡, 读卡器, 电脑</p>
+<h2 id="1-创建航线">1. 创建航线</h2>
+<p>首先, 打开<a href="https://app.flydji.cn/">Rainbow Cloud网站</a>.</p>
+<p>网页界面如下:</p>
+<img src="/2024/08/78788d45/20240907103046.webp" alt="DJI Pilot 2 航线规划地图界面" style="zoom: 33%;">
+<p>点击左侧新建任务.</p>
+<img src="/2024/08/78788d45/20240907103203.png" alt="DJI Pilot 2 新建任务入口" style="zoom:33%;">
+<p>选择正射</p>
+<img src="/2024/08/78788d45/20240907103355.png" alt="DJI Pilot 2 航点任务类型" style="zoom: 33%;">
+<p>输入任务名称</p>
+<img src="/2024/08/78788d45/20240907103444.png" alt="DJI Pilot 2 航点任务命名" style="zoom:50%;">
+<p>确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围.</p>
+<img src="/2024/08/78788d45/20240907103635.webp" alt="在地图上绘制矩形航区" style="zoom:33%;">
+<p>然后, 调整这个范围至合适位置. 可以移动和添加顶点</p>
+<img src="/2024/08/78788d45/20240907104233.webp" alt="调整航区边界控制点" style="zoom:33%;">
+<p>然后, 调整右侧参数栏的参数.</p>
+<img src="/2024/08/78788d45/20240907104901.webp" alt="航线高度与航向参数设置" style="zoom:33%;">
+<img src="/2024/08/78788d45/20240907105200.webp" alt="航线参数调整后的覆盖范围" style="zoom:33%;">
+<p>其余设置与上图保持一致, 保存任务</p>
+<img src="/2024/08/78788d45/20240907105605.png" alt="在航线上添加航点" style="zoom:50%;">
+<p>点击右上角任务导出</p>
+<img src="/2024/08/78788d45/20240907105752.webp" alt="自动生成的航点飞行路线" style="zoom:33%;">
+<p>选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.</p>
+<img src="/2024/08/78788d45/20240907110020.png" alt="Mavic 3 Classic 飞行参数设置" style="zoom:50%;">
+<p>点击下载, 将文件下载并导入到SD卡中.</p>
+<h2 id="2-导入航线">2. 导入航线</h2>
+<p>根据导入教程导入文件<a href="https://docs.qq.com/doc/DWWNyWkxjaURLU05G">Mavic3系列屏控手动导入Kmz航点任务</a></p>
+<h3 id="2-1-创建并备份航线">2.1 创建并备份航线</h3>
+<p>创建任意数量的航点, 保存.</p>
+<p>航点文件保存位置如下</p>
+<img src="/2024/08/78788d45/20240913182709.png" alt="遥控器中的 waypoint 航线文件夹" style="zoom:33%;">
+<p>一串英文字符的文件夹内存放的就是航线文件(kmz格式)</p>
+<p>将整个waypoint文件夹复制至SD卡中</p>
+<h3 id="2-2-替换kmz文件">2.2 替换kmz文件</h3>
+<p>将已经下载好的Kmz文件同样导入到SD卡的该文件夹内</p>
+<p>注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).</p>
+<p>将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)</p>
+<p>最后将替换好的waypoint文件夹替换回去</p>
 ]]></content>
       <categories>
         <category>地理空间技术</category>
-        <category>遥感数据</category>
+        <category>无人机测绘</category>
       </categories>
       <tags>
-        <tag>DEM</tag>
-        <tag>ALOS PALSAR</tag>
+        <tag>DJI Mavic 3 Classic</tag>
+        <tag>航点飞行</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>深度平均法论文研读：二维泥沙输运模型</title>
+    <url>/2024/12/3e16e77c/</url>
+    <content><![CDATA[<h2 id="原文">原文</h2>
+<p><a href="https://www.sciencedirect.com/science/article/pii/S0924796313000833">A depth-averaged two-dimensional sediment transport model for environmental studies in the Scheldt Estuary and tidal river network - ScienceDirect</a></p>
+<p><a href="https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh">附PDF: https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh</a></p>
+<h2 id="工作内容">工作内容</h2>
+<p>针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。</p>
+<h2 id="流体力学和盐度模型">流体力学和盐度模型</h2>
+<p>河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程</p>
+<h3 id="浅水方程-Shallow-water-equations">浅水方程(Shallow water equations)</h3>
+<div class="math block">
+<script type="math/tex; mode=display">\frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) = 0</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u = -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}</script>
+</div>
+<p>其中 t 是时间, <span class="math inline"><script type="math/tex">H=h+\eta</script></span> 是水深, h 是水柱参考高度; <span class="math inline"><script type="math/tex">f=2\omega\sin \phi</script></span>为科里奥利参数, 以<span class="math inline"><script type="math/tex">\omega</script></span>为地球角速度, 以<span class="math inline"><script type="math/tex">\phi</script></span>为纬度; k为单位向上矢量; G为重力加速度; <span class="math inline"><script type="math/tex">\rho</script></span> 是水的密度, 假设水的密度是恒定的, <span class="math inline"><script type="math/tex">P_a</script></span> 是水面的大气压力; <span class="math inline"><script type="math/tex">\nu</script></span> 为水平涡动粘度; <span class="math inline"><script type="math/tex">\tau_s</script></span>和<span class="math inline"><script type="math/tex">\tau_b</script></span>分别为表面和底部应力矢量.</p>
+<h3 id="深度平均盐度运输方程">深度平均盐度运输方程</h3>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial (HS)}{\partial t} + \nabla\cdot (HuS) = \nabla \cdot (Hk\nabla S)</script>
+</div>
+<p>其中k为扩散系数</p>
+<h3 id="水平涡粘性系数">水平涡粘性系数</h3>
+<p>根据 Smagorinsky（1963）的工作，水平涡粘性系数 <span class="math inline"><script type="math/tex">\nu</script></span> 通常按照以下形式给出：</p>
+<div class="math block">
+<script type="math/tex; mode=display">ν = C_s^2 * Δx * |S|</script>
+</div>
+<p>这里，</p>
+<p><span class="math inline"><script type="math/tex">C_s</script></span> 是 Smagorinsky 常数，一般取值在 0.1 到 0.2 之间；<br>
+<span class="math inline"><script type="math/tex">Δx</script></span> 是网格间距，代表了模型分辨率；<br>
+<span class="math inline"><script type="math/tex">|S|</script></span> 是应变率张量 S 的模，它描述了速度场的空间变化，具体为：</p>
+<div class="math block">
+<script type="math/tex; mode=display">S = (∇u + (∇u)^T) / 2</script>
+</div>
+<p>其中 <span class="math inline"><script type="math/tex">∇u</script></span> 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：</p>
+<div class="math block">
+<script type="math/tex; mode=display">|S| = sqrt(2 * S_{ij} * S_{ij})</script>
+</div>
+<p>这里的 <span class="math inline"><script type="math/tex">S_ij</script></span> 表示应变率张量的分量。</p>
+<h3 id="曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation">曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)</h3>
+<div class="math block">
+<script type="math/tex; mode=display">\tau_b = \rho g n^2 \frac{u \begin{Vmatrix} u \end{Vmatrix} }{H^{1/3}}</script>
+</div>
+<p>其中 n 是曼宁系数. 在大陆架等于<span class="math inline"><script type="math/tex">0.0235\ s\ m^{-1/3}</script></span> , 在Antwerp附近, 从河口线性增加到<span class="math inline"><script type="math/tex">0.028\ s\ m^{-1/3}</script></span></p>
+<h3 id="扩散系数-k-Okubo">扩散系数 k (Okubo)</h3>
+<div class="math block">
+<script type="math/tex; mode=display">k = c_k \Delta^{1.15}</script>
+</div>
+<p>其中 <span class="math inline"><script type="math/tex">c_k</script></span> 为常数, <span class="math inline"><script type="math/tex">\Delta</script></span> 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 <span class="math inline"><script type="math/tex">c_k = 150\ m^{0.85}s^{-1}</script></span>.</p>
+<h2 id="泥沙模型">泥沙模型</h2>
+<p>泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即<span class="math inline"><script type="math/tex">C_{ss}</script></span>, 悬浮沉积物的深度平均浓度[<span class="math inline"><script type="math/tex">kg\ m^{−3}</script></span>], 以及<span class="math inline"><script type="math/tex">C_{sb}</script></span>, 新鲜层中底层沉积物的浓度[<span class="math inline"><script type="math/tex">kg\ m^{−2}</script></span>]。母层是沉积物的无限来源, 只有当<span class="math inline"><script type="math/tex">C_{sb}</script></span>局部为零时才会被侵蚀。</p>
+<p>悬浮中的沉积物是通过平流和扩散输送的, 而底部的沉积物则不是。在区域的二维部分, 悬浮泥沙浓度和新沉积泥沙浓度服从如下方程:</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial (HC_{ss})}{\partial t} + \nabla \cdot (HuC_{ss}) = \nabla \cdot (Hk\nabla C_{ss}) + E_f + E_p - D</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial C_{sb}}{\partial t} = D - E_f</script>
+</div>
+<img src="/2024/12/3e16e77c/image-20241208170632962.png" alt="泥沙侵蚀沉积与悬沙输运示意图" style="zoom:50%;">
+<p>式中<span class="math inline"><script type="math/tex">E_f</script></span>为新鲜层沉积物的侵蚀速率, <span class="math inline"><script type="math/tex">E_p</script></span>为母层沉积物的侵蚀速率, <span class="math inline"><script type="math/tex">D</script></span>为新鲜层沉积物的沉积速率。</p>
+<p><strong>假设母层从未供应, 并且两个底层之间没有交换。此外, 也没有考虑床质输运。</strong></p>
+<h3 id="侵蚀速率-Partheniades-1965">侵蚀速率 (Partheniades(1965))</h3>
+<div class="math block">
+<script type="math/tex; mode=display">E_f = \begin{cases}
+M\left( \dfrac{\tau_b}{\tau_e} - 1 \right),
+    & \text{if } \tau_b > \tau_e \text{ and } C_{sb} > 0, \\
+0,  & \text{otherwise}.
+\end{cases}</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">E_p = \begin{cases}
+M\left( \dfrac{\tau_b}{\tau_{e,p}} - 1 \right),
+    & \text{if } \tau_b > \tau_{e,p} \text{ and } C_{sb} = 0, \\
+0,  & \text{otherwise}.
+\end{cases}</script>
+</div>
+<p>当<span class="math inline"><script type="math/tex">\tau_b</script></span>(底部应力向量的范数<span class="math inline"><script type="math/tex">\tau_b</script></span>) 高于一个阈值<span class="math inline"><script type="math/tex">\tau_e</script></span>时, 沉积物从新鲜层被侵蚀, 或者, 如果新鲜层局部是空的, 当<span class="math inline"><script type="math/tex">\tau_b</script></span>高于另一个阈值<span class="math inline"><script type="math/tex">\tau_{e,p}</script></span>; M被称为侵蚀速率参数。</p>
+<h3 id="沉积速率-Einstein和Krone-1962">沉积速率(Einstein和Krone (1962))</h3>
+<div class="math block">
+<script type="math/tex; mode=display">D=w_sC_{ss}</script>
+</div>
+<p>其中 <span class="math inline"><script type="math/tex">w_s</script></span> 为沉降速度.</p>
+<div class="math block">
+<script type="math/tex; mode=display">w_S = w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m</script>
+</div>
+<p>其中 <span class="math inline"><script type="math/tex">C_{ss,0}=0.1\ kg m^{-3}</script></span> 是 Scheldt SSC的参考值, <span class="math inline"><script type="math/tex">w_{s,0}</script></span> 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999).</p>
+<h3 id="连续方程的推导">连续方程的推导</h3>
+<p><img src="/2024/12/3e16e77c/image-20241211171404424.png" alt="深度平均模型的水深与基准面定义"></p>
+<p>引入自由表面的运动学条件和底部运动学条件</p>
+<div class="math block">
+<script type="math/tex; mode=display">u_z|_{z=z_s} = \frac{dz_s}{dt} = \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x} u_x + \frac{\partial z_s}{\partial y} u_y</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">u_z|_{z=z_b} = \frac{dz_b}{dt} = \frac{\partial z_b}{\partial t} + \frac{\partial z_b}{\partial x} u_x + \frac{\partial z_b}{\partial y} u_y</script>
+</div>
+<p>对连续性方程沿水深方向进行积分</p>
+<div class="math block">
+<script type="math/tex; mode=display">\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j} dz = 0 \ (j=1,2,3)</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j}dz + u_z|_{z_s} - u_z|_{u_b} = 0 \ (j=1,2)</script>
+</div>
+<p>由牛顿-莱布尼兹公式</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial}{\partial x_j} \int_a^b f dz = \int_a^b \frac{\partial f}{\partial x_j} dz + f|_b \frac{\partial b}{\partial x_j} - f|_a \frac{\partial a}{\partial x_j}</script>
+</div>
+<p>将上式第一项展开，可得</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + u_z|_{z_s} - u_z|_{z_b} = 0 \ (j=1,2)</script>
+</div>
+<p>代入两个运动学条件，可得</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x_j} u_j|_{z_s} - \frac{\partial z_b}{\partial t} - \frac{\partial z_b}{\partial x_j} u_j|_{z_b} = 0 \ (j=1,2)</script>
+</div>
+<p>化简，得</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz + \frac{\partial z_s}{\partial x_j} - \frac{\partial z_b}{\partial x_j} = 0 \ (j=1,2)</script>
+</div>
+<p>由 <span class="math inline"><script type="math/tex">H=z_s-z_b</script></span>, 进一步化简为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz = 0 \ (j=1,2)</script>
+</div>
+<p>又有</p>
+<div class="math block">
+<script type="math/tex; mode=display">\int_{z_b}^{z_s} u_j dz = HU_j \ (j=1,2)</script>
+</div>
+<p>代入上式，得</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial HU_j}{\partial x_j} = 0 \ (j=1,2)</script>
+</div>
+<p>即</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial HU_x}{\partial x} + \frac{\partial HU_y}{\partial y} = 0</script>
+</div>
+<p>本篇文章中 <span class="math inline"><script type="math/tex">H = h + \eta</script></span>, <span class="math inline"><script type="math/tex">H</script></span> 为水深，<span class="math inline"><script type="math/tex">h</script></span> 为参考水柱高度（河床到基准面的高度），<span class="math inline"><script type="math/tex">\eta</script></span> 为水面相对于基准面的高度，是一个瞬时变化量。</p>
+<p>因此，第一项水深随时间的变化率写为 <span class="math inline"><script type="math/tex">\frac{\partial \eta}{\partial t}</script></span>，第二三项的为水平方向的水流通量，其通过面积可表示为 <span class="math inline"><script type="math/tex">H</script></span>, 因此此项应写为 <span class="math inline"><script type="math/tex">\frac{\partial Hu_j}{\partial x_j}</script></span>.</p>
+<p>综上</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial \eta}{\partial t} + \frac{\partial Hu_j}{\partial x_j} = 0 \ (j=1,2)</script>
+</div>
+<p>使用哈密顿算子可以表示为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial \eta}{\partial t} + \nabla \cdot (Hu) = 0</script>
+</div>
+]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>深度平均法</category>
+      </categories>
+      <tags>
+        <tag>泥沙输运</tag>
+        <tag>盐度输运</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git 分支工作流：从本地开发到 Pull Request 合并</title>
+    <url>/2024/04/5dbdb580/</url>
+    <content><![CDATA[<p>直接在 <code>main</code> 分支修改代码，短期看似省事，却会让未完成的功能、紧急修复和稳定版本混在一起。更稳妥的做法是：<strong>每项任务使用独立分支，在分支上完成小步提交，通过 Pull Request（PR）审查后再合并到 <code>main</code></strong>。</p>
+<p>本文以 GitHub 为例，完整演示一次功能开发。读完后，你将能独立完成“更新主分支 → 创建功能分支 → 修改并提交 → 同步上游 → 发起 PR → 合并与清理”的循环。</p>
+<blockquote>
+<p>前提：本地已经安装并配置 Git，拥有一个设置了 <code>origin</code> 远程仓库的项目，并且团队将 <code>main</code> 作为稳定主分支。</p>
+</blockquote>
+<h2 id="1-先建立正确的心智模型">1. 先建立正确的心智模型</h2>
+<p>一次常规开发会经过四个位置。Git 命令的作用，本质上就是让改动在这些位置之间移动。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[工作区&lt;br&#x2F;&gt;正在编辑的文件] --&gt;|git add| B[暂存区&lt;br&#x2F;&gt;准备提交的快照]
+    B --&gt;|git commit| C[本地仓库&lt;br&#x2F;&gt;提交历史]
+    C --&gt;|git push| D[GitHub 远程分支]
+    D --&gt;|Pull Request| E[main 主分支]
+    C -. 查看差异 .-&gt; A
+    D -. fetch &#x2F; pull .-&gt; C
+  </pre></div>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>可以把它理解为</th>
+<th>常用检查命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工作区（Working Tree）</td>
+<td>当前磁盘中正在修改的文件</td>
+<td><code>git diff</code></td>
+</tr>
+<tr>
+<td>暂存区（Index）</td>
+<td>下一次提交准备包含的内容</td>
+<td><code>git diff --staged</code></td>
+</tr>
+<tr>
+<td>本地仓库</td>
+<td>已提交、可回退的版本历史</td>
+<td><code>git log --oneline --graph</code></td>
+</tr>
+<tr>
+<td>远程仓库</td>
+<td>GitHub 上供协作和备份的分支</td>
+<td><code>git branch -vv</code></td>
+</tr>
+</tbody>
+</table>
+<p>最常用的完整循环如下。无需一次记住所有命令，先记住每一步的目的。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[更新本地 main] --&gt; B[创建并切换到功能分支]
+    B --&gt; C[修改与自测]
+    C --&gt; D[检查并暂存改动]
+    D --&gt; E[提交到本地仓库]
+    E --&gt; F{任务完成了吗}
+    F -- 否 --&gt; C
+    F -- 是 --&gt; G[推送功能分支]
+    G --&gt; H[创建 Pull Request]
+    H --&gt; I{main 是否有新提交}
+    I -- 是 --&gt; J[同步 main 并解决冲突]
+    J --&gt; H
+    I -- 否 --&gt; K[审查并合并]
+    K --&gt; L[更新本地 main 并删除旧分支]
+  </pre></div>
+<h2 id="2-从最新的-main-创建功能分支">2. 从最新的 <code>main</code> 创建功能分支</h2>
+<h3 id="2-1-更新本地主分支">2.1 更新本地主分支</h3>
+<p>先确认当前没有遗漏的修改：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br></pre></td></tr></table></figure>
+<p>切换到 <code>main</code>，再以“只允许快进”的方式拉取远程更新：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git switch main</span><br><span class="line">git pull --ff-only origin main</span><br></pre></td></tr></table></figure>
+<p><code>--ff-only</code> 会在本地和远程历史已经分叉时停止，而不是自动生成一个意外的合并提交。此时应先检查分支状态，再决定如何处理。</p>
+<h3 id="2-2-创建语义清楚的分支">2.2 创建语义清楚的分支</h3>
+<p>假设本次任务是增加登录页：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git switch -c feat/login-page</span><br></pre></td></tr></table></figure>
+<p>推荐使用“类型/简短任务”的命名方式：</p>
+<ul>
+<li><code>feat/login-page</code>：新增功能；</li>
+<li><code>fix/navbar-overflow</code>：修复缺陷；</li>
+<li><code>docs/install-guide</code>：修改文档；</li>
+<li><code>refactor/user-service</code>：重构但不改变外部行为。</li>
+</ul>
+<p><code>git switch -c</code> 会同时创建并切换分支。运行 <code>git branch --show-current</code>，应看到 <code>feat/login-page</code>。</p>
+<h2 id="3-在功能分支上小步开发">3. 在功能分支上小步开发</h2>
+<h3 id="3-1-修改前先确认位置">3.1 修改前先确认位置</h3>
+<p>每次开始工作前都运行：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br></pre></td></tr></table></figure>
+<p>重点确认两件事：当前位于正确的功能分支；工作区没有来自其他任务的无关修改。</p>
+<h3 id="3-2-修改、检查、暂存">3.2 修改、检查、暂存</h3>
+<p>完成一小部分修改并自测后，先查看差异：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git diff</span><br></pre></td></tr></table></figure>
+<p>只暂存属于本次提交的文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git add src/login.html src/login.css</span><br><span class="line">git diff --staged</span><br></pre></td></tr></table></figure>
+<p>不建议初学时无条件使用 <code>git add .</code>。逐个选择文件并用 <code>git diff --staged</code> 复核，可以避免把日志、密钥或临时文件提交进去。</p>
+<h3 id="3-3-创建一个含义完整的提交">3.3 创建一个含义完整的提交</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git commit -m <span class="string">&quot;feat: add login page layout&quot;</span></span><br></pre></td></tr></table></figure>
+<p>一个好提交应当只完成一个可描述的目标。例如，“增加登录页布局”和“修复导航栏溢出”最好拆成两个提交。小而完整的提交更容易审查，也更容易单独撤销。</p>
+<p>如果任务尚未完成，就继续重复“修改 → 自测 → 暂存 → 提交”：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">工作区修改 ──git add──&gt; 暂存区 ──git commit──&gt; 本地功能分支</span><br><span class="line">    ↑                                              │</span><br><span class="line">    └──────────────── 下一轮小步开发 ───────────────┘</span><br></pre></td></tr></table></figure>
+<h2 id="4-推送分支并创建-Pull-Request">4. 推送分支并创建 Pull Request</h2>
+<p>首次推送时建立本地分支与远程分支的跟踪关系：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git push -u origin feat/login-page</span><br></pre></td></tr></table></figure>
+<p>以后在该分支上只需运行 <code>git push</code>。然后进入 GitHub：</p>
+<ol>
+<li>以 <code>feat/login-page</code> 为源分支、<code>main</code> 为目标分支创建 PR；</li>
+<li>标题说明结果，正文说明改动原因、验证方法和影响范围；</li>
+<li>检查自动化任务是否通过；</li>
+<li>邀请成员审查，根据意见继续提交和推送。</li>
+</ol>
+<p>PR 不是“任务完成后的上传按钮”，而是围绕一组改动进行检查、讨论和合并的协作界面。审查期间新增的提交会自动进入同一个 PR。</p>
+<h2 id="5-当-main-在开发期间发生变化">5. 当 <code>main</code> 在开发期间发生变化</h2>
+<p>你开发功能时，其他成员可能已经向 <code>main</code> 合并了新提交。可先获取远程状态，但不立即修改本地文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git fetch origin</span><br><span class="line">git <span class="built_in">log</span> --oneline --graph --decorate --all -n 20</span><br></pre></td></tr></table></figure>
+<p>对于<strong>只有自己使用的功能分支</strong>，可以把功能提交变基到最新的 <code>origin/main</code>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git switch feat/login-page</span><br><span class="line">git rebase origin/main</span><br></pre></td></tr></table></figure>
+<p>变基前后的历史可以这样理解：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    subgraph 变基前
+        A1[main: A] --&gt; B1[main: B]
+        A1 --&gt; F1[feature: F1]
+        F1 --&gt; F2[feature: F2]
+    end
+    subgraph 变基后
+        A2[main: A] --&gt; B2[main: B]
+        B2 --&gt; G1[feature: F1&#39;]
+        G1 --&gt; G2[feature: F2&#39;]
+    end
+    F2 -. git rebase origin&#x2F;main .-&gt; G1
+  </pre></div>
+<p><code>rebase</code> 会重写功能分支提交，使历史更线性，因此<strong>不要对多人共同开发的分支随意变基</strong>。共享分支应遵循团队约定，通常使用 <code>git merge origin/main</code> 更稳妥。</p>
+<h3 id="5-1-解决变基冲突">5.1 解决变基冲突</h3>
+<p>出现冲突时不要慌，Git 会暂停并列出冲突文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status</span><br></pre></td></tr></table></figure>
+<p>打开文件，结合上下文处理 <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>、<code>=======</code> 和 <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> 标记；完成后继续：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git add &lt;已解决的文件&gt;</span><br><span class="line">git rebase --<span class="built_in">continue</span></span><br></pre></td></tr></table></figure>
+<p>如果发现方向不对，可以完整取消本次变基：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git rebase --abort</span><br></pre></td></tr></table></figure>
+<p>解决冲突后重新运行项目测试。由于变基改变了提交 ID，已经推送过的个人功能分支需要安全地更新远程历史：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git push --force-with-lease</span><br></pre></td></tr></table></figure>
+<p>使用 <code>--force-with-lease</code>，不要直接使用 <code>--force</code>。前者会在远程分支出现你尚未获取的新提交时拒绝覆盖，能降低误删他人工作的风险。</p>
+<h2 id="6-合并-PR-与清理分支">6. 合并 PR 与清理分支</h2>
+<p>审查和检查通过后，在 GitHub 按团队规则选择合并方式：</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>结果</th>
+<th>适用情况</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Squash and merge</td>
+<td>将 PR 压缩为 <code>main</code> 上的一个提交</td>
+<td>功能分支有较多修正型小提交</td>
+</tr>
+<tr>
+<td>Rebase and merge</td>
+<td>保留各提交但形成线性历史</td>
+<td>每个提交都清晰、可独立理解</td>
+</tr>
+<tr>
+<td>Merge commit</td>
+<td>保留分支结构并增加合并提交</td>
+<td>团队希望明确记录分支边界</td>
+</tr>
+</tbody>
+</table>
+<p>合并并删除 GitHub 上的功能分支后，清理本地环境：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git switch main</span><br><span class="line">git pull --ff-only origin main</span><br><span class="line">git branch -d feat/login-page</span><br><span class="line">git fetch --prune</span><br></pre></td></tr></table></figure>
+<p>优先使用安全删除参数 <code>-d</code>。如果 PR 使用 Squash and merge，原功能提交不会直接成为 <code>main</code> 的祖先，因此 Git 可能仍拒绝删除。先在 GitHub 确认 PR 已合并、再检查分支内容；只有确认不再需要时，才使用 <code>git branch -D &lt;branch&gt;</code>。</p>
+<p>至此，一个开发循环结束。下一项任务再从最新的 <code>main</code> 创建新分支，不要继续复用已经合并的旧功能分支。</p>
+<h2 id="7-一份可直接复用的命令清单">7. 一份可直接复用的命令清单</h2>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 从最新主分支开始</span></span><br><span class="line">git switch main</span><br><span class="line">git pull --ff-only origin main</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 创建任务分支</span></span><br><span class="line">git switch -c feat/login-page</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 小步开发与提交</span></span><br><span class="line">git status</span><br><span class="line">git diff</span><br><span class="line">git add &lt;file...&gt;</span><br><span class="line">git diff --staged</span><br><span class="line">git commit -m <span class="string">&quot;feat: add login page layout&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 首次推送并创建 PR</span></span><br><span class="line">git push -u origin feat/login-page</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 必要时同步最新主分支（仅个人功能分支使用 rebase）</span></span><br><span class="line">git fetch origin</span><br><span class="line">git rebase origin/main</span><br><span class="line">git push --force-with-lease</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. PR 合并后清理</span></span><br><span class="line">git switch main</span><br><span class="line">git pull --ff-only origin main</span><br><span class="line">git branch -d feat/login-page</span><br><span class="line">git fetch --prune</span><br></pre></td></tr></table></figure>
+<h2 id="8-常见错误与排查顺序">8. 常见错误与排查顺序</h2>
+<ul>
+<li><strong>改错分支</strong>：先不要提交，用 <code>git status</code> 确认改动，再通过 <code>git switch -c &lt;new-branch&gt;</code> 从当前位置创建正确分支。</li>
+<li><strong>提交混入无关文件</strong>：提交前固定运行 <code>git diff --staged</code>；敏感文件应加入 <code>.gitignore</code>，泄露的密钥还必须立即作废。</li>
+<li><strong>拉取后出现意外合并提交</strong>：开始任务时使用 <code>git pull --ff-only</code>，历史分叉后先查看日志，不要盲目继续。</li>
+<li><strong>冲突时不知道保留哪一边</strong>：先理解两边修改的目的，再编辑最终结果并测试；冲突标记不是让你机械地任选一边。</li>
+<li><strong>在共享分支强制推送</strong>：不要这样做。公共历史需要撤销时，通常使用 <code>git revert</code> 创建反向提交。</li>
+</ul>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="https://git-scm.com/book/zh/v2/Git-%E5%88%86%E6%94%AF-%E5%88%86%E6%94%AF%E7%AE%80%E4%BB%8B">Pro Git：Git 分支</a></li>
+<li><a href="https://git-scm.com/docs/git-switch">Git 文档：git switch</a></li>
+<li><a href="https://git-scm.com/docs/git-rebase">Git 文档：git rebase</a></li>
+<li><a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/getting-started/about-pull-requests">GitHub Docs：About pull requests</a></li>
+<li>原学习视频：<a href="https://www.bilibili.com/video/BV19e4y1q7JJ/">十分钟学会正确的 GitHub 工作流</a></li>
+</ul>
+
+<div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
+  <span class="ai-content-label__icon" aria-hidden="true">
+    <i class="fas fa-wand-magic-sparkles"></i>
+  </span>
+  <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span>
+</div>]]></content>
+      <categories>
+        <category>计算机技术</category>
+        <category>版本控制</category>
+      </categories>
+      <tags>
+        <tag>分支管理</tag>
       </tags>
   </entry>
   <entry>
@@ -3332,6 +3174,164 @@ V_p^{n+1}=J_p^{n+1}V_p^0.
       <tags>
         <tag>Hexo</tag>
         <tag>云服务器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Nginx 反向代理配置指南</title>
+    <url>/2025/03/4bc19655/</url>
+    <content><![CDATA[<h2 id="准备工作">准备工作</h2>
+<ul>
+<li>Ubuntu系统</li>
+<li>Nginx</li>
+</ul>
+<h2 id="配置教程">配置教程</h2>
+<h3 id="1-备份配置文件">1.备份配置文件</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default</span><br></pre></td></tr></table></figure>
+<h3 id="2-编辑配置文件">2.编辑配置文件</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/nginx/nginx.conf</span><br></pre></td></tr></table></figure>
+<p>找到<code>http&#123;&#125;</code>块中的<code>server&#123;&#125;</code>块，注释掉原有的<code>server&#123;&#125;</code></p>
+<img src="/2025/03/4bc19655/PixPin_2025-03-08_22-13-27.png" alt="Nginx HTTPS 反向代理配置示例" style="zoom:50%;">
+<h3 id="3-按原有配置添加新的server块">3.按原有配置添加新的server块</h3>
+<h4 id="1-默认的错误界面">(1) 默认的错误界面</h4>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 443 ssl default_server;</span><br><span class="line">    server_name _;</span><br><span class="line"></span><br><span class="line">    ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">    ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line"></span><br><span class="line">    return 404;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-主域名">(2) 主域名</h4>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">     listen 443 ssl;</span><br><span class="line">     server_name fireflye.top;</span><br><span class="line">     ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">     ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line">     ssl_session_timeout 5m;</span><br><span class="line">     ssl_protocols TLSv1.2 TLSv1.3;</span><br><span class="line">     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;</span><br><span class="line">     ssl_prefer_server_ciphers on;</span><br><span class="line"></span><br><span class="line">     location / &#123;</span><br><span class="line">         root /home/www/website;</span><br><span class="line">         index  index.html index.htm;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>root</code>改为自己本地的网站目录</p>
+<h4 id="3-主域名转发">(3) 主域名转发</h4>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name fireflye.top;</span><br><span class="line">        return 301 https://$host$request_uri;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-二级域名端口转发示例">(4) 二级域名端口转发示例</h4>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">     listen 443 ssl;</span><br><span class="line">     server_name xxx.fireflye.top;</span><br><span class="line">     ssl_certificate /etc/nginx/xxx.crt;</span><br><span class="line">     ssl_certificate_key /etc/nginx/xxx.key;</span><br><span class="line">     ssl_session_timeout 5m;</span><br><span class="line">     ssl_protocols TLSv1.2 TLSv1.3;</span><br><span class="line">     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;</span><br><span class="line">     ssl_prefer_server_ciphers on;</span><br><span class="line"></span><br><span class="line">     location / &#123;</span><br><span class="line">       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">       proxy_set_header X-Forwarded-Proto $scheme;</span><br><span class="line">       proxy_set_header Host $host;</span><br><span class="line">       proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">       proxy_set_header Range $http_range;</span><br><span class="line">       proxy_set_header If-Range $http_if_range;</span><br><span class="line">       proxy_redirect off;</span><br><span class="line">       proxy_pass https://127.0.0.1:xxx;</span><br><span class="line">       client_max_body_size 20000m;</span><br><span class="line">       &#125;</span><br><span class="line">&#125;</span><br><span class="line"> server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name xxx.fireflye.top;</span><br><span class="line">        return 301 https://$host$request_uri;</span><br><span class="line">				&#125;</span><br></pre></td></tr></table></figure>
+<p>其他均可套此模版</p>
+<blockquote>
+<p>注意http{}需要闭合，最后的大括号容易被误删</p>
+</blockquote>
+<h4 id="5-检验配置并重启nginx">(5) 检验配置并重启nginx</h4>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -t</span><br></pre></td></tr></table></figure>
+<img src="/2025/03/4bc19655/PixPin_2025-03-08_22-34-47.png" alt="Nginx 配置检查与重载结果" style="zoom:67%;">
+<p>证明无错误，重启nginx</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -s reload</span><br></pre></td></tr></table></figure>
+<h3 id="4-SSL证书">4.SSL证书</h3>
+<p>可以去腾讯云申请免费的证书，下载证书的crt和key(选nginx即可)可用于其他平台的服务器</p>
+<blockquote>
+<p>每个证书有效期三个月</p>
+<p>除www外的二级域名需要单独申请</p>
+<p>总有效证书最多50个(到期会释放个数)</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>计算机技术</category>
+        <category>服务器运维</category>
+      </categories>
+      <tags>
+        <tag>反向代理</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ArcGIS Pro 分水岭提取指南</title>
+    <url>/2025/05/2ef32537/</url>
+    <content><![CDATA[<h2 id="准备工具">准备工具</h2>
+<ul>
+<li>
+<p>Arcgis Pro</p>
+</li>
+<li>
+<p>ArcMap</p>
+</li>
+<li>
+<p>完整的DEM数据（如果有缺失，需要提前补缺（填补空缺值））</p>
+</li>
+</ul>
+<h2 id="开始教程">开始教程</h2>
+<h3 id="1-填洼（Fill）">1. 填洼（Fill）</h3>
+<p>通过填充表面栅格中的汇来移除数据中的小缺陷。</p>
+<p>地理处理工具 -&gt; 搜索填洼 -&gt; 输入栅格 -&gt; 输出栅格</p>
+<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Fill</strong></p>
+<img src="/2025/05/2ef32537/PixPin_2025-05-06_10-47-10.png" alt="ArcGIS Pro 填洼工具参数" style="zoom: 67%;">
+<h3 id="2-流向-（FLow-Direction）">2. 流向 （FLow Direction）</h3>
+<p>使用 D8、多流向 (MFD) 或 D-Infinity (DINF) 方法创建从每个像元到其下坡相邻点的流向的栅格。</p>
+<p>地理处理工具 -&gt; 搜索流向 -&gt; 输入处理后的栅格数据 -&gt; 输出流向栅格</p>
+<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Flow Direction</strong></p>
+<img src="/2025/05/2ef32537/PixPin_2025-05-06_10-58-18.png" alt="ArcGIS Pro 流向工具参数" style="zoom:67%;">
+<p>这里类型一般使用默认的D8即可，具体类型区别请查看<a href="https://pro.arcgis.com/zh-cn/pro-app/3.1/tool-reference/spatial-analyst/flow-direction.htm">帮助文档</a>。</p>
+<h3 id="3-计算河流网络（计算流量（Flow-Accumulation））（可选）">3. 计算河流网络（计算流量（Flow Accumulation））（可选）</h3>
+<p>此部计算是为了下一步更好的选点做准备。如果地形不复杂，也可直接使用D8流向栅格做参考。</p>
+<p>地理处理工具 -&gt; 搜索流量 -&gt; 输入流向栅格数据 -&gt; 输出流量栅格</p>
+<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Flow Accumulation</strong></p>
+<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-06-24.png" alt="ArcGIS Pro 流量工具参数" style="zoom:67%;">
+<p>创建之后，修改符号系统（可以按示例修改为拉伸-标准差）</p>
+<img src="/2025/05/2ef32537/file-20260402190910106.png" alt="流量栅格的标准差拉伸显示设置" style="zoom: 67%;">
+<p>为下一步创建点要素做参考，将点创建在各处水流汇聚位置。</p>
+<h3 id="4-创建点要素文件">4. 创建点要素文件</h3>
+<p>找到目录窗口，打开到需要保存到的文件夹，右键文件夹，选择新建，选择Shapefile</p>
+<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-10-22.png" alt="ArcGIS Pro 新建要素类菜单" style="zoom:50%;">
+<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-15-40.png" alt="ArcGIS Pro 创建点要素类参数" style="zoom:50%;">
+<p>创建完成之后，找到<strong>编辑</strong>工具栏；选择<strong>创建</strong>选项。打开的窗口中选择刚刚创建的文件。</p>
+<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-18-55.png" alt="ArcGIS Pro 编辑工具栏" style="zoom:50%;">
+<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-19-50.png" alt="ArcGIS Pro 创建汇水点要素" style="zoom:50%;">
+<p>然后，在河流的上游和下游选点（至少各一个）。不要求完全选到源头，但汇出口尽量选到。</p>
+<blockquote>
+<p>根据创建的河网和流向栅格创建，之后生成的效果不好就回来修改这个文件</p>
+</blockquote>
+<h3 id="5-提取分水岭（Watershed）">5. 提取分水岭（Watershed）</h3>
+<p>地理处理工具 -&gt; 搜索集水区 -&gt; 输入流向栅格数据 -&gt; 输入点要素文件 -&gt; 输出集水区栅格</p>
+<p>英文：打开<strong>ArcToolbox</strong> -&gt;  搜索 <strong>Watershed</strong></p>
+<img src="/2025/05/2ef32537/PixPin_2025-05-06_11-29-44.png" alt="ArcGIS Pro 集水区工具参数" style="zoom:50%;">
+<p>字段默认id即可</p>
+<blockquote>
+<p>集水区生成与点的位置有关，它会把每一个点的上游集水区域选择上，但由于地形数据原因会导致有些连续的流域选择不上，使用多个点可尽量保证选择全部区域；</p>
+<p>字段的作用是区分该点对应的集水区，这些点的id都相同，因此只会创建一个集水区；如果需要创建多个集水区，需要使用不同的id区分。</p>
+</blockquote>
+<p>反复调整点要素文件，即可得到该区域的一个集水区栅格文件。将栅格转为面（地理处理工具 -&gt; 栅格转面）即可得到集水区的要素文件。</p>
+]]></content>
+      <categories>
+        <category>地理空间技术</category>
+        <category>地理信息系统（GIS）</category>
+      </categories>
+      <tags>
+        <tag>DEM</tag>
+        <tag>水文分析</tag>
+        <tag>分水岭</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ASF ALOS PALSAR 12.5 m DEM 数据下载指南</title>
+    <url>/2025/11/a648a944/</url>
+    <content><![CDATA[<h2 id="准备工作">准备工作</h2>
+<ul>
+<li>ASF账号（下载必须，免费注册）</li>
+<li>良好的网络连接</li>
+<li>ArcGis</li>
+</ul>
+<h2 id="下载教程">下载教程</h2>
+<h3 id="1-打开ASF网站">1. 打开<a href="https://search.asf.alaska.edu/#/?dataset=ALOS">ASF网站</a></h3>
+<p>或网址：<a href="https://search.asf.alaska.edu/#/?dataset=ALOS">https://search.asf.alaska.edu/#/?dataset=ALOS</a></p>
+<h3 id="2-右上角注册并登录账号">2. 右上角注册并登录账号</h3>
+<h3 id="3-下载数据">3. 下载数据</h3>
+<p>(1) 如果使用上面的超链接或网址进入网站，那当前的数据来源应当为ALOS PALSAR，如果不是，下拉选择该选项</p>
+<img src="/2025/11/a648a944/image-20251109230642877.webp" alt="ASF Vertex 数据集和处理级别选择" style="zoom:33%;">
+<p>(2) 框选需要下载的范围</p>
+<img src="/2025/11/a648a944/image-20251109231901774.webp" alt="在 ASF Vertex 地图上框选研究区域" style="zoom:50%;">
+<p>(3) 筛选数据</p>
+<img src="/2025/11/a648a944/image-20251109232034162.webp" alt="ASF Vertex 搜索区域与结果数量" style="zoom:50%;">
+<img src="/2025/11/a648a944/image-20251109232319249.png" alt="ASF Vertex 地形校正搜索条件" style="zoom: 50%;">
+<p>点击搜索查找数据</p>
+<img src="/2025/11/a648a944/image-20251109232958644.webp" alt="ASF Vertex DEM 搜索结果与场景预览" style="zoom:50%;">
+<p>打开右上角购物车(下载列表)</p>
+<img src="/2025/11/a648a944/image-20251109233221741.png" alt="ASF Vertex 批量下载列表" style="zoom:50%;">
+<p>即可下载相关数据</p>
+<h3 id="4-合并数据">4. 合并数据</h3>
+<p>将下载好的数据导入到ArcMap(或ArcGis Pro)中，下图为ArcGis Pro的示例(ArcMap操作相同仅界面不同)</p>
+<p>在地理处理中搜索”镶嵌至新栅格“</p>
+<img src="/2025/11/a648a944/PixPin_2025-11-09_23-42-31.png" alt="ArcGIS Pro 镶嵌至新栅格参数设置" style="zoom: 50%;">
+<p>这样就可以把多个栅格文件合并成一个栅格文件。</p>
+]]></content>
+      <categories>
+        <category>地理空间技术</category>
+        <category>遥感数据</category>
+      </categories>
+      <tags>
+        <tag>DEM</tag>
+        <tag>ALOS PALSAR</tag>
       </tags>
   </entry>
   <entry>
