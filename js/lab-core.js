@@ -146,6 +146,180 @@
         return stencil;
     }
 
+    function transferComparison2D(options = {}) {
+        assert(options && typeof options === 'object' && !Array.isArray(options), 'Transfer comparison options must be an object.');
+        const { preset = 'rotation', rounds = 1, inset = 0.25, affineInitialization = 'exact' } = options;
+        assert(preset === 'translation' || preset === 'shear' || preset === 'rotation',
+            'Preset must be translation, shear or rotation.');
+        assert(Number.isInteger(rounds) && rounds >= 1 && rounds <= 20, 'Rounds must be an integer in [1, 20].');
+        assert(Number.isFinite(inset) && inset >= 0.1 && inset <= 0.4, 'Inset must be finite and in [0.1, 0.4].');
+        assert(affineInitialization === 'exact' || affineInitialization === 'zero',
+            'Affine initialization must be exact or zero.');
+
+        // Fixed SI geometry: four 1 kg particles, four corner nodes, complete
+        // bilinear support. A round is P2G/G2P, not a physical time step.
+        const particlePositions = [[inset, inset], [1 - inset, inset],
+            [inset, 1 - inset], [1 - inset, 1 - inset]];
+        const nodePositions = [[0, 0], [1, 0], [0, 1], [1, 1]];
+        const matrix = preset === 'rotation' ? [0, -1, 1, 0] :
+            preset === 'shear' ? [0, 1, 0, 0] : [0, 0, 0, 0];
+        const referenceVelocity = ([x, y]) => preset === 'translation' ? [1, -0.5] :
+            [matrix[0] * (x - 0.5) + matrix[1] * (y - 0.5),
+                matrix[2] * (x - 0.5) + matrix[3] * (y - 0.5)];
+        const reference = {
+            particles: particlePositions.map(referenceVelocity),
+            nodes: nodePositions.map(referenceVelocity)
+        };
+
+        // Cache weights, offsets, masses and each particle's actual second
+        // moment and inverse. The quadratic-kernel shortcut 4 I / h² is not
+        // the inverse moment for these bilinear weights.
+        const nodeMasses = [0, 0, 0, 0];
+        const geometry = particlePositions.map(([x, y]) => {
+            const D = [0, 0, 0, 0];
+            const stencil = nodePositions.map(([nx, ny], index) => {
+                const weight = (nx === 0 ? 1 - x : x) * (ny === 0 ? 1 - y : y);
+                const dx = nx - x;
+                const dy = ny - y;
+                nodeMasses[index] += weight;
+                D[0] += weight * dx * dx;
+                D[1] += weight * dx * dy;
+                D[2] += weight * dy * dx;
+                D[3] += weight * dy * dy;
+                return { weight, dx, dy };
+            });
+            const determinant = D[0] * D[3] - D[1] * D[2];
+            const inverseD = [D[3] / determinant, -D[1] / determinant,
+                -D[2] / determinant, D[0] / determinant];
+            return { stencil, D, inverseD };
+        });
+
+        function snapshot(velocities, matrices, affine) {
+            let orbital = 0;
+            let affineAngular = 0;
+            const momentum = [0, 0];
+            for (let p = 0; p < 4; p += 1) {
+                const [vx, vy] = velocities[p];
+                orbital += (particlePositions[p][0] - 0.5) * vy - (particlePositions[p][1] - 0.5) * vx;
+                momentum[0] += vx;
+                momentum[1] += vy;
+                if (affine) {
+                    const C = matrices[p];
+                    const D = geometry[p].D;
+                    // B = C D; intrinsic angular momentum is m (B21 - B12).
+                    affineAngular += C[2] * D[0] + C[3] * D[2] - C[0] * D[1] - C[1] * D[3];
+                }
+            }
+            // No working arrays escape: later rounds cannot change snapshots.
+            return {
+                velocities: velocities.map(velocity => velocity.slice()),
+                matrices: matrices.map(C => C.slice()),
+                angular: { orbital, affine: affineAngular, total: orbital + affineAngular },
+                momentum
+            };
+        }
+
+        const referenceParticleNorm = Math.hypot(...reference.particles.flat());
+        const referenceGridNorm = Math.hypot(...reference.nodes.flat());
+        function relativeError(velocities, exact, norm) {
+            let squaredError = 0;
+            for (let p = 0; p < velocities.length; p += 1) {
+                squaredError += (velocities[p][0] - exact[p][0]) ** 2 + (velocities[p][1] - exact[p][1]) ** 2;
+            }
+            return Math.sqrt(squaredError) / norm;
+        }
+
+        const methods = ['pic', 'flip', 'apic'].map(method => {
+            const affine = method === 'apic';
+            const velocities = reference.particles.map(velocity => velocity.slice());
+            const matrices = particlePositions.map(() =>
+                affine && affineInitialization === 'exact' ? matrix.slice() : [0, 0, 0, 0]);
+            const initial = snapshot(velocities, matrices, affine);
+            let before;
+            const nodes = nodePositions.map((position, index) => ({
+                position: position.slice(), mass: nodeMasses[index], velocity: [0, 0]
+            }));
+            for (let round = 0; round < rounds; round += 1) {
+                if (round === rounds - 1) before = snapshot(velocities, matrices, affine);
+                for (let n = 0; n < 4; n += 1) {
+                    let px = 0;
+                    let py = 0;
+                    for (let p = 0; p < 4; p += 1) {
+                        const { weight, dx, dy } = geometry[p].stencil[n];
+                        const C = matrices[p];
+                        px += weight * (velocities[p][0] + (affine ? C[0] * dx + C[1] * dy : 0));
+                        py += weight * (velocities[p][1] + (affine ? C[2] * dx + C[3] * dy : 0));
+                    }
+                    nodes[n].velocity[0] = px / nodes[n].mass;
+                    nodes[n].velocity[1] = py / nodes[n].mass;
+                }
+
+                // There are no forces or constraints: the grid before and
+                // after the (absent) dynamics update is identical. FLIP adds
+                // sum N (v_grid,new - v_grid,old) = 0, not a PIC overwrite.
+                const gridBefore = nodes;
+                for (let p = 0; p < 4; p += 1) {
+                    let vx = method === 'flip' ? velocities[p][0] : 0;
+                    let vy = method === 'flip' ? velocities[p][1] : 0;
+                    let bxx = 0;
+                    let bxy = 0;
+                    let byx = 0;
+                    let byy = 0;
+                    for (let n = 0; n < 4; n += 1) {
+                        const { weight, dx, dy } = geometry[p].stencil[n];
+                        const velocity = nodes[n].velocity;
+                        vx += weight * (velocity[0] - (method === 'flip' ? gridBefore[n].velocity[0] : 0));
+                        vy += weight * (velocity[1] - (method === 'flip' ? gridBefore[n].velocity[1] : 0));
+                        if (affine) {
+                            bxx += weight * velocity[0] * dx;
+                            bxy += weight * velocity[0] * dy;
+                            byx += weight * velocity[1] * dx;
+                            byy += weight * velocity[1] * dy;
+                        }
+                    }
+                    velocities[p][0] = vx;
+                    velocities[p][1] = vy;
+                    if (affine) {
+                        const inverseD = geometry[p].inverseD;
+                        const C = matrices[p];
+                        C[0] = bxx * inverseD[0] + bxy * inverseD[2];
+                        C[1] = bxx * inverseD[1] + bxy * inverseD[3];
+                        C[2] = byx * inverseD[0] + byy * inverseD[2];
+                        C[3] = byx * inverseD[1] + byy * inverseD[3];
+                    }
+                }
+            }
+            let gridAngular = 0;
+            const gridMomentum = [0, 0];
+            for (const node of nodes) {
+                const px = node.mass * node.velocity[0];
+                const py = node.mass * node.velocity[1];
+                gridAngular += (node.position[0] - 0.5) * py - (node.position[1] - 0.5) * px;
+                gridMomentum[0] += px;
+                gridMomentum[1] += py;
+            }
+            let squaredMatrixError = 0;
+            if (affine) {
+                for (const C of matrices) {
+                    for (let entry = 0; entry < 4; entry += 1) {
+                        squaredMatrixError += (C[entry] - matrix[entry]) ** 2;
+                    }
+                }
+            }
+            return {
+                method, initial, before, after: snapshot(velocities, matrices, affine), nodes,
+                gridError: relativeError(nodes.map(node => node.velocity), reference.nodes, referenceGridNorm),
+                particleError: relativeError(velocities, reference.particles, referenceParticleNorm),
+                matrixError: affine ? Math.sqrt(squaredMatrixError) : null,
+                gridAngular, gridMomentum
+            };
+        });
+        return {
+            parameters: { preset, rounds, inset, affineInitialization },
+            matrix, D: geometry[0].D.slice(), particlePositions, nodePositions, reference, methods
+        };
+    }
+
     function kinematics2D(options = {}) {
         assert(options && typeof options === 'object' && !Array.isArray(options), 'Kinematics options must be an object.');
         const {
@@ -754,6 +928,7 @@
         shapeStencil1D,
         particleToGrid2D,
         kinematics2D,
+        transferComparison2D,
         elasticBar,
         transferStep,
         vanGenuchten,

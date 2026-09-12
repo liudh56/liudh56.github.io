@@ -1568,6 +1568,234 @@
     elasticBar.snapshot.addEventListener('input', updateElasticBarSnapshot);
     byId('elastic-bar-particle-details').addEventListener('toggle', updateElasticBarParticleTable);
 
+    const apic = {
+        panel: byId('apic-lab'),
+        preset: byId('apic-preset'),
+        affineInitialization: byId('apic-affine-init'),
+        stage: byId('apic-stage'),
+        rounds: byId('apic-rounds'),
+        inset: byId('apic-inset'),
+        step: byId('apic-step'),
+        canvases: ['pic', 'flip', 'apic'].map(method => byId(`apic-${method}-canvas`)),
+        tableIds: ['metrics', 'angular', 'momentum', 'matrix', 'particle', 'grid'].map(name => `apic-${name}-body`),
+        key: null,
+        result: null
+    };
+
+    function formatAPICNumber(value) {
+        if (value === 0) return '0';
+        return Math.abs(value) < 1e-4 || Math.abs(value) >= 1e5 ? value.toExponential(3) : String(Number(value.toFixed(6)));
+    }
+
+    function formatAPICPosition(position) {
+        return `(${position[0].toFixed(2)}, ${position[1].toFixed(2)}) m`;
+    }
+
+    function syncAPICControls() {
+        byId('apic-rounds-output').textContent = `${apic.rounds.value} 轮`;
+        byId('apic-inset-output').textContent = `${Number(apic.inset.value).toFixed(2)} m`;
+        apic.step.disabled = Number(apic.rounds.value) >= 20;
+    }
+
+    function updateAPICTables() {
+        const { methods, particlePositions, reference } = apic.result;
+        fillMPM2DTable('apic-metrics-body', methods.map(result => [
+            result.method.toUpperCase(),
+            `${formatAPICNumber(result.gridError * 100)}%`,
+            `${formatAPICNumber(result.particleError * 100)}%`,
+            result.matrixError === null ? '—' : formatAPICNumber(result.matrixError)
+        ]));
+        fillMPM2DTable('apic-angular-body', methods.map(result => [
+            result.method.toUpperCase(),
+            result.initial.angular.total,
+            result.before.angular.total,
+            result.gridAngular,
+            result.after.angular.total,
+            result.after.angular.orbital,
+            result.after.angular.affine
+        ].map((value, index) => index === 0 ? value : formatAPICNumber(value))));
+        fillMPM2DTable('apic-momentum-body', methods.map(result => [
+            result.method.toUpperCase(),
+            ...result.before.momentum,
+            ...result.gridMomentum,
+            ...result.after.momentum
+        ].map((value, index) => index === 0 ? value : formatAPICNumber(value))));
+        const affine = methods.find(result => result.method === 'apic');
+        fillMPM2DTable('apic-matrix-body', affine.after.matrices.map((matrix, index) => [
+            `P${index + 1}`, ...matrix.map(formatAPICNumber)
+        ]));
+        fillMPM2DTable('apic-particle-body', methods.flatMap(result => particlePositions.map((position, index) => [
+            result.method.toUpperCase(),
+            `P${index + 1} · ${formatAPICPosition(position)}`,
+            ...result.before.velocities[index].map(formatAPICNumber),
+            ...result.after.velocities[index].map(formatAPICNumber)
+        ])));
+        fillMPM2DTable('apic-grid-body', methods.flatMap(result => result.nodes.map((node, index) => [
+            result.method.toUpperCase(),
+            `N${index + 1} · ${formatAPICPosition(node.position)}`,
+            formatAPICNumber(node.mass),
+            ...node.velocity.map(formatAPICNumber),
+            ...reference.nodes[index].map(formatAPICNumber)
+        ])));
+    }
+
+    function updateAPICObservation() {
+        const { parameters, methods } = apic.result;
+        const [pic, flip, affine] = methods;
+        const percent = value => `${formatAPICNumber(value * 100)}%`;
+        const initialization = parameters.affineInitialization === 'exact'
+            ? 'APIC 仅在起点设 C = A，随后从网格重建；当前仿射场可保持。'
+            : parameters.preset === 'translation'
+                ? '平移场 A = 0，零 C 也是精确初始化。'
+                : '初始 C = 0：APIC 第一轮与 PIC 相同，后续重建不能补回已损失的幅值。';
+        const picNote = parameters.preset === 'translation'
+            ? '均匀平移可由 PIC 再现。'
+            : '本剪切／旋转场会被 PIC 反复平均而衰减。';
+        byId('apic-observation').textContent = [
+            `第 ${parameters.rounds} 轮 · ${apic.stage.value === 'grid' ? 'P2G 后网格速度' : 'G2P 后粒子速度'}。${picNote}`,
+            `网格／粒子误差：PIC ${percent(pic.gridError)}／${percent(pic.particleError)}；FLIP ${percent(flip.gridError)}／${percent(flip.particleError)}；APIC ${percent(affine.gridError)}／${percent(affine.particleError)}。`,
+            'FLIP 的零粒子误差来自零网格增量，不等于网格准确。',
+            initialization
+        ].join(' ');
+    }
+
+    function drawAPICVector(context, x, y, velocity, scale, color, reference) {
+        const dx = velocity[0] * scale;
+        const dy = -velocity[1] * scale;
+        const length = Math.hypot(dx, dy);
+        if (length < 1) return;
+        const endX = x + dx;
+        const endY = y + dy;
+        const angle = Math.atan2(dy, dx);
+        const head = Math.min(7, length * 0.35);
+        const strokeWidth = reference ? 3.5 : 1.8;
+        context.setLineDash(reference ? [5, 4] : []);
+        line(context, x, y, endX, endY, color, strokeWidth);
+        context.setLineDash([]);
+        line(context, endX, endY, endX - head * Math.cos(angle - Math.PI / 6), endY - head * Math.sin(angle - Math.PI / 6), color, strokeWidth);
+        line(context, endX, endY, endX - head * Math.cos(angle + Math.PI / 6), endY - head * Math.sin(angle + Math.PI / 6), color, strokeWidth);
+    }
+
+    function drawAPICComparison() {
+        const { methods, particlePositions, nodePositions, reference, parameters } = apic.result;
+        const scenes = apic.canvases.map(setupCanvas);
+        const palette = colors();
+        // One physical frame and velocity scale, independent of method, phase and round.
+        const span = Math.max(1, Math.min(...scenes.map(scene => Math.min(scene.width - 64, scene.height - 72))) / 1.8);
+        let referencePeak = 0;
+        for (const velocity of reference.nodes) {
+            referencePeak = Math.max(referencePeak, Math.abs(velocity[0]), Math.abs(velocity[1]));
+        }
+        const vectorLength = 0.36 / referencePeak;
+        const velocityScale = span * vectorLength;
+        byId('apic-vector-scale').textContent = formatAPICNumber(vectorLength);
+        const gridStage = apic.stage.value === 'grid';
+        const positions = gridStage ? nodePositions : particlePositions;
+        const analytical = gridStage ? reference.nodes : reference.particles;
+        scenes.forEach(({ context, width, height }, methodIndex) => {
+            const result = methods[methodIndex];
+            const xFor = x => width / 2 + (x - 0.5) * span;
+            const yFor = y => height / 2 - (y - 0.5) * span;
+            context.strokeStyle = palette.muted;
+            context.lineWidth = 1;
+            context.strokeRect(xFor(0), yFor(1), span, span);
+            context.setLineDash([2, 4]);
+            line(context, xFor(0.5), yFor(0), xFor(0.5), yFor(1), palette.border);
+            line(context, xFor(0), yFor(0.5), xFor(1), yFor(0.5), palette.border);
+            context.setLineDash([]);
+            context.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+            context.fillStyle = palette.text;
+            context.textAlign = 'center';
+            context.fillText(`${result.method.toUpperCase()} · 第 ${parameters.rounds} 轮 · ${gridStage ? '节点' : '返回粒子'}`, width / 2, 18);
+            context.fillText('x / m →', width / 2, height - 10);
+            context.fillText('0', xFor(0), yFor(0) + 17);
+            context.fillText('1', xFor(1), yFor(0) + 17);
+            context.textAlign = 'left';
+            context.fillText('y / m ↑', 8, 36);
+            context.fillText('0', xFor(0) - 17, yFor(0) + 4);
+            context.fillText('1', xFor(0) - 17, yFor(1) + 4);
+            nodePositions.forEach(position => {
+                context.fillStyle = gridStage ? palette.text : palette.muted;
+                context.fillRect(xFor(position[0]) - 3, yFor(position[1]) - 3, 6, 6);
+            });
+            particlePositions.forEach(position => {
+                context.beginPath();
+                context.arc(xFor(position[0]), yFor(position[1]), 3.5, 0, Math.PI * 2);
+                context.fillStyle = gridStage ? palette.muted : palette.text;
+                context.fill();
+            });
+            positions.forEach((position, index) => {
+                drawAPICVector(context, xFor(position[0]), yFor(position[1]), analytical[index], velocityScale, palette.orange, true);
+            });
+            positions.forEach((position, index) => {
+                const velocity = gridStage ? result.nodes[index].velocity : result.after.velocities[index];
+                drawAPICVector(context, xFor(position[0]), yFor(position[1]), velocity, velocityScale, palette.blue, false);
+            });
+        });
+    }
+
+    function clearAPICResult(error) {
+        apic.result = null;
+        apic.tableIds.forEach(id => byId(id).replaceChildren());
+        apic.canvases.forEach(canvas => {
+            const context = canvas.getContext('2d');
+            context.save();
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.restore();
+        });
+        const output = byId('apic-error');
+        output.hidden = false;
+        output.textContent = `纯传输计算失败：${error instanceof Error ? error.message : String(error)} 请修改参数后重试。`;
+        byId('apic-observation').textContent = '当前参数没有可用结果；旧图表与数值已清除。';
+    }
+
+    function renderAPIC() {
+        if (apic.panel.hidden) return;
+        syncAPICControls();
+        const options = {
+            preset: apic.preset.value,
+            rounds: apic.rounds.valueAsNumber,
+            inset: apic.inset.valueAsNumber,
+            affineInitialization: apic.affineInitialization.value
+        };
+        const key = JSON.stringify(options);
+        if (key !== apic.key) {
+            apic.key = key;
+            try {
+                apic.result = core.transferComparison2D(options);
+                byId('apic-error').hidden = true;
+                byId('apic-error').textContent = '';
+                updateAPICTables();
+            } catch (error) {
+                clearAPICResult(error);
+            }
+        }
+        if (!apic.result) return;
+        updateAPICObservation();
+        drawAPICComparison();
+    }
+
+    byId('apic-controls').addEventListener('submit', event => event.preventDefault());
+    [apic.preset, apic.affineInitialization, apic.rounds, apic.inset].forEach(input => {
+        ['input', 'change'].forEach(name => input.addEventListener(name, () => {
+            syncAPICControls();
+            renderAPIC();
+        }));
+    });
+    apic.stage.addEventListener('change', renderAPIC);
+    apic.step.addEventListener('click', () => {
+        apic.rounds.value = Math.min(20, apic.rounds.valueAsNumber + 1);
+        syncAPICControls();
+        renderAPIC();
+    });
+    byId('apic-reset').addEventListener('click', () => {
+        apic.rounds.value = 1;
+        syncAPICControls();
+        renderAPIC();
+    });
+    syncAPICControls();
+
     function renderVisible() {
         renderP2G();
         renderMPM2D();
@@ -1575,6 +1803,7 @@
         renderTerrain();
         renderKinematics();
         renderElasticBar();
+        renderAPIC();
     }
 
     const initialPanel = panels.some(panel => `#${panel.id}` === location.hash) ? location.hash.slice(1) : 'mpm-lab';
