@@ -71,6 +71,7 @@
         if (id !== 'mpm-lab') stopP2G();
         if (id !== 'mpm2d-lab') stopMPMScan();
         if (id !== 'kinematics-lab') stopKinematics();
+        if (id !== 'consolidation-lab') stopConsolidation();
         tabs.forEach(tab => {
             const active = tab.dataset.labTab === id;
             tab.setAttribute('aria-selected', String(active));
@@ -1796,6 +1797,416 @@
     });
     syncAPICControls();
 
+    /* ---------- EXPERIMENT 08: 一维固结 ---------- */
+    const consolidation = {
+        panel: byId('consolidation-lab'),
+        slider: byId('consolidation-tv'),
+        output: byId('consolidation-tv-output'),
+        cells: byId('consolidation-soil-cells'),
+        column: byId('consolidation-soil-column'),
+        path: byId('consolidation-profile-path'),
+        area: byId('consolidation-profile-area'),
+        dot: byId('consolidation-probe-dot'),
+        grid: byId('consolidation-chart-grid'),
+        axes: byId('consolidation-chart-axes'),
+        bottomDrain: byId('consolidation-bottom-drain'),
+        sealedBase: byId('consolidation-sealed-base'),
+        bottomFlow: byId('consolidation-bottom-flow'),
+        midline: byId('consolidation-midline'),
+        columnNote: byId('consolidation-column-note'),
+        drainageNote: byId('consolidation-drainage-note'),
+        uAvg: byId('consolidation-u'),
+        split: byId('consolidation-split'),
+        porePart: byId('consolidation-pore-part'),
+        effectivePart: byId('consolidation-effective-part'),
+        time: byId('consolidation-time'),
+        play: byId('consolidation-play'),
+        captionNote: byId('consolidation-caption-note'),
+        drainage: 'double',
+        timer: null,
+        cellCount: 28
+    };
+    const CONSOLIDATION_NS = 'http://www.w3.org/2000/svg';
+    const CONSOLIDATION_PLOT = { left: 78, right: 524, top: 34, bottom: 372 };
+
+    function consolidationSvg(tag, attrs, text) {
+        const el = document.createElementNS(CONSOLIDATION_NS, tag);
+        Object.keys(attrs).forEach(key => el.setAttribute(key, attrs[key]));
+        if (text !== undefined) el.textContent = text;
+        return el;
+    }
+
+    function consolidationBuildChart() {
+        [0, .25, .5, .75, 1].forEach(v => {
+            const x = CONSOLIDATION_PLOT.left + v * (CONSOLIDATION_PLOT.right - CONSOLIDATION_PLOT.left);
+            consolidation.grid.appendChild(consolidationSvg('line', { x1: x, y1: CONSOLIDATION_PLOT.top, x2: x, y2: CONSOLIDATION_PLOT.bottom, class: 'lab-consolidation-grid-line' }));
+            consolidation.axes.appendChild(consolidationSvg('text', { x: x, y: CONSOLIDATION_PLOT.bottom + 24, 'text-anchor': 'middle', class: 'lab-consolidation-tick-text' }, v.toFixed(2)));
+        });
+        [0, .25, .5, .75, 1].forEach(v => {
+            const y = CONSOLIDATION_PLOT.top + v * (CONSOLIDATION_PLOT.bottom - CONSOLIDATION_PLOT.top);
+            consolidation.grid.appendChild(consolidationSvg('line', { x1: CONSOLIDATION_PLOT.left, y1: y, x2: CONSOLIDATION_PLOT.right, y2: y, class: 'lab-consolidation-grid-line' }));
+            consolidation.axes.appendChild(consolidationSvg('text', { x: CONSOLIDATION_PLOT.left - 13, y: y + 4, 'text-anchor': 'end', class: 'lab-consolidation-tick-text' }, v.toFixed(2)));
+        });
+        consolidation.axes.appendChild(consolidationSvg('line', { x1: CONSOLIDATION_PLOT.left, y1: CONSOLIDATION_PLOT.top, x2: CONSOLIDATION_PLOT.left, y2: CONSOLIDATION_PLOT.bottom, class: 'lab-consolidation-axis-line' }));
+        consolidation.axes.appendChild(consolidationSvg('line', { x1: CONSOLIDATION_PLOT.left, y1: CONSOLIDATION_PLOT.bottom, x2: CONSOLIDATION_PLOT.right, y2: CONSOLIDATION_PLOT.bottom, class: 'lab-consolidation-axis-line' }));
+        consolidation.axes.appendChild(consolidationSvg('text', { x: (CONSOLIDATION_PLOT.left + CONSOLIDATION_PLOT.right) / 2, y: 418, 'text-anchor': 'middle', class: 'lab-consolidation-axis-title' }, '剩余超孔压比  u / Δu₀'));
+        const midY = (CONSOLIDATION_PLOT.top + CONSOLIDATION_PLOT.bottom) / 2;
+        consolidation.axes.appendChild(consolidationSvg('text', { x: 18, y: midY, 'text-anchor': 'middle', class: 'lab-consolidation-axis-title', transform: `rotate(-90 18 ${midY})` }, '归一化深度  z / H'));
+    }
+
+    function consolidationHalfProfile(eta, tv) {
+        if (tv <= 0) return eta <= 0 ? 0 : 1;
+        let sum = 0;
+        for (let m = 0; m < 80; m++) {
+            const n = 2 * m + 1;
+            sum += 4 / (Math.PI * n) * Math.sin(n * Math.PI * eta / 2) * Math.exp(-(n * n * Math.PI * Math.PI * tv) / 4);
+        }
+        return Math.max(0, Math.min(1, sum));
+    }
+
+    function consolidationPressureAt(y, tv) {
+        const eta = consolidation.drainage === 'double' ? (y <= .5 ? y * 2 : (1 - y) * 2) : y;
+        return consolidationHalfProfile(eta, tv);
+    }
+
+    function consolidationAverageU(tv) {
+        if (tv <= 0) return 0;
+        let remaining = 0;
+        for (let m = 0; m < 80; m++) {
+            const n = 2 * m + 1;
+            remaining += 8 / (Math.PI * Math.PI * n * n) * Math.exp(-(n * n * Math.PI * Math.PI * tv) / 4);
+        }
+        return Math.max(0, Math.min(1, 1 - remaining));
+    }
+
+    function consolidationFormatTime(seconds) {
+        const days = seconds / 86400;
+        if (days < 2) return `${days.toFixed(1)} 天`;
+        if (days < 365.25 * 2) return `${Math.round(days)} 天`;
+        return `${(days / 365.25).toFixed(2)} 年`;
+    }
+
+    function consolidationColorFor(ratio) {
+        const hue = 27 + ratio * 160;
+        const sat = 49 + ratio * 17;
+        const light = 47 - ratio * 8;
+        return `hsl(${hue.toFixed(0)} ${sat.toFixed(0)}% ${light.toFixed(0)}%)`;
+    }
+
+    function renderConsolidation() {
+        if (consolidation.panel.hidden) return;
+        const tv = parseFloat(consolidation.slider.value);
+        consolidation.output.textContent = tv.toFixed(3);
+        const plot = CONSOLIDATION_PLOT;
+        const points = [];
+        for (let i = 0; i <= 100; i++) {
+            const yNorm = i / 100;
+            const ratio = consolidationPressureAt(yNorm, tv);
+            points.push([plot.left + ratio * (plot.right - plot.left), plot.top + yNorm * (plot.bottom - plot.top)]);
+        }
+        const d = points.map((p, idx) => `${idx === 0 ? 'M' : 'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ');
+        consolidation.path.setAttribute('d', d);
+        consolidation.area.setAttribute('d', `${d} L${plot.left},${plot.bottom} L${plot.left},${plot.top} Z`);
+        const midRatio = consolidationPressureAt(.5, tv);
+        consolidation.dot.setAttribute('cx', plot.left + midRatio * (plot.right - plot.left));
+        consolidation.dot.setAttribute('cy', plot.top + .5 * (plot.bottom - plot.top));
+
+        Array.prototype.forEach.call(consolidation.cells.children, (cell, idx) => {
+            const y = (idx + .5) / consolidation.cellCount;
+            const ratio = consolidationPressureAt(y, tv);
+            cell.style.backgroundColor = consolidationColorFor(ratio);
+            cell.setAttribute('title', `z/H=${y.toFixed(2)}，u/Δu₀=${ratio.toFixed(3)}`);
+        });
+
+        const U = consolidationAverageU(tv);
+        const uPct = U * 100;
+        const porePct = 100 - uPct;
+        consolidation.uAvg.textContent = `${uPct.toFixed(1)}%`;
+        consolidation.split.textContent = `${Math.round(porePct)} / ${Math.round(uPct)}`;
+        consolidation.porePart.style.width = `${porePct}%`;
+        consolidation.effectivePart.style.width = `${uPct}%`;
+        const hdr = consolidation.drainage === 'double' ? 5 : 10;
+        consolidation.time.textContent = tv === 0 ? '0 天' : consolidationFormatTime(tv * hdr * hdr / 1e-7);
+        consolidation.column.setAttribute('aria-label', `${consolidation.drainage === 'double' ? '双面排水' : '单面排水'}土柱，平均固结度${uPct.toFixed(1)}%`);
+    }
+
+    function consolidationSetDrainage(mode) {
+        consolidation.drainage = mode;
+        Array.prototype.forEach.call(consolidation.panel.querySelectorAll('[data-consolidation-drainage]'), button => {
+            button.setAttribute('aria-pressed', String(button.getAttribute('data-consolidation-drainage') === mode));
+        });
+        const isDouble = mode === 'double';
+        consolidation.bottomDrain.style.display = isDouble ? 'block' : 'none';
+        consolidation.sealedBase.style.display = isDouble ? 'none' : 'block';
+        consolidation.bottomFlow.style.display = isDouble ? 'block' : 'none';
+        consolidation.midline.style.display = isDouble ? 'block' : 'none';
+        const note = isDouble ? '双面排水：最远排水距离 H<sub>dr</sub> = H/2' : '单面排水：最远排水距离 H<sub>dr</sub> = H';
+        consolidation.columnNote.innerHTML = note;
+        consolidation.drainageNote.innerHTML = note;
+        consolidation.captionNote.textContent = isDouble ? '上下边界处 u = 0（双面排水）' : '顶边界 u = 0，底边界 ∂u/∂z = 0';
+        renderConsolidation();
+    }
+
+    function stopConsolidation() {
+        if (consolidation.timer) {
+            clearInterval(consolidation.timer);
+            consolidation.timer = null;
+            consolidation.play.textContent = '▶ 播放';
+            consolidation.play.setAttribute('aria-pressed', 'false');
+        }
+    }
+
+    function consolidationTogglePlay() {
+        if (consolidation.timer) {
+            stopConsolidation();
+            return;
+        }
+        if (parseFloat(consolidation.slider.value) >= 1.5) consolidation.slider.value = 0;
+        consolidation.play.textContent = 'Ⅱ 暂停';
+        consolidation.play.setAttribute('aria-pressed', 'true');
+        consolidation.timer = setInterval(() => {
+            const next = parseFloat(consolidation.slider.value) + .01;
+            if (next >= 1.5) {
+                consolidation.slider.value = 1.5;
+                renderConsolidation();
+                stopConsolidation();
+                consolidation.play.textContent = '↺ 重播';
+            } else {
+                consolidation.slider.value = next.toFixed(3);
+                renderConsolidation();
+            }
+        }, 45);
+    }
+
+    for (let c = 0; c < consolidation.cellCount; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'lab-consolidation-soil-cell';
+        consolidation.cells.appendChild(cell);
+    }
+    consolidationBuildChart();
+    byId('consolidation-controls').addEventListener('submit', event => event.preventDefault());
+    consolidation.slider.addEventListener('input', renderConsolidation);
+    Array.prototype.forEach.call(consolidation.panel.querySelectorAll('[data-consolidation-tv]'), button => {
+        button.addEventListener('click', () => {
+            consolidation.slider.value = button.getAttribute('data-consolidation-tv');
+            renderConsolidation();
+        });
+    });
+    Array.prototype.forEach.call(consolidation.panel.querySelectorAll('[data-consolidation-drainage]'), button => {
+        button.addEventListener('click', () => consolidationSetDrainage(button.getAttribute('data-consolidation-drainage')));
+    });
+    consolidation.play.addEventListener('click', consolidationTogglePlay);
+    consolidationSetDrainage('double');
+
+    /* ---------- EXPERIMENT 09: K0 初始应力场 ---------- */
+    const k0Layers = [
+        { name: '粉砂', top: 0, bottom: 2, dry: 18, sat: 20, color: 'var(--sand)' },
+        { name: '砂质粉土', top: 2, bottom: 6, dry: 19, sat: 21, color: 'var(--silt)' },
+        { name: '黏土', top: 6, bottom: 10, dry: 18.5, sat: 20.5, color: 'var(--clay)' }
+    ];
+    const k0 = {
+        panel: byId('k0-lab'),
+        water: byId('k0-water'),
+        coef: byId('k0-coef'),
+        gammaw: byId('k0-gammaw'),
+        probe: byId('k0-probe'),
+        waterOutput: byId('k0-water-output'),
+        coefOutput: byId('k0-coef-output'),
+        gammawOutput: byId('k0-gammaw-output'),
+        probeOutput: byId('k0-probe-output'),
+        depth: byId('k0-depth'),
+        sv: byId('k0-sv'),
+        u: byId('k0-u'),
+        svp: byId('k0-svp'),
+        shp: byId('k0-shp'),
+        insight: byId('k0-insight'),
+        column: byId('k0-column'),
+        plot: byId('k0-plot'),
+        css: null
+    };
+    const K0_NS = 'http://www.w3.org/2000/svg';
+
+    function k0State() {
+        return {
+            wt: parseFloat(k0.water.value),
+            k0: parseFloat(k0.coef.value),
+            gw: parseFloat(k0.gammaw.value),
+            z: parseFloat(k0.probe.value)
+        };
+    }
+
+    function k0LayerAt(z) {
+        for (let i = 0; i < k0Layers.length; i++) {
+            if (z <= k0Layers[i].bottom + 1e-9) return k0Layers[i];
+        }
+        return k0Layers[k0Layers.length - 1];
+    }
+
+    function k0Calc(z, s) {
+        let total = 0;
+        for (let i = 0; i < k0Layers.length; i++) {
+            const l = k0Layers[i];
+            const b = Math.min(z, l.bottom);
+            if (b <= l.top) continue;
+            const dryEnd = Math.min(b, Math.max(l.top, s.wt));
+            if (dryEnd > l.top) total += (dryEnd - l.top) * l.dry;
+            const satStart = Math.max(l.top, s.wt);
+            if (b > satStart) total += (b - satStart) * l.sat;
+        }
+        const u = Math.max(0, z - s.wt) * s.gw;
+        const vp = total - u;
+        return { sv: total, u, svp: vp, shp: s.k0 * vp };
+    }
+
+    function k0Color(name) {
+        return (k0.css || getComputedStyle(k0.panel)).getPropertyValue(name).trim();
+    }
+
+    function k0Svg(tag, attrs, text) {
+        const el = document.createElementNS(K0_NS, tag);
+        Object.keys(attrs).forEach(key => el.setAttribute(key, attrs[key]));
+        if (text !== undefined) el.textContent = text;
+        return el;
+    }
+
+    function k0Clear(svg) {
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+    }
+
+    function k0Line(svg, x1, y1, x2, y2, stroke, width, dash) {
+        const a = { x1, y1, x2, y2, stroke, 'stroke-width': width || 1 };
+        if (dash) a['stroke-dasharray'] = dash;
+        svg.appendChild(k0Svg('line', a));
+    }
+
+    function k0Text(svg, x, y, t, size, fill, anchor, weight) {
+        svg.appendChild(k0Svg('text', {
+            x, y, fill, 'font-size': size,
+            'font-family': 'ui-monospace, SFMono-Regular, Menlo, monospace',
+            'text-anchor': anchor || 'start', 'font-weight': weight || 400
+        }, t));
+    }
+
+    function k0DrawColumn(s) {
+        const svg = k0.column;
+        const w = svg.clientWidth || 260;
+        const h = svg.clientHeight || 480;
+        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        k0Clear(svg);
+        const top = 28, bottom = h - 28, left = 44, right = w - 24, dh = bottom - top;
+        k0Layers.forEach(l => {
+            const y = top + dh * l.top / 10;
+            const hh = dh * (l.bottom - l.top) / 10;
+            svg.appendChild(k0Svg('rect', { x: left, y, width: right - left, height: hh, fill: l.color, opacity: .9 }));
+            for (let yy = y + 9; yy < y + hh; yy += 11) k0Line(svg, left, yy, right, yy, k0Color('--ink'), .4, '2 5');
+            k0Text(svg, (left + right) / 2, y + hh / 2 - 2, l.name, 12, k0Color('--paper'), 'middle', 700);
+            k0Text(svg, (left + right) / 2, y + hh / 2 + 14, `${l.top}–${l.bottom} m`, 10, k0Color('--paper'), 'middle', 400);
+        });
+        const wy = top + dh * s.wt / 10;
+        if (s.wt < 10) {
+            svg.appendChild(k0Svg('rect', { x: left, y: wy, width: right - left, height: bottom - wy, fill: k0Color('--blue'), opacity: .18 }));
+            k0Line(svg, left - 6, wy, right + 6, wy, k0Color('--blue'), 2);
+            k0Text(svg, right - 2, Math.max(14, wy - 7), '地下水位', 10, k0Color('--blue'), 'end', 700);
+            for (let x = left + 8; x < right; x += 16) {
+                svg.appendChild(k0Svg('path', { d: `M${x},${wy + 8} q4,-3 8,0`, fill: 'none', stroke: k0Color('--blue'), 'stroke-width': 1, opacity: .7 }));
+            }
+        }
+        [0, 2, 4, 6, 8, 10].forEach(d => {
+            const y = top + dh * d / 10;
+            k0Line(svg, left - 5, y, left, y, k0Color('--ink'), 1);
+            k0Text(svg, left - 10, y + 4, `${d} m`, 10, k0Color('--muted'), 'end');
+        });
+        const py = top + dh * s.z / 10;
+        k0Line(svg, 16, py, right + 8, py, k0Color('--accent2'), 2, '5 4');
+        svg.appendChild(k0Svg('circle', { cx: right + 3, cy: py, r: 5, fill: k0Color('--accent2'), stroke: k0Color('--paper'), 'stroke-width': 2 }));
+        k0Text(svg, 18, Math.max(14, py - 7), `z = ${s.z.toFixed(1)} m`, 10, k0Color('--accent2'), 'start', 700);
+    }
+
+    function k0DrawPlot(s) {
+        const svg = k0.plot;
+        const w = svg.clientWidth || 500;
+        const h = svg.clientHeight || 480;
+        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        k0Clear(svg);
+        const L = 44, R = 18, T = 28, B = 38, pw = w - L - R, ph = h - T - B, max = 220;
+        const X = v => L + pw * v / max;
+        const Y = z => T + ph * z / 10;
+        svg.appendChild(k0Svg('rect', { x: L, y: T, width: pw, height: ph, fill: k0Color('--paper') }));
+        [0, 50, 100, 150, 200].forEach(v => {
+            const x = X(v);
+            k0Line(svg, x, T, x, T + ph, k0Color('--line'), 1, '3 4');
+            k0Text(svg, x, T + ph + 18, String(v), 10, k0Color('--muted'), 'middle');
+        });
+        [0, 2, 4, 6, 8, 10].forEach(d => {
+            const y = Y(d);
+            k0Line(svg, L, y, L + pw, y, k0Color('--line'), 1);
+            k0Text(svg, L - 8, y + 4, String(d), 10, k0Color('--muted'), 'end');
+        });
+        k0Text(svg, L + pw / 2, h - 5, '应力 / kPa', 10, k0Color('--muted'), 'middle');
+        k0Text(svg, 12, T + ph / 2, '深度', 10, k0Color('--muted'), 'middle');
+        const zs = [];
+        for (let z = 0; z <= 10.0001; z += .1) zs.push(+z.toFixed(1));
+        [2, 6, s.wt].forEach(z => { if (z >= 0 && z <= 10) zs.push(z); });
+        zs.sort((a, b) => a - b);
+        const pathFor = (key, color, width, dash) => {
+            let d = '';
+            for (let i = 0; i < zs.length; i++) d += `${i ? ' L' : 'M'}${X(k0Calc(zs[i], s)[key])},${Y(zs[i])}`;
+            const a = { d, fill: 'none', stroke: color, 'stroke-width': width, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
+            if (dash) a['stroke-dasharray'] = dash;
+            svg.appendChild(k0Svg('path', a));
+        };
+        pathFor('sv', k0Color('--ink'), 2.5);
+        pathFor('svp', k0Color('--accent2'), 2.5);
+        pathFor('u', k0Color('--blue'), 2.5);
+        pathFor('shp', k0Color('--accent'), 2.5, '7 4');
+        const c = k0Calc(s.z, s);
+        const py = Y(s.z);
+        k0Line(svg, L, py, L + pw, py, k0Color('--accent2'), 1.3, '4 4');
+        [['sv', k0Color('--ink')], ['svp', k0Color('--accent2')], ['u', k0Color('--blue')], ['shp', k0Color('--accent')]].forEach(it => {
+            svg.appendChild(k0Svg('circle', { cx: X(c[it[0]]), cy: py, r: 4, fill: it[1], stroke: k0Color('--paper'), 'stroke-width': 1.5 }));
+        });
+    }
+
+    function renderK0() {
+        if (k0.panel.hidden) return;
+        k0.css = getComputedStyle(k0.panel);
+        const s = k0State();
+        const c = k0Calc(s.z, s);
+        k0.waterOutput.textContent = `${s.wt.toFixed(1)} m`;
+        k0.coefOutput.textContent = s.k0.toFixed(2);
+        k0.gammawOutput.textContent = `${s.gw.toFixed(2)} kN/m³`;
+        k0.probeOutput.textContent = `${s.z.toFixed(1)} m`;
+        k0.depth.textContent = s.z.toFixed(1);
+        k0.sv.textContent = c.sv.toFixed(1);
+        k0.u.textContent = c.u.toFixed(1);
+        k0.svp.textContent = c.svp.toFixed(1);
+        k0.shp.textContent = c.shp.toFixed(1);
+        const l = k0LayerAt(s.z);
+        let txt;
+        if (s.z < s.wt - .05) txt = `探针位于水位以上的${l.name}层，孔压取零；此处总应力全部由土骨架承担。`;
+        else if (Math.abs(s.z - s.wt) <= .05) txt = '探针位于地下水位。此处表压 u = 0，继续向下后孔压按 γw 线性增长。';
+        else {
+            const share = c.sv ? c.u / c.sv * 100 : 0;
+            txt = `探针位于饱和${l.name}层。孔隙水承担总竖向应力的 ${share.toFixed(0)}%，土骨架承担其余部分。`;
+        }
+        k0.insight.textContent = txt;
+        k0DrawColumn(s);
+        k0DrawPlot(s);
+    }
+
+    [k0.water, k0.coef, k0.gammaw, k0.probe].forEach(input => {
+        input.addEventListener('input', renderK0);
+    });
+    byId('k0-controls').addEventListener('submit', event => event.preventDefault());
+    byId('k0-reset').addEventListener('click', () => {
+        k0.water.value = 2;
+        k0.coef.value = .55;
+        k0.gammaw.value = 9.81;
+        k0.probe.value = 5;
+        renderK0();
+    });
+    renderK0();
+
     function renderVisible() {
         renderP2G();
         renderMPM2D();
@@ -1804,6 +2215,8 @@
         renderKinematics();
         renderElasticBar();
         renderAPIC();
+        renderConsolidation();
+        renderK0();
     }
 
     const initialPanel = panels.some(panel => `#${panel.id}` === location.hash) ? location.hash.slice(1) : 'mpm-lab';
