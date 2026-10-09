@@ -150,6 +150,46 @@
       </tags>
   </entry>
   <entry>
+    <title>有限元非饱和土孔压迭代程序修改说明</title>
+    <url>/2024/04/863a85e0/</url>
+    <content><![CDATA[<h2 id="修改内容">修改内容</h2>
+<h3 id="1、输入参数改变">1、输入参数改变</h3>
+<p>t(nl) 每层层底沉积年代(37 行)<br>
+土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)<br>
+内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)<br>
+水位位置（坡顶为 0，y 方向为负值）(58 行)<br>
+非饱和抗剪强度公式中 κ(59 行)</p>
+<h3 id="2、输入所有节点孔压-53-行">2、输入所有节点孔压(53 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">READ(<span class="number">12</span>,*)inpore  <span class="comment">!所有节点孔压</span></span><br></pre></td></tr></table></figure>
+<h3 id="3、输出-prop-nprops-np-types-98-85-行">3、输出 prop(nprops,np_types)(98-85 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">nprops=<span class="number">10</span> <span class="comment">!分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CALL</span> g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;</span><br><span class="line">  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;</span><br><span class="line">  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;</span><br><span class="line">  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，求prop1：一列单元的参数(其中重度为干重度)</span><br><span class="line">其次，求prop：所有单元参数(其中重度为干重度)</span><br><span class="line">之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率</span><br><span class="line">最后，利用含水率计算天然重度</span><br></pre></td></tr></table></figure>
+<h3 id="4、输出-surf-2-nosurf-79-行">4、输出 surf(2,nosurf) (79 行)</h3>
+<p>根据水位计算水位线上各节点坐标</p>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">call</span> WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)</span><br></pre></td></tr></table></figure>
+<h3 id="5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行">5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)</h3>
+<h3 id="6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行">6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> water_loads</span><br></pre></td></tr></table></figure>
+<h3 id="7、对于孔压-inpore-的处理">7、对于孔压 inpore 的处理</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，单元循环内提取该单元所有节点的孔压(172行)</span><br><span class="line">其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)</span><br><span class="line">之后，高斯循环中计算高斯点吸应力pore (181行)</span><br><span class="line">最后，修正正应力(186-188行)</span><br></pre></td></tr></table></figure>
+<h3 id="8、若收敛，对应力进行恢复-193-195-行">8、若收敛，对应力进行恢复(193-195 行)</h3>
+<h3 id="9、奇偶分层下的变形图-224-行">9、奇偶分层下的变形图(224 行)</h3>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> dismsh</span><br></pre></td></tr></table></figure>
+<h2 id="输入说明">输入说明</h2>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">w1   s1   w2   h1   h2   nl <span class="comment">!分层数  用于划分黄土古土壤序列情况</span></span><br><span class="line"><span class="number">8</span>    <span class="number">4</span>     <span class="number">4</span>    <span class="number">14</span>   <span class="number">8</span>    <span class="number">4</span></span><br><span class="line">h(nl) <span class="comment">!每层层底距坡顶距离</span></span><br><span class="line"><span class="number">4</span>   <span class="number">12</span>   <span class="number">16</span>   <span class="number">22</span></span><br><span class="line">ny(nl) <span class="comment">!每层划分网格数</span></span><br><span class="line"><span class="number">2</span>    <span class="number">4</span>    <span class="number">2</span>   <span class="number">3</span></span><br><span class="line">t(nl) <span class="comment">!每层层底沉积年代</span></span><br><span class="line"><span class="number">8</span>   <span class="number">12</span>   <span class="number">18</span>   <span class="number">33</span></span><br><span class="line">nx1    nx2   ny1    ny2</span><br><span class="line"><span class="number">4</span>       <span class="number">2</span>     <span class="number">7</span>    <span class="number">4</span></span><br><span class="line"><span class="comment">!土水特征参数a、m、n随沉积年代模型参数</span></span><br><span class="line"><span class="number">0.044</span>     <span class="number">7.062</span>      -<span class="number">0.0000724</span>      <span class="number">0.3318</span>              -<span class="number">0.000161</span>      <span class="number">1.5092</span></span><br><span class="line"><span class="number">24.4397</span>   -<span class="number">113.0186</span>   <span class="number">0.000000176</span>   -<span class="number">0.0000591</span>   <span class="number">0.2077</span>   <span class="number">0.000000331</span>   -<span class="number">0.000128</span>   <span class="number">1.2664</span></span><br><span class="line"><span class="comment">!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">0.17</span>    <span class="number">0</span>      <span class="number">0.0</span>        <span class="number">1.25</span>   <span class="number">0.018</span>    <span class="number">0.4623</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.71</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">3.56</span>   <span class="number">500</span>     <span class="number">0.0</span>        <span class="number">1.39</span>   <span class="number">0.0035</span>   <span class="number">0.6489</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.72</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">100</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">1.4</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span>   <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">9</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">0.8</span>  <span class="number">0.9</span>  <span class="number">1.0</span>  <span class="number">1.1</span>  <span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
+<hr>
+<p>非本人原创内容</p>
+]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>有限元法（FEM）</category>
+      </categories>
+      <tags>
+        <tag>非饱和土</tag>
+        <tag>孔隙水压力</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>流体力学基本方程（一）：基本概念与质量守恒</title>
     <url>/2024/04/98e90823/</url>
     <content><![CDATA[<h2 id="学习视频">学习视频</h2>
@@ -3184,46 +3224,6 @@ M\left( \dfrac{\tau_b}{\tau_{e,p}} - 1 \right),
       </categories>
       <tags>
         <tag>反向代理</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>有限元非饱和土孔压迭代程序修改说明</title>
-    <url>/2024/04/863a85e0/</url>
-    <content><![CDATA[<h2 id="修改内容">修改内容</h2>
-<h3 id="1、输入参数改变">1、输入参数改变</h3>
-<p>t(nl) 每层层底沉积年代(37 行)<br>
-土水特征参数 a、m、n 随沉积年代模型参数(54、55 行)<br>
-内摩擦角 粘聚力 重度 随沉积年代模型非线性(56、57 行)<br>
-水位位置（坡顶为 0，y 方向为负值）(58 行)<br>
-非饱和抗剪强度公式中 κ(59 行)</p>
-<h3 id="2、输入所有节点孔压-53-行">2、输入所有节点孔压(53 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">READ(<span class="number">12</span>,*)inpore  <span class="comment">!所有节点孔压</span></span><br></pre></td></tr></table></figure>
-<h3 id="3、输出-prop-nprops-np-types-98-85-行">3、输出 prop(nprops,np_types)(98-85 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">nprops=<span class="number">10</span> <span class="comment">!分别为内摩擦角、粘聚力、剪胀角、干密度、弹模、泊松比、a、m、n、饱和体积含水率</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CALL</span> g_prop(a1,a2,a3,a4,b1,a5,a6,a7,b2,b3,b4,c1,c2,c3,c4,d1,c5,c6,c7,d2,d3,d5,la_rwt1,   &amp;</span><br><span class="line">  la_rwt2,lm_rwt1,lm_rwt2,ln_rwt1,ln_rwt2,theta_r,zero,gam_w,np_types,nprops,nl,ny,t,   &amp;</span><br><span class="line">  nx1,nx2,ny1,ny2,nye,nod,nels,g_num,num,nn,h,inpore,prop,prop1,theta_w,pa_rwt1,        &amp;</span><br><span class="line">  pa_rwt2,pm_rwt1,pm_rwt2,pm_rwt3,pn_rwt1,pn_rwt2,pn_rwt3)</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，求prop1：一列单元的参数(其中重度为干重度)</span><br><span class="line">其次，求prop：所有单元参数(其中重度为干重度)</span><br><span class="line">之后，判断孔压正负，计算天然体积含水率/使用饱和体积含水率</span><br><span class="line">最后，利用含水率计算天然重度</span><br></pre></td></tr></table></figure>
-<h3 id="4、输出-surf-2-nosurf-79-行">4、输出 surf(2,nosurf) (79 行)</h3>
-<p>根据水位计算水位线上各节点坐标</p>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">call</span> WTpoints(zero,nx1,nx2,nn,ny1,ny2,nod,nels,g_num,gam_w,inpore,g_coord,nosurf,surf,ndim)</span><br></pre></td></tr></table></figure>
-<h3 id="5、绘制网格划分时，将所有网格设置为具有不同参数-81-85-行">5、绘制网格划分时，将所有网格设置为具有不同参数(81-85 行)</h3>
-<h3 id="6、坡外水位所导致的重度荷载的变化，输出-gravlo-0-neq-119-行">6、坡外水位所导致的重度荷载的变化，输出 gravlo(0:neq) (119 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> water_loads</span><br></pre></td></tr></table></figure>
-<h3 id="7、对于孔压-inpore-的处理">7、对于孔压 inpore 的处理</h3>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">首先，单元循环内提取该单元所有节点的孔压(172行)</span><br><span class="line">其次，利用Vanapalli公式计算吸应力suc_sig (174-176行)</span><br><span class="line">之后，高斯循环中计算高斯点吸应力pore (181行)</span><br><span class="line">最后，修正正应力(186-188行)</span><br></pre></td></tr></table></figure>
-<h3 id="8、若收敛，对应力进行恢复-193-195-行">8、若收敛，对应力进行恢复(193-195 行)</h3>
-<h3 id="9、奇偶分层下的变形图-224-行">9、奇偶分层下的变形图(224 行)</h3>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CALL</span> dismsh</span><br></pre></td></tr></table></figure>
-<h2 id="输入说明">输入说明</h2>
-<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line">w1   s1   w2   h1   h2   nl <span class="comment">!分层数  用于划分黄土古土壤序列情况</span></span><br><span class="line"><span class="number">8</span>    <span class="number">4</span>     <span class="number">4</span>    <span class="number">14</span>   <span class="number">8</span>    <span class="number">4</span></span><br><span class="line">h(nl) <span class="comment">!每层层底距坡顶距离</span></span><br><span class="line"><span class="number">4</span>   <span class="number">12</span>   <span class="number">16</span>   <span class="number">22</span></span><br><span class="line">ny(nl) <span class="comment">!每层划分网格数</span></span><br><span class="line"><span class="number">2</span>    <span class="number">4</span>    <span class="number">2</span>   <span class="number">3</span></span><br><span class="line">t(nl) <span class="comment">!每层层底沉积年代</span></span><br><span class="line"><span class="number">8</span>   <span class="number">12</span>   <span class="number">18</span>   <span class="number">33</span></span><br><span class="line">nx1    nx2   ny1    ny2</span><br><span class="line"><span class="number">4</span>       <span class="number">2</span>     <span class="number">7</span>    <span class="number">4</span></span><br><span class="line"><span class="comment">!土水特征参数a、m、n随沉积年代模型参数</span></span><br><span class="line"><span class="number">0.044</span>     <span class="number">7.062</span>      -<span class="number">0.0000724</span>      <span class="number">0.3318</span>              -<span class="number">0.000161</span>      <span class="number">1.5092</span></span><br><span class="line"><span class="number">24.4397</span>   -<span class="number">113.0186</span>   <span class="number">0.000000176</span>   -<span class="number">0.0000591</span>   <span class="number">0.2077</span>   <span class="number">0.000000331</span>   -<span class="number">0.000128</span>   <span class="number">1.2664</span></span><br><span class="line"><span class="comment">!内摩擦角     粘聚力        剪胀角     重度                    弹模 泊松比  比重</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">0.17</span>    <span class="number">0</span>      <span class="number">0.0</span>        <span class="number">1.25</span>   <span class="number">0.018</span>    <span class="number">0.4623</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.71</span></span><br><span class="line"><span class="number">0</span>  <span class="number">18.5</span>       <span class="number">3.56</span>   <span class="number">500</span>     <span class="number">0.0</span>        <span class="number">1.39</span>   <span class="number">0.0035</span>   <span class="number">0.6489</span>   <span class="number">1.0e5</span>   <span class="number">0.3</span>  <span class="number">2.72</span></span><br><span class="line"><span class="comment">!水位位置（坡顶为0，y方向为负值）</span></span><br><span class="line">-<span class="number">100</span></span><br><span class="line"><span class="comment">!非饱和抗剪强度公式中κ</span></span><br><span class="line"><span class="number">1.4</span></span><br><span class="line"><span class="comment">!收敛准则  计算次数</span></span><br><span class="line"><span class="number">0.0001</span>   <span class="number">500</span></span><br><span class="line"><span class="comment">!折减次数</span></span><br><span class="line"><span class="number">9</span></span><br><span class="line"><span class="comment">!折减系数</span></span><br><span class="line"><span class="number">0.8</span>  <span class="number">0.9</span>  <span class="number">1.0</span>  <span class="number">1.1</span>  <span class="number">1.2</span>  <span class="number">1.3</span>  <span class="number">1.4</span>  <span class="number">1.5</span>  <span class="number">1.6</span></span><br></pre></td></tr></table></figure>
-<hr>
-<p>非本人原创内容</p>
-]]></content>
-      <categories>
-        <category>数值模拟</category>
-        <category>有限元法（FEM）</category>
-      </categories>
-      <tags>
-        <tag>非饱和土</tag>
-        <tag>孔隙水压力</tag>
       </tags>
   </entry>
   <entry>
