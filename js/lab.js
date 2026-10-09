@@ -1,1 +1,1823 @@
-(()=>{let q=globalThis.FireflyLabCore;var e=document.getElementById("computation-lab");if(!q||!e||"true"===e.dataset.initialized)return;e.dataset.initialized="true",e.classList.add("lab-ready");let z=e=>document.getElementById(e),t=e=>getComputedStyle(document.documentElement).getPropertyValue(e).trim(),J=()=>({text:t("--font-color")||"#46515d",muted:t("--lab-muted")||"#657587",border:t("--lab-border")||"rgba(80,105,132,.18)",blue:t("--lab-blue")||"#3f84d7",cyan:t("--lab-cyan")||"#24a5a5",orange:t("--lab-orange")||"#d8843f",violet:t("--lab-violet")||"#7869d6"});function O(e){var t=e.getBoundingClientRect(),a=Math.min(window.devicePixelRatio||1,2),i=t.width||300,t=t.height||260,e=(e.width=Math.round(i*a),e.height=Math.round(t*a),e.getContext("2d"));return e.setTransform(a,0,0,a,0,0),e.clearRect(0,0,i,t),{context:e,width:i,height:t}}function U(e,t,a,i,n,r,o){e.beginPath(),e.moveTo(t,a),e.lineTo(i,n),e.strokeStyle=r,e.lineWidth=o||1,e.stroke()}function H(e,t,a,i,n,r,o){var l=Math.atan2(n-a,i-t);U(e,t,a,i,n,r,o||1.5),e.beginPath(),e.moveTo(i,n),e.lineTo(i-7*Math.cos(l-Math.PI/6),n-7*Math.sin(l-Math.PI/6)),e.lineTo(i-7*Math.cos(l+Math.PI/6),n-7*Math.sin(l+Math.PI/6)),e.closePath(),e.fillStyle=r,e.fill()}function a(e,t,a,i){var n=()=>{t.textContent=a(Number(e.value)),i()};e.addEventListener("input",n),e.addEventListener("change",n)}let i=Array.from(e.querySelectorAll("[data-lab-tab]")),n=Array.from(e.querySelectorAll("[data-lab-panel]"));function r(a,e){"mpm-lab"!==(a=n.some(e=>e.id===a)?a:"mpm-lab")&&l(),"mpm2d-lab"!==a&&d(),"kinematics-lab"!==a&&y(),i.forEach(e=>{var t=e.dataset.labTab===a;e.setAttribute("aria-selected",String(t)),e.tabIndex=t?0:-1}),n.forEach(e=>{e.hidden=e.id!==a}),e&&history.replaceState(null,"","#"+a),"elastic-bar-lab"!==a||b.attempted||Y(),requestAnimationFrame(k)}i.forEach((e,a)=>{e.addEventListener("click",()=>r(e.dataset.labTab,!0)),e.addEventListener("keydown",t=>{if(["ArrowLeft","ArrowRight","Home","End"].includes(t.key)){t.preventDefault();let e=a;"ArrowLeft"===t.key&&(e=(a-1+i.length)%i.length),"ArrowRight"===t.key&&(e=(a+1)%i.length),"Home"===t.key&&(e=0),"End"===t.key&&(e=i.length-1),i[e].focus(),r(i[e].dataset.labTab,!0)}})});let h={canvas:z("p2g-canvas"),positionA:z("particle-a-position"),velocityA:z("particle-a-velocity"),massA:z("particle-a-mass"),positionB:z("particle-b-position"),velocityB:z("particle-b-velocity"),massB:z("particle-b-mass"),nodeCount:z("p2g-node-count"),timeStep:z("p2g-time-step"),acceleration:z("p2g-acceleration"),flipRatio:z("p2g-flip-ratio"),fixedBoundaries:z("p2g-fixed-boundaries"),dragging:-1,lastGeometry:null,lastStep:null,stepCount:0,elapsedTime:0,timer:null,trails:[[],[]]};function S(){return[{position:Number(h.positionA.value),velocity:Number(h.velocityA.value),mass:Number(h.massA.value)},{position:Number(h.positionB.value),velocity:Number(h.velocityB.value),mass:Number(h.massB.value)}]}function o(){if(!z("mpm-lab").hidden){var m=S();let t=q.particleToGrid(m,Number(h.nodeCount.value)),{context:n,width:e,height:a}=O(h.canvas),r=J(),i=Math.max(42,.075*e),o=e-2*i,l=Math.max(92,.29*a),s=Math.min(a-72,.72*a),d=[r.orange,r.violet],c=e=>i+e*o;n.font="12px ui-monospace, SFMono-Regular, Menlo, monospace",n.textAlign="center",n.fillStyle=r.muted,n.fillText("背景网格节点",i+55,24),n.fillText("物质点",i+28,s+53),U(n,i,l,e-i,l,r.border,2),t.nodes.forEach(e=>{var t=c(e.position),a=Math.min(70,48*e.mass);.5<a&&(n.fillStyle=r.blue+"55",n.fillRect(t-8,l-a,16,a)),n.beginPath(),n.arc(t,l,6,0,2*Math.PI),n.fillStyle=1e-10<e.mass?r.blue:r.muted,n.fill(),n.fillStyle=r.muted,n.fillText("i"+e.index,t,l+22),1e-10<e.mass&&(n.fillStyle=r.text,n.fillText("m="+e.mass.toFixed(2),t,l-a-9),a=e.velocity*Math.min(30,.04*o),2<Math.abs(a)&&H(n,t,l+38,t+a,l+38,r.blue,1.5),n.fillStyle=r.muted,n.fillText("v="+e.velocity.toFixed(2),t,l+58))}),h.trails.forEach((a,i)=>{a.forEach((e,t)=>{n.save(),n.globalAlpha=(t+1)/a.length*.24,n.beginPath(),n.arc(c(e),s,3.5,0,2*Math.PI),n.fillStyle=d[i],n.fill(),n.restore()})}),m.forEach((e,a)=>{let i=c(e.position);t.nodes.forEach(e=>{var t=e.contributions.find(e=>e.particleIndex===a);t&&(n.save(),n.globalAlpha=.16+.68*t.weight,U(n,i,s-12,c(e.position),l+8,d[a],2.5),n.restore())}),n.beginPath(),n.arc(i,s,13,0,2*Math.PI),n.fillStyle=d[a],n.fill(),n.strokeStyle="rgba(255,255,255,.8)",n.lineWidth=2,n.stroke(),n.fillStyle=r.text,n.fillText(a?"B":"A",i,s+34);e=e.velocity*Math.min(38,.055*o);2<Math.abs(e)&&H(n,i,s-23,i+e,s-23,d[a],2)}),h.lastGeometry={marginX:i,span:o,particleY:s,particles:m},z("p2g-mass-total").textContent=t.totals.particleMass.toFixed(3)+" / "+t.totals.gridMass.toFixed(3),z("p2g-momentum-total").textContent=t.totals.particleMomentum.toFixed(3)+" / "+t.totals.gridMomentum.toFixed(3);var p=Math.max(Math.abs(t.totals.massError),Math.abs(t.totals.momentumError)),p=(z("p2g-error").textContent=p.toExponential(2),m.reduce((e,t)=>e+.5*t.mass*t.velocity**2,0)),m=t.nodes.reduce((e,t)=>e+.5*t.mass*t.velocity**2,0),u=h.lastStep?h.lastStep.kineticEnergyBefore:p,p=h.lastStep?h.lastStep.kineticEnergyAfter:p;z("p2g-particle-energy").textContent=`${u.toFixed(4)} / ${p.toFixed(4)} J`,z("p2g-grid-energy").textContent=(h.lastStep?h.lastStep.gridKineticEnergy:m).toFixed(4)+" J",z("p2g-step-count").textContent=h.elapsedTime.toFixed(3)+" s / "+h.stepCount,z("p2g-table-body").replaceChildren(...t.nodes.map(e=>{let a=document.createElement("tr");return[e.index,e.position.toFixed(3),e.mass.toFixed(4),e.momentum.toFixed(4),1e-10<e.mass?e.velocity.toFixed(4):"—"].forEach(e=>{var t=document.createElement("td");t.textContent=e,a.appendChild(t)}),a}))}}function l(){h.timer&&clearInterval(h.timer),h.timer=null;var e=z("p2g-play");e.textContent="连续播放",e.setAttribute("aria-pressed","false")}function w(){let n=S();var e=q.transferStep(n,{nodeCount:Number(h.nodeCount.value),timeStep:Number(h.timeStep.value),acceleration:Number(h.acceleration.value),flipRatio:Number(h.flipRatio.value),fixedBoundaries:h.fixedBoundaries.checked});h.lastStep=e,h.stepCount+=1,h.elapsedTime+=Number(h.timeStep.value),e.updatedParticles.forEach((e,t)=>{h.trails[t].push(n[t].position),28<h.trails[t].length&&h.trails[t].shift();var a=0===t?h.positionA:h.positionB,i=0===t?h.velocityA:h.velocityB,a=(a.value=e.position.toFixed(3),q.clamp(e.velocity,-2,2));i.value=a.toFixed(3),z(0===t?"particle-a-position-output":"particle-b-position-output").textContent=e.position.toFixed(2),z(0===t?"particle-a-velocity-output":"particle-b-velocity-output").textContent=a.toFixed(2)+" m/s"}),o(),300<=h.stepCount&&l()}function $(e){var t=h.canvas.getBoundingClientRect();return{x:e.clientX-t.left,y:e.clientY-t.top}}a(h.positionA,z("particle-a-position-output"),e=>e.toFixed(2),o),a(h.velocityA,z("particle-a-velocity-output"),e=>e.toFixed(2)+" m/s",o),a(h.massA,z("particle-a-mass-output"),e=>e.toFixed(2)+" kg",o),a(h.positionB,z("particle-b-position-output"),e=>e.toFixed(2),o),a(h.velocityB,z("particle-b-velocity-output"),e=>e.toFixed(2)+" m/s",o),a(h.massB,z("particle-b-mass-output"),e=>e.toFixed(2)+" kg",o),a(h.nodeCount,z("p2g-node-count-output"),e=>String(e),o),a(h.timeStep,z("p2g-time-step-output"),e=>e.toFixed(3)+" s",o),a(h.acceleration,z("p2g-acceleration-output"),e=>e.toFixed(2)+" m/s²",o),a(h.flipRatio,z("p2g-flip-ratio-output"),e=>Math.round(100*e)+"%",o),h.fixedBoundaries.addEventListener("change",o),z("p2g-step").addEventListener("click",w),z("p2g-play").addEventListener("click",()=>{h.timer?l():(z("p2g-play").textContent="暂停",z("p2g-play").setAttribute("aria-pressed","true"),h.timer=setInterval(w,180))}),z("p2g-reset").addEventListener("click",()=>{l(),h.positionA.value=.28,h.velocityA.value=1.2,h.massA.value=1,h.positionB.value=.68,h.velocityB.value=-.4,h.massB.value=1,h.nodeCount.value=6,h.timeStep.value=.02,h.acceleration.value=0,h.flipRatio.value=.7,h.fixedBoundaries.checked=!0,h.lastStep=null,h.stepCount=0,h.elapsedTime=0,h.trails=[[],[]],["particle-a-position","particle-a-velocity","particle-a-mass","particle-b-position","particle-b-velocity","particle-b-mass","p2g-node-count","p2g-time-step","p2g-acceleration","p2g-flip-ratio"].forEach(e=>z(e).dispatchEvent(new Event("input")))}),h.canvas.addEventListener("pointerdown",t=>{if(h.lastGeometry){let i=$(t),{marginX:n,span:r,particleY:o,particles:e}=h.lastGeometry,l=-1,s=1/0;e.forEach((e,t)=>{var e=i.x-(n+e.position*r),a=i.y-o,e=Math.hypot(e,a);e<s&&(s=e,l=t)}),32<s||(h.dragging=l,h.canvas.setPointerCapture(t.pointerId))}}),h.canvas.addEventListener("pointermove",e=>{var t;h.dragging<0||!h.lastGeometry||(e=$(e),e=q.clamp((e.x-h.lastGeometry.marginX)/h.lastGeometry.span,0,1),(t=0===h.dragging?h.positionA:h.positionB).value=e.toFixed(2),t.dispatchEvent(new Event("input")))}),["pointerup","pointercancel"].forEach(e=>h.canvas.addEventListener(e,()=>{h.dragging=-1}));let j={canvas:z("mpm2d-canvas"),nodeCount:z("mpm2d-node-count"),basis:z("mpm2d-basis"),halfWidthRatio:z("mpm2d-half-width-ratio"),layer:z("mpm2d-layer"),selected:0,particles:[],geometry:null,pointerId:null},A=[{id:"x",key:"x",scale:1},{id:"y",key:"y",scale:1},{id:"mass",key:"mass",scale:1},{id:"vx",key:"vx",scale:1},{id:"vy",key:"vy",scale:1},{id:"volume",key:"volume",scale:1e-6},{id:"stress-xx",key:"stressXX",scale:1e3},{id:"stress-yy",key:"stressYY",scale:1e3},{id:"stress-xy",key:"stressXY",scale:1e3}],K={linear:"线性",quadratic:"二次 B 样条",gimp:"uGIMP"};function s(){let i=j.particles[j.selected];z("mpm2d-particle").value=j.selected,z("mpm2d-particle-output").textContent="ABCD"[j.selected],A.forEach(e=>{var t=i[e.key]/e.scale,a=z("mpm2d-"+e.id);a.value=Number(t.toPrecision(12)),a.removeAttribute("aria-invalid"),z(`mpm2d-${e.id}-output`).textContent=t.toFixed(3)}),["x","y"].forEach(e=>{z(`mpm2d-${e}-range`).value=i[e]}),z("mpm2d-input-status").textContent=""}function P(t){j.particles=[{x:.28,y:.32,mass:1,vx:.8,vy:.3},{x:.67,y:.29,mass:1.4,vx:-.4,vy:.6},{x:.36,y:.72,mass:.8,vx:.2,vy:-.5},{x:.76,y:.68,mass:1.2,vx:-.3,vy:-.2}].map(e=>({...e,volume:.001,stressXX:0,stressYY:0,stressXY:0}));"reset"!==t?j.particles.forEach(e=>{e.vx="translation"===t?1:0,e.vy="translation"===t?.5:0,e.stressXX=e.stressYY="compression"===t?-2e4:0,e.stressXY="shear"===t?15e3:0}):(j.nodeCount.value="5",j.basis.value="linear",j.halfWidthRatio.value="0.25"),j.layer.value="translation"===t?"velocity":"reset"===t?"mass":"internal-force",j.selected=0,z("mpm2d-preset-note").textContent={reset:"默认：不同质量与速度，零应力；没有时间推进。",translation:"均匀平移：四粒子 v = (1, 0.5) m/s、应力为零；有质量节点速度相同。仅映射，不移动粒子。",compression:"压应力：四粒子 σxx = σyy = −20 kPa、σxy = 0、速度为零；展示给定各向同性压应力的离散内力。",shear:"纯剪切应力：四粒子 σxy = σyx = +15 kPa、正应力与速度为零；展示对称剪应力的节点内力。"}[t],s(),c()}function V(e,t){z(e).replaceChildren(...t.map(e=>{let a=document.createElement("tr");return e.forEach(e=>{var t=document.createElement("td");t.textContent=e,a.appendChild(t)}),a}))}let f={panel:z("mpm-scan"),position:z("mpm-scan-position"),frame:null,lastFrame:null,cache:null},L=["linear","quadratic","gimp"];function N(e,t,a,i,n){e=q.shapeStencil1D(e,t,a,i).find(e=>e.index===n),t=e?e.weight:0,a=e?e.gradient:0;return[t,a,-10*a]}function Q(){if(f.panel.open&&!z("mpm2d-lab").hidden){let m=(()=>{let c=Number(j.nodeCount.value),m=Number(j.halfWidthRatio.value);if(!f.cache||f.cache.nodeCount!==c||f.cache.ratio!==m){let o=1/(c-1),l=(c-1)/2;var e=l*o;let s=e-o,d=e+o;var t=L.map(r=>[0,1].map(n=>Array.from({length:121},(e,t)=>{var a=(n+t/120)/2;let i=s+(d-s)*a;return"linear"===r&&(0===t&&(i+=1e-9*o),120===t)&&(i-=1e-9*o),{progress:a,values:N(i,c,r,m,l)}})));f.cache={nodeCount:c,ratio:m,h:o,nodeIndex:l,center:e,start:s,end:d,curves:t}}return f.cache})(),p=Number(f.position.value),t=m.start+2*m.h*p,u=L.map(e=>N(t,m.nodeCount,e,m.ratio,m.nodeIndex)),h=J(),x=[h.blue,h.cyan,h.orange],v=[[],[7,4],[3,3]],a=(z("mpm-scan-position-output").textContent=(100*p).toFixed(1)+"%",z("mpm-scan-status").textContent=`固定节点 i = ${m.nodeIndex}，xᵢ = ${m.center.toFixed(4)} m；粒子 xₚ = ${t.toFixed(4)} m。扫描区间 [${m.start.toFixed(4)}, ${m.end.toFixed(4)}] m，h = ${m.h.toFixed(4)} m，uGIMP ℓp/h = ${m.ratio.toFixed(2)}。`,V("mpm-scan-values",u.map((e,t)=>[K[L[t]],...e.map(e=>e.toFixed(6))])),O(z("mpm-scan-path"))),i=e=>40+e*(a.width-80);U(a.context,i(0),44,i(1),44,h.border,2),a.context.font="12px sans-serif",a.context.textAlign="center",[0,.5,1].forEach(e=>{a.context.fillStyle=.5===e?h.text:h.muted,a.context.fillRect(i(e)-4,40,8,8),a.context.fillText(.5===e?"固定节点 i":0===e?"i − 1":"i + 1",i(e),72)}),a.context.fillStyle=h.orange,a.context.beginPath(),a.context.arc(i(p),25,5,0,2*Math.PI),a.context.fill(),U(a.context,i(p),30,i(p),39,h.orange),[{id:"weight",title:"权重 Nᵢ",min:0,max:1.1},{id:"gradient",title:"梯度 dNᵢ/dx / m⁻¹",min:-1.2/m.h,max:1.2/m.h},{id:"force",title:"单粒子内力 fᵢₚ / N",min:-12/m.h,max:12/m.h}].forEach((t,a)=>{let{context:i,width:e,height:n}=O(z("mpm-scan-"+t.id)),r=48,o=e-20,l=32,s=n-36,d=e=>r+e*(o-r),c=e=>s-(e-t.min)/(t.max-t.min)*(s-l);i.font="12px sans-serif",i.fillStyle=h.text,i.textAlign="left",i.fillText(t.title,r,17),i.textAlign="right",[t.min,(t.min+t.max)/2,t.max].forEach(e=>{U(i,r,c(e),o,c(e),h.border),i.fillText(e.toFixed(1),r-6,c(e)+4)}),i.textAlign="center",[0,.5,1].forEach(e=>{U(i,d(e),l,d(e),s,h.border),i.fillText((m.start+2*e*m.h).toFixed(3),d(e),s+17)}),i.textAlign="right",i.fillText("xₚ / m",o,n-3),m.curves.forEach((e,t)=>{i.strokeStyle=x[t],i.lineWidth=2,i.setLineDash(v[t]),e.forEach(e=>{i.beginPath(),e.forEach((e,t)=>{0===t?i.moveTo(d(e.progress),c(e.values[a])):i.lineTo(d(e.progress),c(e.values[a]))}),i.stroke()})}),i.setLineDash([2,3]),U(i,d(p),l,d(p),s,h.muted),i.setLineDash([]),u.forEach((e,t)=>{i.fillStyle=x[t],i.beginPath(),i.arc(d(p),c(e[a]),3.5,0,2*Math.PI),i.fill()})})}}function d(){null!==f.frame&&cancelAnimationFrame(f.frame),f.frame=null,f.lastFrame=null,z("mpm-scan-play").textContent="播放扫描",z("mpm-scan-play").setAttribute("aria-pressed","false")}function T(e){var t;!f.panel.open||z("mpm2d-lab").hidden||document.hidden||(null===f.lastFrame&&(f.lastFrame=e),32<=(t=e-f.lastFrame)&&(f.position.value=Math.min(1,Number(f.position.value)+Math.min(t,100)/8e3),f.lastFrame=e,Q()),1<=Number(f.position.value))?d():f.frame=requestAnimationFrame(T)}function c(){if(!z("mpm2d-lab").hidden&&j.particles.length){let i=Number(j.nodeCount.value);var w=j.basis.value;let e=Number(j.halfWidthRatio.value),n=j.layer.value;var $=1/(i-1),A=e*$,P=`ℓp/h = ${e.toFixed(2)}，半宽 ℓp = ${A.toFixed(5)} m，全宽 2ℓp = ${(2*A).toFixed(5)} m`,L=(j.halfWidthRatio.disabled="gimp"!==w,z("mpm2d-half-width-ratio-output").textContent=e.toFixed(2),z("mpm2d-domain-note").textContent=`${"gimp"===w?"当前 uGIMP 域":"保留的 uGIMP 比较参数（选择 uGIMP 后可调整）"}：${P}；h = ${$.toFixed(3)} m。切换形函数保留半宽比，跨边界对比始终使用此值。`,q.particleToGrid2D(j.particles,{nodeCount:i,basis:w,particleHalfWidthRatio:e}));let t=j.particles[j.selected];var N=L.nodes.flatMap(e=>{var t=e.contributions.find(e=>e.particleIndex===j.selected);return t?[{node:e,...t}]:[]});let r=new Map(N.map(e=>[e.node.index,e])),{context:o,width:a,height:l}=O(j.canvas),s=J(),d=[s.orange,s.violet,s.cyan,s.blue],c=Math.min(a-64,l-64)/(i+2.3);var T=c*(i+1);let m=c*(i-1),p=(a-T)/2+c,u=(l+T)/2-c,h=e=>p+e*m,x=e=>u-e*m;j.geometry={width:a,height:l,originX:p,originY:u,span:m};for(let e=-1;e<=i;e+=1)o.setLineDash(-1===e||e===i?[3,4]:[]),U(o,h(e*$),x(-$),h(e*$),x(1+$),s.border),U(o,h(-$),x(e*$),h(1+$),x(e*$),s.border);o.setLineDash([]),o.strokeStyle=s.muted,o.lineWidth=1.5,o.strokeRect(h(0),x(1),m,m),o.font="11px ui-monospace, SFMono-Regular, Menlo, monospace",o.fillStyle=s.text,o.textAlign="center",o.fillText("0",h(0),x(0)+16),o.fillText("1",h(1),x(0)+16),o.fillText("x / m →",a/2,l-9),o.textAlign="left",o.fillText("y / m ↑",8,15),o.fillText("1",h(0)-16,x(1)+4),o.fillText("0",h(0)-16,x(0)+4),"weights"===n&&N.forEach(e=>{o.save(),o.globalAlpha=.25+.75*e.weight,o.setLineDash(0===e.weight?[3,3]:[]),U(o,h(t.x),x(t.y),h(e.node.x),x(e.node.y),d[j.selected],1.5),o.restore()});let v="velocity"===n||"internal-force"===n,f="velocity"===n?"vx":"fx",g="velocity"===n?"vy":"fy",y=v?Math.max(...L.nodes.map(e=>Math.hypot(e[f],e[g]))):0,b=Math.max(...L.nodes.map(e=>e.mass)),E=Math.max(...N.map(e=>e.weight)),C=.65*c;L.nodes.forEach(e=>{var t=r.get(e.index),a="mass"===n?e.mass/b:"weights"===n&&t?t.weight/E:0,a=2+Math.min(7,.22*c)*Math.sqrt(a),t="weights"===n?Boolean(t):0<e.contributions.length,i=t?"weights"===n?d[j.selected]:s.blue:s.muted;o.strokeStyle=i,o.fillStyle=i,o.lineWidth=t?1.5:1,o.setLineDash(e.ghost?[2,2]:[]),!e.ghost&&t&&o.fillRect(h(e.x)-a,x(e.y)-a,2*a,2*a),o.strokeRect(h(e.x)-a,x(e.y)-a,2*a,2*a),o.setLineDash([]),v&&0<y&&(i=e[f]/y*C,t=-e[g]/y*C,1<=Math.hypot(i,t))&&H(o,h(e.x),x(e.y),h(e.x)+i,x(e.y)+t,"velocity"===n?s.cyan:s.orange,1.8)});var I=A*m;for(let e=1;e<=j.particles.length;e+=1){var R,B,D=(j.selected+e)%j.particles.length,W=j.particles[D],X=D===j.selected,Y=("gimp"===w&&(Y=h(W.x-A),R=x(W.y+A),B=2*I,o.save(),o.fillStyle=d[D],o.globalAlpha=X?.2:.1,o.fillRect(Y,R,B,B),o.globalAlpha=1,X&&(o.strokeStyle=s.text,o.lineWidth=3,o.strokeRect(Y,R,B,B)),o.strokeStyle=d[D],o.lineWidth=X?1.5:1.2,o.strokeRect(Y,R,B,B),o.restore()),o.beginPath(),"gimp"===w?Math.min(2,.25*I):X?11:8);o.arc(h(W.x),x(W.y),Y,0,2*Math.PI),o.fillStyle=d[D],o.fill(),o.strokeStyle=s.text,o.lineWidth="gimp"===w?.75:X?2:1,o.stroke(),o.fillStyle=s.text,o.textAlign="center",o.fillText("ABCD"[D],h(W.x),x(W.y)-("gimp"===w?Math.max(16,10+I):16))}z("mpm2d-scale").textContent=v?`箭头每图自适应：最长为 0.65 个网格间距，表示 ${y.toExponential(3)} ${"velocity"===n?"m/s":"N"}；长度按向量模同比缩放，短于 1 绘图像素不画。精确分量见节点表。`:"mass"===n?`方块尺寸随节点质量增大；本图最大 ${b.toFixed(4)} kg。真实网格 h = ${$.toFixed(3)} m；外围一层为外延支持。`:`仅显示粒子 ${"ABCD"[j.selected]} 的支持；方块尺寸与连线深浅随权重增大，最大 N = ${E.toFixed(4)}。虚线连线表示零权重、非零梯度。`;T=L.totals;let F=e=>e.toFixed(6);var G=e=>e.toExponential(2),G=(z("mpm2d-mass-total").textContent=F(T.particleMass)+" / "+F(T.gridMass),z("mpm2d-momentum-x").textContent=F(T.particleMomentumX)+" / "+F(T.gridMomentumX),z("mpm2d-momentum-y").textContent=F(T.particleMomentumY)+" / "+F(T.gridMomentumY),z("mpm2d-mass-error").textContent=G(T.massError),z("mpm2d-momentum-error").textContent=`(${G(T.momentumErrorX)}, ${G(T.momentumErrorY)})`,z("mpm2d-force-total").textContent=`(${G(T.internalForceX)}, ${G(T.internalForceY)})`,z("mpm2d-partition-error").textContent=G(T.maxPartitionError),z("mpm2d-gradient-error").textContent=G(T.maxGradientSumError),[j.nodeCount,j.basis,j.layer].forEach(e=>{z(e.id+"-output").textContent=e.selectedOptions[0].textContent}),V("mpm2d-node-body",L.nodes.filter(e=>e.contributions.length).map(e=>[`(${e.ix}, ${e.iy})`,e.ghost?"外延":"真实",...[e.mass,e.px,e.py,e.vx,e.vy,e.fx,e.fy].map(F)])),V("mpm2d-support-body",N.map(e=>[`(${e.node.ix}, ${e.node.iy})`,e.node.ghost?"外延":"真实",F(e.weight),F(e.gradientX),F(e.gradientY)])),q.shapeStencil1D(t.x,i,w,e));z("mpm2d-shape-summary").textContent=`粒子 ${"ABCD"[j.selected]}：x = ${t.x.toFixed(6)} m，h = ${$.toFixed(3)} m。${K[w]} 一维支持（二维为张量积）${"gimp"===w?"；"+P:""}；下表梯度单位 m⁻¹。`,V("mpm2d-shape-body",G.map(e=>[""+e.index+(e.index<0||e.index>=i?"（外延）":""),F(e.position),F(e.weight),F(e.gradient)]));let M=q.clamp(Math.round(t.x/$),1,i-2)*$,k=.001*$,S=(z("mpm2d-boundary-note").textContent=`当前比较边界 xb = ${F(M)} m；ε = ${F(k)} m。三种基函数使用相同网格与采样位置，与当前二维图层无关。uGIMP 使用 ${P}。`,[]);["linear","quadratic","gimp"].forEach(a=>{[-1,0,1].forEach(t=>{q.shapeStencil1D(M+t*k,i,a,e).forEach(e=>{S.push([K[a],-1===t?"xb − ε":1===t?"xb + ε":"xb",e.index,F(e.weight),F(e.gradient)])})})}),V("mpm2d-boundary-body",S),Q()}}function I(e){var t=j.canvas.getBoundingClientRect();return{x:(e.clientX-t.left)*j.geometry.width/t.width,y:(e.clientY-t.top)*j.geometry.height/t.height}}z("mpm-scan-play").addEventListener("click",()=>{null!==f.frame?d():(1<=Number(f.position.value)&&(f.position.value=0),z("mpm-scan-play").textContent="暂停扫描",z("mpm-scan-play").setAttribute("aria-pressed","true"),f.frame=requestAnimationFrame(T))}),z("mpm-scan-reset").addEventListener("click",()=>{d(),f.position.value=0,Q()}),f.position.addEventListener("input",()=>{d(),Q()}),f.panel.addEventListener("toggle",()=>{(f.panel.open?Q:d)()}),document.addEventListener("visibilitychange",()=>{document.hidden&&d()}),window.addEventListener("pagehide",d),z("mpm2d-controls").addEventListener("submit",e=>e.preventDefault()),A.forEach(e=>{let t=z("mpm2d-"+e.id);t.addEventListener("input",()=>{t.checkValidity()&&Number.isFinite(t.valueAsNumber)?(t.removeAttribute("aria-invalid"),j.particles[j.selected][e.key]=t.valueAsNumber*e.scale,z(t.id+"-output").textContent=t.valueAsNumber.toFixed(3),"x"!==e.id&&"y"!==e.id||(z(t.id+"-range").value=t.value),z("mpm2d-input-status").textContent=z("mpm2d-controls").querySelector('[aria-invalid="true"]')?"仍有无效输入未应用；图表使用各参数最近一次有效值。":"",z("mpm2d-preset-note").textContent="自定义当前状态；没有时间推进。",c()):(t.setAttribute("aria-invalid","true"),z("mpm2d-input-status").textContent="此输入尚未应用：请输入范围内的有限数值；图表保留最近一次有效结果。")})}),["x","y"].forEach(a=>{z(`mpm2d-${a}-range`).addEventListener("input",e=>{var t=z("mpm2d-"+a);t.value=e.target.value,t.dispatchEvent(new Event("input"))})}),z("mpm2d-particle").addEventListener("change",e=>{j.selected=Number(e.target.value),s(),c()}),[j.nodeCount,j.basis,j.layer].forEach(e=>e.addEventListener("change",c)),j.halfWidthRatio.addEventListener("input",c),["reset","translation","compression","shear"].forEach(e=>{z("mpm2d-"+e).addEventListener("click",()=>P(e))}),j.canvas.addEventListener("pointerdown",e=>{if(j.geometry&&null===j.pointerId&&0===e.button){let a=I(e),{originX:i,originY:n,span:r}=j.geometry,o=-1,l=28;j.particles.forEach((e,t)=>{e=Math.hypot(a.x-i-e.x*r,a.y-n+e.y*r);e<l&&(o=t,l=e)}),o<0||(e.preventDefault(),j.selected=o,j.pointerId=e.pointerId,j.canvas.setPointerCapture(e.pointerId),s(),c())}}),j.canvas.addEventListener("pointermove",e=>{var t,a,i,n;e.pointerId!==j.pointerId||z("mpm2d-lab").hidden||(e=I(e),{originX:t,originY:a,span:i}=j.geometry,(n=j.particles[j.selected]).x=Number(q.clamp((e.x-t)/i,0,1).toFixed(3)),n.y=Number(q.clamp((a-e.y)/i,0,1).toFixed(3)),z("mpm2d-preset-note").textContent="自定义当前状态；没有时间推进。",s(),c())}),["pointerup","pointercancel","lostpointercapture"].forEach(e=>{j.canvas.addEventListener(e,e=>{e.pointerId===j.pointerId&&(j.pointerId=null)})});let v={canvas:z("retention-canvas"),alpha:z("vg-alpha"),n:z("vg-n"),thetaResidual:z("vg-theta-r"),thetaSaturated:z("vg-theta-s"),porosity:z("swrc-porosity"),a:z("swrc-a"),lambda:z("swrc-lambda"),residualSaturation:z("swrc-residual"),family:z("swrc-family")};function R(e){return{porosity:void 0===e?Number(v.porosity.value):e,a:Number(v.a.value),lambda:Number(v.lambda.value),residualSaturation:Number(v.residualSaturation.value)}}function m(){if(!z("retention-lab").hidden){var m=(()=>{let e=Number(v.thetaResidual.value);var t=Number(v.thetaSaturated.value);return e>=t&&(e=Math.max(.01,t-.01),v.thetaResidual.value=e.toFixed(2),z("vg-theta-r-output").textContent=e.toFixed(2)),{alpha:Number(v.alpha.value),n:Number(v.n.value),thetaResidual:e,thetaSaturated:t}})(),p=R(),u=[0,1,10,100,1e3],h=q.vanGenuchten(m,u);let i=q.tarantinoSWRC(p,u),t=Array.from({length:181},(e,t)=>Math.pow(10,t*(4/180)-1));u=q.vanGenuchten(m,t),m=q.tarantinoSWRC(p,t);let{context:r,width:e,height:a}=O(v.canvas),n=J(),o={left:58,right:24,top:28,bottom:48},l=e-o.left-o.right,s=a-o.top-o.bottom,d=e=>o.left+(Math.log10(Math.max(.1,e))+1)/4*l,c=e=>o.top+(1-e)*s;r.font="12px ui-monospace, SFMono-Regular, Menlo, monospace",r.fillStyle=n.muted,r.textAlign="center",[.1,1,10,100,1e3].forEach(e=>{var t=d(e);U(r,t,o.top,t,o.top+s,n.border,1),r.fillText(String(e),t,o.top+s+22)}),r.textAlign="right",[0,.2,.4,.6,.8,1].forEach(e=>{var t=c(e);U(r,o.left,t,o.left+l,t,n.border,1),r.fillText(e.toFixed(1),o.left-9,t+4)}),r.textAlign="center",r.fillText("基质吸力 s / kPa（对数坐标）",o.left+l/2,a-9),r.save(),r.translate(15,o.top+s/2),r.rotate(-Math.PI/2),r.fillText("有效饱和度",0,0),r.restore(),v.family.checked&&[q.clamp(p.porosity-.05,.2,.6),q.clamp(p.porosity+.05,.2,.6)].forEach(e=>{x(q.tarantinoSWRC(R(e),t).points,"effectiveSaturation",n.orange+"66",1.5,[5,5])}),x(u.points,"effectiveSaturation",n.cyan,3),x(m.points,"effectiveSaturation",n.orange,3),z("vg-m-value").textContent=h.m.toFixed(4),z("vg-air-entry").textContent=(1/h.alpha).toFixed(2)+" kPa";p=i.points.find(e=>100===e.suction);function x(e,i,t,a,n){r.save(),r.beginPath(),e.forEach((e,t)=>{var a=d(e.suction),e=c(e[i]);0===t?r.moveTo(a,e):r.lineTo(a,e)}),r.strokeStyle=t,r.lineWidth=a,r.setLineDash(n||[]),r.stroke(),r.restore()}z("swrc-summary").textContent=`${i.voidRatio.toFixed(3)} / ${i.b.toFixed(3)} / `+p.degreeOfSaturation.toFixed(3),z("retention-table-body").replaceChildren(...h.points.map((e,t)=>{t=i.points[t];let a=document.createElement("tr");return[e.suction.toFixed(1),e.effectiveSaturation.toFixed(5),e.waterContent.toFixed(5),t.effectiveSaturation.toFixed(5),t.degreeOfSaturation.toFixed(5),t.relativePermeability.toExponential(3)].forEach(e=>{var t=document.createElement("td");t.textContent=e,a.appendChild(t)}),a}))}}a(v.alpha,z("vg-alpha-output"),e=>e.toFixed(3)+" kPa⁻¹",m),a(v.n,z("vg-n-output"),e=>e.toFixed(2),m),a(v.thetaResidual,z("vg-theta-r-output"),e=>e.toFixed(2),m),a(v.thetaSaturated,z("vg-theta-s-output"),e=>e.toFixed(2),m),a(v.porosity,z("swrc-porosity-output"),e=>e.toFixed(2),m),a(v.a,z("swrc-a-output"),e=>e.toFixed(1)+" m⁻¹",m),a(v.lambda,z("swrc-lambda-output"),e=>e.toFixed(2),m),a(v.residualSaturation,z("swrc-residual-output"),e=>e.toFixed(2),m),v.family.addEventListener("change",m),z("vg-reset").addEventListener("click",()=>{v.alpha.value=.08,v.n.value=1.6,v.thetaResidual.value=.06,v.thetaSaturated.value=.46,v.porosity.value=.4,v.a.value=12,v.lambda.value=.3,v.residualSaturation.value=.05,v.family.checked=!0,["vg-alpha","vg-n","vg-theta-r","vg-theta-s","swrc-porosity","swrc-a","swrc-lambda","swrc-residual"].forEach(e=>z(e).dispatchEvent(new Event("input")))});let g={canvas:z("terrain-canvas"),grid:q.valleyTerrain(7),selected:{row:1,column:1},seed:20260830,geometry:null};function p(){if(!z("terrain-lab").hidden){let s=q.traceD8(g.grid,g.selected),{context:d,width:e,height:t}=O(g.canvas),a=J();var i=g.grid.length;let c=Math.min((e-44)/i,(t-44)/i);var n=c*i;let m=(e-n)/2,p=(t-n)/2;n=g.grid.flat();let u=Math.min(...n),h=Math.max(...n),x=new Set(s.path.map(e=>e.row+":"+e.column));g.grid.forEach((e,l)=>e.forEach((e,t)=>{var a,i,n=m+t*c,r=p+l*c,o=(d.fillStyle=(i=e,a=u,o=h,`hsl(${210-175*(i=o===a?.5:(i-a)/(o-a))} 48% ${30+32*i}%)`),d.fillRect(1+n,1+r,c-2,c-2),x.has(l+":"+t)&&(d.fillStyle="rgba(36,165,165,.38)",d.fillRect(3+n,3+r,c-6,c-6)),s.directions[l][t]);o&&(a=n+c/2,i=r+c/2,t=(o.column-t)*c*.25,o=(o.row-l)*c*.25,H(d,a-.25*t,i-.25*o,a+t,i+o,"rgba(255,255,255,.62)",1)),52<c&&(d.fillStyle="rgba(255,255,255,.86)",d.font=Math.max(10,.15*c)+"px ui-monospace, SFMono-Regular, Menlo, monospace",d.textAlign="left",d.fillText(e.toFixed(1),5+n,14+r))}));var n=m+g.selected.column*c,r=p+g.selected.row*c,n=(d.strokeStyle=a.orange,d.lineWidth=4,d.strokeRect(2+n,2+r,c-4,c-4),s.path.forEach((e,t)=>{0!==t&&(t=s.path[t-1],H(d,m+(t.column+.5)*c,p+(t.row+.5)*c,m+(e.column+.5)*c,p+(e.row+.5)*c,a.cyan,3))}),g.geometry={originX:m,originY:p,cell:c,size:i},g.grid[g.selected.row][g.selected.column]);z("terrain-cell").textContent=g.selected.row+1+" / "+(g.selected.column+1),z("terrain-elevation").textContent=n.toFixed(2)+" m";z("terrain-status").textContent=`${{outlet:"到达边界出口",sink:"终止于局部洼地",loop:"检测到循环"}[s.reason]} · ${s.path.length} 格`}}g.canvas.addEventListener("click",e=>{var t,a;g.geometry&&(t=g.canvas.getBoundingClientRect(),a=e.clientX-t.left,e=e.clientY-t.top,t=Math.floor((a-g.geometry.originX)/g.geometry.cell),(a=Math.floor((e-g.geometry.originY)/g.geometry.cell))<0||a>=g.geometry.size||t<0||t>=g.geometry.size||(g.selected={row:a,column:t},p()))}),z("terrain-valley").addEventListener("click",()=>{g.grid=q.valleyTerrain(7),p()}),z("terrain-random").addEventListener("click",()=>{g.seed+=1,g.grid=q.randomTerrain(7,g.seed),p()}),z("terrain-raise").addEventListener("click",()=>{g.grid[g.selected.row][g.selected.column]+=2,p()}),z("terrain-lower").addEventListener("click",()=>{g.grid[g.selected.row][g.selected.column]-=2,p()});let u={canvas:z("kinematics-canvas"),preset:z("kinematics-preset"),rate:z("kinematics-rate"),timeStep:z("kinematics-time-step"),x:z("kinematics-x"),y:z("kinematics-y"),nodeCount:z("kinematics-node-count"),basis:z("kinematics-basis"),halfWidthRatio:z("kinematics-half-width-ratio"),frame:null,lastFrame:null,boundsKey:"",bounds:null};function x(){if(!z("kinematics-lab").hidden){var e={preset:u.preset.value,rate:Number(u.rate.value),timeStep:Number(u.timeStep.value),x:Number(u.x.value),y:Number(u.y.value),nodeCount:Number(u.nodeCount.value),basis:u.basis.value,particleHalfWidthRatio:Number(u.halfWidthRatio.value)};let h=q.kinematics2D(e),x=1/(e.nodeCount-1),a=e=>(Math.abs(e)<5e-7?0:e).toFixed(6),i=e=>`(${e.map(a).join(", ")})`;[u.preset,u.nodeCount,u.basis].forEach(e=>{z(e.id+"-output").textContent=e.selectedOptions[0].textContent}),[u.rate,u.timeStep,u.halfWidthRatio,u.x,u.y].forEach(e=>{z(e.id+"-output").textContent=Number(e.value).toFixed(e===u.x||e===u.y?3:2)}),u.halfWidthRatio.disabled="gimp"!==e.basis,z("kinematics-rate-label").textContent="translation"===e.preset?"平移倍率（无量纲）":"速率 r / s⁻¹";var t={translation:`v = (${(.2*e.rate).toFixed(3)}, ${(.1*e.rate).toFixed(3)}) m/s；所有节点同速，梯度为零。`,extension:`vx = r(x − 0.5 m)，vy = 0；沿 x 轴伸长，r = ${e.rate.toFixed(2)} s⁻¹。`,shear:`vx = r(y − 0.5 m)，vy = 0；简单剪切，r = ${e.rate.toFixed(2)} s⁻¹。`,rotation:`vx = −r(y − 0.5 m)，vy = r(x − 0.5 m)；逆时针角速度 ${e.rate.toFixed(2)} rad/s。`},t=(z("kinematics-field-note").textContent=t[e.preset],z("kinematics-domain-note").textContent=`${"gimp"===e.basis?"当前":"保留的"} uGIMP 半宽 ℓp = ${(e.particleHalfWidthRatio*x).toFixed(5)} m，全宽 2ℓp = ${(2*e.particleHalfWidthRatio*x).toFixed(5)} m；h = ${x.toFixed(3)} m。此固定积分域独立于图示的 0.12 m 初始方域，不随 F 更新。`,z("kinematics-compare").checked);let v="grid"===z("kinematics-view").value;z("kinematics-euler-scene").hidden=!t,z("kinematics-comparison-note").hidden=!t,z("kinematics-current-title").textContent=`当前状态 · t = ${e.timeStep.toFixed(2)} s`;z("kinematics-observation").textContent=0===e.rate?"当前速率为零，方块保持静止；可在计算细节中调整速率。":{translation:"看位置：方块整体移动，形状、大小和方向都不变。",extension:"看宽度：方块沿水平方向拉长，高度不变，面积增大。",shear:"看上下两边：上边相对下边向右错动，方块变成平行四边形，面积不变。",rotation:"看橙色角点：方块逆时针转动，方向改变，但形状和面积不变。"}[e.preset];var n={translation:"平移：一次 Euler 近似与精确运动相同。",extension:"拉伸：一次大步 Euler 低估伸长；这里只比较从起点跨到当前时刻的一步。",shear:"剪切：这个特殊速度场下，一次 Euler 近似恰好与精确运动相同。",rotation:`旋转：精确面积保持 100%；一次 Euler 近似为 ${(100*h.eulerJ).toFixed(1)}%。额外变大是算法误差，不是真实变形。`},n=(z("kinematics-comparison-note").textContent=n[e.preset],[e.preset,e.rate,e.x,e.y,e.nodeCount,e.basis,e.particleHalfWidthRatio,t,v].join("|"));u.boundsKey!==n&&(o=[...(r=q.kinematics2D({...e,timeStep:1})).originalCorners,...r.exactCorners],t&&o.push(...r.eulerCorners),"rotation"===e.preset&&(r=Math.max(...r.originalCorners.map(([e,t])=>Math.hypot(e-.5,t-.5))),o.push([.5-r,.5-r],[.5+r,.5+r])),v&&o.push([-2*x,-2*x],[1+2*x,1+2*x]),u.bounds=[Math.min(...o.map(e=>e[0])),Math.max(...o.map(e=>e[0])),Math.min(...o.map(e=>e[1])),Math.max(...o.map(e=>e[1]))],u.boundsKey=n);let f=J(),[g,y,b,E]=u.bounds;var r=[[z("kinematics-initial-canvas"),h.originalCorners,f.muted],[u.canvas,h.exactCorners,f.cyan]],o=(t&&r.push([z("kinematics-euler-canvas"),h.eulerCorners,f.violet]),r.map(([e])=>e.getBoundingClientRect()));let C=Math.min(...o.map(e=>Math.min((e.width-48)/(y-g),(e.height-48)/(E-b))));r.forEach(([e,t,a])=>{let{context:i,width:n,height:r}=O(e),o=e=>n/2+(e-(g+y)/2)*C,l=e=>r/2-(e-(b+E)/2)*C;if(v){e=Math.max(...h.nodes.map(e=>Math.hypot(e.vx,e.vy)));let t=0<e?.5*x/e:0;h.nodes.forEach(e=>{i.fillStyle=f.border,i.fillRect(o(e.x)-2,l(e.y)-2,4,4),8<=Math.hypot(e.vx,e.vy)*t*C&&H(i,o(e.x),l(e.y),o(e.x+e.vx*t),l(e.y+e.vy*t),f.blue,1)})}i.beginPath(),t.forEach(([e,t],a)=>{0===a?i.moveTo(o(e),l(t)):i.lineTo(o(e),l(t))}),i.closePath(),i.fillStyle=a,i.globalAlpha=.12,i.fill(),i.globalAlpha=1,i.strokeStyle=a,i.lineWidth=3,i.stroke();var s,d=(e,t,a)=>[e[0]+(t[0]-e[0])*a,e[1]+(t[1]-e[1])*a];for(s of[.25,.5,.75])for(var[c,m,p,u]of[[0,1,3,2],[0,3,1,2]]){c=d(t[c],t[m],s),m=d(t[p],t[u],s);U(i,o(c[0]),l(c[1]),o(m[0]),l(m[1]),a,1)}i.beginPath(),i.arc(o(t[2][0]),l(t[2][1]),5,0,2*Math.PI),i.fillStyle=f.orange,i.fill(),i.fillStyle=f.muted,i.font="12px system-ui, sans-serif",i.textAlign="left",i.fillText("y ↑",10,18),i.textAlign="right",i.fillText("x →",n-10,r-10)}),z("kinematics-details").open&&(z("kinematics-scale").textContent=`每图 x、y 等比例，播放全程固定视野；h = ${x.toFixed(3)} m，初始方块边长 0.12 m。网格模式下速度箭头按最长 0.5h 同比缩放。图示方块不是 uGIMP 的积分域。`,[["l",h.L],["d",h.D],["w",h.W]].forEach(([e,t])=>{V(`kinematics-${e}-body`,[["x",a(t[0]),a(t[1])],["y",a(t[2]),a(t[3])]])}),z("kinematics-gradient-error").textContent=h.gradientError.toExponential(3),z("kinematics-exact-j").textContent=a(h.exactJ),z("kinematics-euler-j").textContent=a(h.eulerJ),n={translation:"均匀平移不产生速度梯度、变形率或自旋；精确与一次 Euler 域重合，面积不变。",extension:"单轴伸长的精确面积比为 exp(rΔt)，一次 Euler 为 1 + rΔt；差异来自时间离散，而不是形函数梯度误差。",shear:"简单剪切同时含对称变形率与反对称自旋；本预设 A² = 0，精确与一次 Euler 域重合，面积比均为 1。",rotation:`刚体旋转 D = 0，精确 J = 1；一次 Euler J = 1 + (rΔt)² = ${(1+(e.rate*e.timeStep)**2).toFixed(6)}。Euler 面积增大是时间离散误差，不是材料可压缩性；不应据此推断应力。`},z("kinematics-result-note").textContent=n[e.preset],V("kinematics-position-body",[["固定采样点 / 初始中心",...h.position.map(a)],["采样重构速度",...h.velocity.map(a)],["精确演化中心",...h.exactPosition.map(a)],["一次 Euler 中心",...h.eulerPosition.map(a)]]),V("kinematics-f-body",[["给定 A / s⁻¹",...h.prescribedL.map(a)],["精确 F",...h.exactF.map(a)],["一次 Euler F",...h.eulerF.map(a)]]),V("kinematics-corner-body",h.originalCorners.map((e,t)=>[t+1,i(e),i(h.exactCorners[t]),i(h.eulerCorners[t])])),V("kinematics-node-body",h.nodes.filter(e=>0!==e.weight||0!==e.gx||0!==e.gy).map(e=>[i([e.x,e.y]),e.ghost?"外延":"真实",a(e.vx),a(e.vy),a(e.weight),a(e.gx),a(e.gy)])))}}function y(){null!==u.frame&&cancelAnimationFrame(u.frame),u.frame=null,u.lastFrame=null,z("kinematics-play").textContent="播放运动",z("kinematics-play").setAttribute("aria-pressed","false")}function B(e){var t;z("kinematics-lab").hidden||document.hidden||(null===u.lastFrame&&(u.lastFrame=e),32<=(t=e-u.lastFrame)&&(u.timeStep.value=Math.min(1,Number(u.timeStep.value)+Math.min(t,100)/6e3),u.lastFrame=e,x()),1<=Number(u.timeStep.value))?y():u.frame=requestAnimationFrame(B)}z("kinematics-play").addEventListener("click",()=>{(null!==u.frame?y:(z("kinematics-details").open=!1,1<=Number(u.timeStep.value)&&(u.timeStep.value=0),z("kinematics-play").textContent="暂停",z("kinematics-play").setAttribute("aria-pressed","true"),u.frame=requestAnimationFrame(B),x))()}),z("kinematics-reset").addEventListener("click",()=>{y(),u.timeStep.value=0,x()}),[z("kinematics-controls"),z("kinematics-advanced")].forEach(e=>{e.addEventListener("submit",e=>e.preventDefault()),e.addEventListener("input",e=>{y(),e.target===u.preset&&(u.timeStep.value=0),x()})}),z("kinematics-details").addEventListener("toggle",()=>{z("kinematics-details").open&&y(),x()}),document.addEventListener("visibilitychange",()=>{document.hidden&&y()}),window.addEventListener("pagehide",y);let b={controls:z("elastic-bar-controls"),cells:z("elastic-bar-cells"),particlesPerCell:z("elastic-bar-particles-per-cell"),cfl:z("elastic-bar-cfl"),periods:z("elastic-bar-periods"),transfer:z("elastic-bar-transfer"),snapshot:z("elastic-bar-snapshot"),attempted:!1,result:null,comparison:null};function D(){return{cells:Number(b.cells.value),particlesPerCell:Number(b.particlesPerCell.value),cfl:Number(b.cfl.value),periods:Number(b.periods.value),transfer:b.transfer.value}}function W(e,t){return(t?e.cells+` 单元 · ${e.cells*e.particlesPerCell} 粒子 · `:"")+e.particlesPerCell+` 粒子/单元 · CFL ${e.cfl.toFixed(2)} · ${e.periods.toFixed(2)} T · `+e.transfer.toUpperCase()}function X(e,t){var a=z("elastic-bar-error");a.hidden=!1,a.textContent=`${t}失败：${e instanceof Error?e.message:String(e)} 请检查参数后重试。`}function Y(){b.attempted=!0,z("elastic-bar-error").hidden=!0;try{var e=q.elasticBar(D()),t=(b.result=e,b.snapshot.max=String(e.history.length-1),b.snapshot.value=b.snapshot.max,z("elastic-bar-result").hidden=!1,z("elastic-bar-status").dataset.stale="false",z("elastic-bar-status").textContent="验证完成：下方为当前参数的已保存数值解。快照仅选择时间点，不重新求解。",e.parameters);z("elastic-bar-case").textContent=`已运行算例：${W(t,!0)}；${t.stepCount} 步，实际 Δt = ${t.timeStep.toExponential(4)} s，实际 cΔt/h = ${(t.waveSpeed*t.timeStep*t.cells/t.length).toFixed(4)}；E₀ = ${t.initialEnergy.toExponential(4)} J。`,_()}catch(e){z("elastic-bar-status").dataset.stale="true",z("elastic-bar-status").textContent=b.result?"本次运行未成功。下方仅保留上一次算例，不代表当前参数。":"本次运行未成功，尚无数值结果。",X(e,"验证")}}function G(){z("elastic-bar-cfl-output").textContent=Number(b.cfl.value).toFixed(2),z("elastic-bar-periods-output").textContent=Number(b.periods.value).toFixed(2),b.comparison=null,z("elastic-bar-error").hidden=!0,z("elastic-bar-status").dataset.stale="true",z("elastic-bar-status").textContent=b.result?"参数已修改，结果已过期。下方图表、误差与快照仍属于“已运行算例”，不是当前参数；请点击“运行验证”。":"参数已修改，请点击“运行验证”生成数值结果。",z("elastic-bar-convergence-result").hidden=!0,z("elastic-bar-convergence-body").replaceChildren(),z("elastic-bar-convergence-status").textContent="参数已修改，对照缓存已清除；请点击“网格收敛对照”重新生成。"}function Z(){b.result&&z("elastic-bar-particle-details").open&&V("elastic-bar-particle-body",b.result.history[Number(b.snapshot.value)].particles.map(e=>[e.referencePosition.toFixed(6),(1e6*e.displacement).toFixed(4),(1e6*e.exactDisplacement).toFixed(4),e.velocity.toFixed(7),e.exactVelocity.toFixed(7),(e.stress/1e3).toFixed(6),(e.exactStress/1e3).toFixed(6)]))}function _(){if(b.result){var{parameters:e,history:a}=b.result,i=Number(b.snapshot.value);let t=a[i];z("elastic-bar-snapshot-output").textContent=i+1+" / "+a.length,z("elastic-bar-time").textContent=`已运行算例快照：t = ${t.time.toFixed(6)} s = ${(t.time/e.period).toFixed(4)} T。`,["displacement","velocity","stress"].forEach(e=>{z(`elastic-bar-${e}-error`).textContent=(100*t[e+"Error"]).toFixed(4)+"%"}),z("elastic-bar-energy-summary").textContent=`当前 K/E₀ = ${(t.kineticEnergy/e.initialEnergy).toFixed(6)}，U/E₀ = ${(t.strainEnergy/e.initialEnergy).toFixed(6)}，总能量/E₀ = ${(t.totalEnergy/e.initialEnergy).toFixed(6)}；解析总能量/E₀ = 1。`,Z(),te()}}function ee(e,t,a){let{context:i,width:n,height:r}=O(e);var o=J();let l={left:61,right:18,top:30,bottom:43},s=n-l.left-l.right,d=r-l.top-l.bottom,c=e=>l.left+e/a.xMax*s,m=e=>l.top+(a.yMax-e)/(a.yMax-a.yMin)*d;i.font="11px system-ui, sans-serif",i.fillStyle=o.text,i.textAlign="left",i.fillText(a.label,l.left,18);for(let e=0;e<=4;e+=1){var p=a.xMax*e/4,u=a.yMin+(a.yMax-a.yMin)*e/4;U(i,c(p),l.top,c(p),r-l.bottom,o.border),U(i,l.left,m(u),n-l.right,m(u),o.border),i.fillStyle=o.muted,i.textAlign="center",i.fillText(p.toFixed(2),c(p),r-l.bottom+17),i.textAlign="right",i.fillText(Math.abs(u)<1e-12?"0":u.toFixed(a.decimals),l.left-7,m(u)+4)}void 0!==a.marker&&U(i,c(a.marker),l.top,c(a.marker),r-l.bottom,o.muted),t.forEach(e=>{i.beginPath(),e.points.forEach((e,t)=>{0===t?i.moveTo(c(e[0]),m(e[1])):i.lineTo(c(e[0]),m(e[1]))}),i.strokeStyle=e.color,i.lineWidth=e.width||2,i.setLineDash(e.dash||[]),i.stroke(),i.setLineDash([]),e.dots&&(i.fillStyle=e.color,e.points.forEach(e=>{i.beginPath(),i.arc(c(e[0]),m(e[1]),1.6,0,2*Math.PI),i.fill()}))}),i.fillStyle=o.text,i.textAlign="center",i.fillText(a.xLabel,l.left+s/2,r-6)}function te(){if(!z("elastic-bar-lab").hidden&&b.result){let{parameters:d,history:e}=b.result,c=e[Number(b.snapshot.value)],m=J();var t=2*Math.PI*c.time/d.period,t=([{field:"displacement",label:"u / µm",scale:1e6,amplitude:d.displacementAmplitude,temporal:Math.sin(t),decimals:1},{field:"velocity",label:"v / m/s",scale:1,amplitude:d.velocityAmplitude,temporal:Math.cos(t),decimals:3},{field:"stress",label:"σ / kPa (拉正)",scale:.001,amplitude:d.stressAmplitude,temporal:Math.sin(t),decimals:2}].forEach(({field:i,label:e,scale:n,amplitude:r,temporal:o,decimals:t})=>{var a=c.particles.map(e=>[e.referencePosition,e[i]*n]),l=Array.from({length:161},(e,t)=>{var t=d.length*t/160,a="stress"===i?Math.cos(Math.PI*t/d.length):Math.sin(Math.PI*t/d.length);return[t,r*a*o*n]}),s=1.12*Math.max(r*n,...a.map(e=>Math.abs(e[1])));ee(z("elastic-bar-"+i),[{points:a,color:m.blue,dots:!0},{points:l,color:m.orange,dash:[6,4]}],{label:e,xLabel:"参考 X / m",xMax:d.length,yMin:-s,yMax:s,decimals:t})}),[{field:"kineticEnergy",color:m.blue},{field:"strainEnergy",color:m.cyan,dash:[6,4]},{field:"totalEnergy",color:m.violet,width:3}].map(t=>({...t,points:e.map(e=>[e.time/d.period,e[t.field]/d.initialEnergy])})));t.push({points:[[0,1],[d.periods,1]],color:m.orange,dash:[2,4]}),ee(z("elastic-bar-energy"),t,{label:"能量 / E₀",xLabel:"t / T",xMax:d.periods,yMin:0,yMax:1.12*Math.max(1,...e.map(e=>e.totalEnergy/d.initialEnergy)),decimals:2,marker:c.time/d.period})}}b.controls.addEventListener("submit",e=>{e.preventDefault(),Y()}),b.controls.addEventListener("input",G),b.controls.addEventListener("change",G),z("elastic-bar-convergence").addEventListener("click",function(){z("elastic-bar-error").hidden=!0;try{if(!b.comparison){let t=D();b.comparison=[8,16,32,64].map(e=>{e=q.elasticBar({...t,cells:e});return{parameters:e.parameters,final:e.history[e.history.length-1]}})}V("elastic-bar-convergence-body",b.comparison.map(({parameters:e,final:t})=>[e.cells+" / "+e.cells*e.particlesPerCell,e.stepCount+" / "+e.timeStep.toExponential(3),(100*t.displacementError).toFixed(4),(100*t.velocityError).toFixed(4),(100*t.stressError).toFixed(4),(t.totalEnergy/e.initialEnergy).toFixed(6)]));var e=b.comparison[0].parameters;z("elastic-bar-convergence-status").textContent=`已缓存对照：8 / 16 / 32 / 64 单元；${W(e,!1)}；所有行终态 t = ${(e.periods*e.period).toFixed(6)} s。此表独立于上方单算例与快照；修改任一求解参数即失效。`,z("elastic-bar-convergence-result").hidden=!1}catch(e){b.comparison=null,z("elastic-bar-convergence-result").hidden=!0,z("elastic-bar-convergence-status").textContent="对照未完成，没有可用对照表；请重新运行。",X(e,"网格对照")}}),b.snapshot.addEventListener("input",_),z("elastic-bar-particle-details").addEventListener("toggle",Z);let E={panel:z("apic-lab"),preset:z("apic-preset"),affineInitialization:z("apic-affine-init"),stage:z("apic-stage"),rounds:z("apic-rounds"),inset:z("apic-inset"),step:z("apic-step"),canvases:["pic","flip","apic"].map(e=>z(`apic-${e}-canvas`)),tableIds:["metrics","angular","momentum","matrix","particle","grid"].map(e=>`apic-${e}-body`),key:null,result:null};function C(e){return 0===e?"0":Math.abs(e)<1e-4||1e5<=Math.abs(e)?e.toExponential(3):String(Number(e.toFixed(6)))}function ae(e){return`(${e[0].toFixed(2)}, ${e[1].toFixed(2)}) m`}function F(){z("apic-rounds-output").textContent=E.rounds.value+" 轮",z("apic-inset-output").textContent=Number(E.inset.value).toFixed(2)+" m",E.step.disabled=20<=Number(E.rounds.value)}function ie(e,t,a,i,n,r,o){var l,s,d=i[0]*n,i=-i[1]*n,n=Math.hypot(d,i);n<1||(l=t+d,s=a+i,i=Math.atan2(i,d),d=Math.min(7,.35*n),n=o?3.5:1.8,e.setLineDash(o?[5,4]:[]),U(e,t,a,l,s,r,n),e.setLineDash([]),U(e,l,s,l-d*Math.cos(i-Math.PI/6),s-d*Math.sin(i-Math.PI/6),r,n),U(e,l,s,l-d*Math.cos(i+Math.PI/6),s-d*Math.sin(i+Math.PI/6),r,n))}function M(){if(!E.panel.hidden){F();var a={preset:E.preset.value,rounds:E.rounds.valueAsNumber,inset:E.inset.valueAsNumber,affineInitialization:E.affineInitialization.value},t=JSON.stringify(a);if(t!==E.key){E.key=t;try{E.result=q.transferComparison2D(a),z("apic-error").hidden=!0,z("apic-error").textContent="";{let{methods:e,particlePositions:t,reference:i}=E.result;V("apic-metrics-body",e.map(e=>[e.method.toUpperCase(),C(100*e.gridError)+"%",C(100*e.particleError)+"%",null===e.matrixError?"—":C(e.matrixError)])),V("apic-angular-body",e.map(e=>[e.method.toUpperCase(),e.initial.angular.total,e.before.angular.total,e.gridAngular,e.after.angular.total,e.after.angular.orbital,e.after.angular.affine].map((e,t)=>0===t?e:C(e)))),V("apic-momentum-body",e.map(e=>[e.method.toUpperCase(),...e.before.momentum,...e.gridMomentum,...e.after.momentum].map((e,t)=>0===t?e:C(e)))),V("apic-matrix-body",e.find(e=>"apic"===e.method).after.matrices.map((e,t)=>["P"+(t+1),...e.map(C)])),V("apic-particle-body",e.flatMap(a=>t.map((e,t)=>[a.method.toUpperCase(),`P${t+1} · `+ae(e),...a.before.velocities[t].map(C),...a.after.velocities[t].map(C)]))),V("apic-grid-body",e.flatMap(a=>a.nodes.map((e,t)=>[a.method.toUpperCase(),`N${t+1} · `+ae(e.position),C(e.mass),...e.velocity.map(C),...i.nodes[t].map(C)])))}}catch(e){t=e,E.result=null,E.tableIds.forEach(e=>z(e).replaceChildren()),E.canvases.forEach(e=>{var t=e.getContext("2d");t.save(),t.setTransform(1,0,0,1,0,0),t.clearRect(0,0,e.width,e.height),t.restore()}),(a=z("apic-error")).hidden=!1,a.textContent=`纯传输计算失败：${t instanceof Error?t.message:String(t)} 请修改参数后重试。`,z("apic-observation").textContent="当前参数没有可用结果；旧图表与数值已清除。"}}if(E.result){var{parameters:a,methods:t}=E.result,[t,e,i]=t,n=e=>C(100*e)+"%",r="exact"===a.affineInitialization?"APIC 仅在起点设 C = A，随后从网格重建；当前仿射场可保持。":"translation"===a.preset?"平移场 A = 0，零 C 也是精确初始化。":"初始 C = 0：APIC 第一轮与 PIC 相同，后续重建不能补回已损失的幅值。",o="translation"===a.preset?"均匀平移可由 PIC 再现。":"本剪切／旋转场会被 PIC 反复平均而衰减。";z("apic-observation").textContent=[`第 ${a.rounds} 轮 · ${"grid"===E.stage.value?"P2G 后网格速度":"G2P 后粒子速度"}。`+o,`网格／粒子误差：PIC ${n(t.gridError)}／${n(t.particleError)}；FLIP ${n(e.gridError)}／${n(e.particleError)}；APIC ${n(i.gridError)}／${n(i.particleError)}。`,"FLIP 的零粒子误差来自零网格增量，不等于网格准确。",r].join(" ");{let{methods:l,particlePositions:s,nodePositions:d,reference:e,parameters:c}=E.result;var f,a=E.canvases.map(O);let m=J(),p=Math.max(1,Math.min(...a.map(e=>Math.min(e.width-64,e.height-72)))/1.8),t=0;for(f of e.nodes)t=Math.max(t,Math.abs(f[0]),Math.abs(f[1]));o=.36/t;let u=p*o,h=(z("apic-vector-scale").textContent=C(o),"grid"===E.stage.value),x=h?d:s,v=h?e.nodes:e.particles;a.forEach(({context:a,width:t,height:i},e)=>{let n=l[e],r=e=>t/2+(e-.5)*p,o=e=>i/2-(e-.5)*p;a.strokeStyle=m.muted,a.lineWidth=1,a.strokeRect(r(0),o(1),p,p),a.setLineDash([2,4]),U(a,r(.5),o(0),r(.5),o(1),m.border),U(a,r(0),o(.5),r(1),o(.5),m.border),a.setLineDash([]),a.font="11px ui-monospace, SFMono-Regular, Menlo, monospace",a.fillStyle=m.text,a.textAlign="center",a.fillText(`${n.method.toUpperCase()} · 第 ${c.rounds} 轮 · `+(h?"节点":"返回粒子"),t/2,18),a.fillText("x / m →",t/2,i-10),a.fillText("0",r(0),o(0)+17),a.fillText("1",r(1),o(0)+17),a.textAlign="left",a.fillText("y / m ↑",8,36),a.fillText("0",r(0)-17,o(0)+4),a.fillText("1",r(0)-17,o(1)+4),d.forEach(e=>{a.fillStyle=h?m.text:m.muted,a.fillRect(r(e[0])-3,o(e[1])-3,6,6)}),s.forEach(e=>{a.beginPath(),a.arc(r(e[0]),o(e[1]),3.5,0,2*Math.PI),a.fillStyle=h?m.muted:m.text,a.fill()}),x.forEach((e,t)=>{ie(a,r(e[0]),o(e[1]),v[t],u,m.orange,!0)}),x.forEach((e,t)=>{t=h?n.nodes[t].velocity:n.after.velocities[t];ie(a,r(e[0]),o(e[1]),t,u,m.blue,!1)})})}}}}function k(){o(),c(),m(),p(),x(),te(),M()}if(z("apic-controls").addEventListener("submit",e=>e.preventDefault()),[E.preset,E.affineInitialization,E.rounds,E.inset].forEach(t=>{["input","change"].forEach(e=>t.addEventListener(e,()=>{F(),M()}))}),E.stage.addEventListener("change",M),E.step.addEventListener("click",()=>{E.rounds.value=Math.min(20,E.rounds.valueAsNumber+1),F(),M()}),z("apic-reset").addEventListener("click",()=>{E.rounds.value=1,F(),M()}),F(),e=n.some(e=>"#"+e.id===location.hash)?location.hash.slice(1):"mpm-lab",z("mpm2d-lab").hidden="mpm2d-lab"!==e,P("reset"),r(e,!1),window.addEventListener("hashchange",()=>r(location.hash.slice(1),!1)),"ResizeObserver"in window){let t=new ResizeObserver(()=>requestAnimationFrame(k));n.forEach(e=>t.observe(e))}else window.addEventListener("resize",k);new MutationObserver(k).observe(document.documentElement,{attributes:!0,attributeFilter:["data-theme"]})})();
+(function () {
+    'use strict';
+
+    const core = globalThis.FireflyLabCore;
+    const root = document.getElementById('computation-lab');
+    if (!core || !root || root.dataset.initialized === 'true') return;
+    root.dataset.initialized = 'true';
+    root.classList.add('lab-ready');
+
+    const byId = id => document.getElementById(id);
+    const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const colors = () => ({
+        text: css('--font-color') || '#46515d',
+        muted: css('--lab-muted') || '#657587',
+        border: css('--lab-border') || 'rgba(80,105,132,.18)',
+        blue: css('--lab-blue') || '#3f84d7',
+        cyan: css('--lab-cyan') || '#24a5a5',
+        orange: css('--lab-orange') || '#d8843f',
+        violet: css('--lab-violet') || '#7869d6'
+    });
+
+    function setupCanvas(canvas) {
+        const rectangle = canvas.getBoundingClientRect();
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        const width = rectangle.width || 300;
+        const height = rectangle.height || 260;
+        canvas.width = Math.round(width * ratio);
+        canvas.height = Math.round(height * ratio);
+        const context = canvas.getContext('2d');
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        context.clearRect(0, 0, width, height);
+        return { context, width, height };
+    }
+
+    function line(context, startX, startY, endX, endY, color, width) {
+        context.beginPath();
+        context.moveTo(startX, startY);
+        context.lineTo(endX, endY);
+        context.strokeStyle = color;
+        context.lineWidth = width || 1;
+        context.stroke();
+    }
+
+    function arrow(context, startX, startY, endX, endY, color, width) {
+        const angle = Math.atan2(endY - startY, endX - startX);
+        line(context, startX, startY, endX, endY, color, width || 1.5);
+        context.beginPath();
+        context.moveTo(endX, endY);
+        context.lineTo(endX - 7 * Math.cos(angle - Math.PI / 6), endY - 7 * Math.sin(angle - Math.PI / 6));
+        context.lineTo(endX - 7 * Math.cos(angle + Math.PI / 6), endY - 7 * Math.sin(angle + Math.PI / 6));
+        context.closePath();
+        context.fillStyle = color;
+        context.fill();
+    }
+
+    function bindOutput(input, output, formatter, render) {
+        const update = () => {
+            output.textContent = formatter(Number(input.value));
+            render();
+        };
+        input.addEventListener('input', update);
+        input.addEventListener('change', update);
+        return update;
+    }
+
+    const tabs = Array.from(root.querySelectorAll('[data-lab-tab]'));
+    const panels = Array.from(root.querySelectorAll('[data-lab-panel]'));
+
+    function activatePanel(id, updateHash) {
+        if (!panels.some(panel => panel.id === id)) id = 'mpm-lab';
+        if (id !== 'mpm-lab') stopP2G();
+        if (id !== 'mpm2d-lab') stopMPMScan();
+        if (id !== 'kinematics-lab') stopKinematics();
+        tabs.forEach(tab => {
+            const active = tab.dataset.labTab === id;
+            tab.setAttribute('aria-selected', String(active));
+            tab.tabIndex = active ? 0 : -1;
+        });
+        panels.forEach(panel => {
+            panel.hidden = panel.id !== id;
+        });
+        if (updateHash) history.replaceState(null, '', `#${id}`);
+        if (id === 'elastic-bar-lab' && !elasticBar.attempted) runElasticBar();
+        requestAnimationFrame(renderVisible);
+    }
+
+    tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => activatePanel(tab.dataset.labTab, true));
+        tab.addEventListener('keydown', event => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            let target = index;
+            if (event.key === 'ArrowLeft') target = (index - 1 + tabs.length) % tabs.length;
+            if (event.key === 'ArrowRight') target = (index + 1) % tabs.length;
+            if (event.key === 'Home') target = 0;
+            if (event.key === 'End') target = tabs.length - 1;
+            tabs[target].focus();
+            activatePanel(tabs[target].dataset.labTab, true);
+        });
+    });
+
+    const p2g = {
+        canvas: byId('p2g-canvas'),
+        positionA: byId('particle-a-position'),
+        velocityA: byId('particle-a-velocity'),
+        massA: byId('particle-a-mass'),
+        positionB: byId('particle-b-position'),
+        velocityB: byId('particle-b-velocity'),
+        massB: byId('particle-b-mass'),
+        nodeCount: byId('p2g-node-count'),
+        timeStep: byId('p2g-time-step'),
+        acceleration: byId('p2g-acceleration'),
+        flipRatio: byId('p2g-flip-ratio'),
+        fixedBoundaries: byId('p2g-fixed-boundaries'),
+        dragging: -1,
+        lastGeometry: null,
+        lastStep: null,
+        stepCount: 0,
+        elapsedTime: 0,
+        timer: null,
+        trails: [[], []]
+    };
+
+    function p2gParticles() {
+        return [
+            { position: Number(p2g.positionA.value), velocity: Number(p2g.velocityA.value), mass: Number(p2g.massA.value) },
+            { position: Number(p2g.positionB.value), velocity: Number(p2g.velocityB.value), mass: Number(p2g.massB.value) }
+        ];
+    }
+
+    function renderP2G() {
+        if (byId('mpm-lab').hidden) return;
+        const particles = p2gParticles();
+        const result = core.particleToGrid(particles, Number(p2g.nodeCount.value));
+        const { context, width, height } = setupCanvas(p2g.canvas);
+        const palette = colors();
+        const marginX = Math.max(42, width * 0.075);
+        const span = width - marginX * 2;
+        const nodeY = Math.max(92, height * 0.29);
+        const particleY = Math.min(height - 72, height * 0.72);
+        const particleColors = [palette.orange, palette.violet];
+        const xFor = position => marginX + position * span;
+
+        context.font = '12px ui-monospace, SFMono-Regular, Menlo, monospace';
+        context.textAlign = 'center';
+        context.fillStyle = palette.muted;
+        context.fillText('背景网格节点', marginX + 55, 24);
+        context.fillText('物质点', marginX + 28, particleY + 53);
+        line(context, marginX, nodeY, width - marginX, nodeY, palette.border, 2);
+
+        result.nodes.forEach(node => {
+            const x = xFor(node.position);
+            const barHeight = Math.min(70, node.mass * 48);
+            if (barHeight > 0.5) {
+                context.fillStyle = `${palette.blue}55`;
+                context.fillRect(x - 8, nodeY - barHeight, 16, barHeight);
+            }
+            context.beginPath();
+            context.arc(x, nodeY, 6, 0, Math.PI * 2);
+            context.fillStyle = node.mass > 1e-10 ? palette.blue : palette.muted;
+            context.fill();
+            context.fillStyle = palette.muted;
+            context.fillText(`i${node.index}`, x, nodeY + 22);
+            if (node.mass > 1e-10) {
+                context.fillStyle = palette.text;
+                context.fillText(`m=${node.mass.toFixed(2)}`, x, nodeY - barHeight - 9);
+                const velocityLength = node.velocity * Math.min(30, span * 0.04);
+                if (Math.abs(velocityLength) > 2) {
+                    arrow(context, x, nodeY + 38, x + velocityLength, nodeY + 38, palette.blue, 1.5);
+                }
+                context.fillStyle = palette.muted;
+                context.fillText(`v=${node.velocity.toFixed(2)}`, x, nodeY + 58);
+            }
+        });
+
+        p2g.trails.forEach((trail, particleIndex) => {
+            trail.forEach((position, index) => {
+                context.save();
+                context.globalAlpha = (index + 1) / trail.length * 0.24;
+                context.beginPath();
+                context.arc(xFor(position), particleY, 3.5, 0, Math.PI * 2);
+                context.fillStyle = particleColors[particleIndex];
+                context.fill();
+                context.restore();
+            });
+        });
+
+        particles.forEach((particle, particleIndex) => {
+            const particleX = xFor(particle.position);
+            result.nodes.forEach(node => {
+                const contribution = node.contributions.find(item => item.particleIndex === particleIndex);
+                if (!contribution) return;
+                context.save();
+                context.globalAlpha = 0.16 + contribution.weight * 0.68;
+                line(context, particleX, particleY - 12, xFor(node.position), nodeY + 8, particleColors[particleIndex], 2.5);
+                context.restore();
+            });
+            context.beginPath();
+            context.arc(particleX, particleY, 13, 0, Math.PI * 2);
+            context.fillStyle = particleColors[particleIndex];
+            context.fill();
+            context.strokeStyle = 'rgba(255,255,255,.8)';
+            context.lineWidth = 2;
+            context.stroke();
+            context.fillStyle = palette.text;
+            context.fillText(particleIndex ? 'B' : 'A', particleX, particleY + 34);
+            const velocityLength = particle.velocity * Math.min(38, span * 0.055);
+            if (Math.abs(velocityLength) > 2) {
+                arrow(context, particleX, particleY - 23, particleX + velocityLength, particleY - 23, particleColors[particleIndex], 2);
+            }
+        });
+
+        p2g.lastGeometry = { marginX, span, particleY, particles };
+        byId('p2g-mass-total').textContent = `${result.totals.particleMass.toFixed(3)} / ${result.totals.gridMass.toFixed(3)}`;
+        byId('p2g-momentum-total').textContent = `${result.totals.particleMomentum.toFixed(3)} / ${result.totals.gridMomentum.toFixed(3)}`;
+        const maximumError = Math.max(Math.abs(result.totals.massError), Math.abs(result.totals.momentumError));
+        byId('p2g-error').textContent = maximumError.toExponential(2);
+        const particleEnergy = particles.reduce((sum, particle) => sum + 0.5 * particle.mass * particle.velocity ** 2, 0);
+        const gridEnergy = result.nodes.reduce((sum, node) => sum + 0.5 * node.mass * node.velocity ** 2, 0);
+        const beforeEnergy = p2g.lastStep ? p2g.lastStep.kineticEnergyBefore : particleEnergy;
+        const afterEnergy = p2g.lastStep ? p2g.lastStep.kineticEnergyAfter : particleEnergy;
+        byId('p2g-particle-energy').textContent = `${beforeEnergy.toFixed(4)} / ${afterEnergy.toFixed(4)} J`;
+        byId('p2g-grid-energy').textContent = `${(p2g.lastStep ? p2g.lastStep.gridKineticEnergy : gridEnergy).toFixed(4)} J`;
+        byId('p2g-step-count').textContent = `${p2g.elapsedTime.toFixed(3)} s / ${p2g.stepCount}`;
+
+        const table = byId('p2g-table-body');
+        table.replaceChildren(...result.nodes.map(node => {
+            const row = document.createElement('tr');
+            [node.index, node.position.toFixed(3), node.mass.toFixed(4), node.momentum.toFixed(4), node.mass > 1e-10 ? node.velocity.toFixed(4) : '—'].forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            return row;
+        }));
+    }
+
+    bindOutput(p2g.positionA, byId('particle-a-position-output'), value => value.toFixed(2), renderP2G);
+    bindOutput(p2g.velocityA, byId('particle-a-velocity-output'), value => `${value.toFixed(2)} m/s`, renderP2G);
+    bindOutput(p2g.massA, byId('particle-a-mass-output'), value => `${value.toFixed(2)} kg`, renderP2G);
+    bindOutput(p2g.positionB, byId('particle-b-position-output'), value => value.toFixed(2), renderP2G);
+    bindOutput(p2g.velocityB, byId('particle-b-velocity-output'), value => `${value.toFixed(2)} m/s`, renderP2G);
+    bindOutput(p2g.massB, byId('particle-b-mass-output'), value => `${value.toFixed(2)} kg`, renderP2G);
+    bindOutput(p2g.nodeCount, byId('p2g-node-count-output'), value => String(value), renderP2G);
+    bindOutput(p2g.timeStep, byId('p2g-time-step-output'), value => `${value.toFixed(3)} s`, renderP2G);
+    bindOutput(p2g.acceleration, byId('p2g-acceleration-output'), value => `${value.toFixed(2)} m/s²`, renderP2G);
+    bindOutput(p2g.flipRatio, byId('p2g-flip-ratio-output'), value => `${Math.round(value * 100)}%`, renderP2G);
+    p2g.fixedBoundaries.addEventListener('change', renderP2G);
+
+    function stopP2G() {
+        if (p2g.timer) clearInterval(p2g.timer);
+        p2g.timer = null;
+        const button = byId('p2g-play');
+        button.textContent = '连续播放';
+        button.setAttribute('aria-pressed', 'false');
+    }
+
+    function advanceP2G() {
+        const before = p2gParticles();
+        const step = core.transferStep(before, {
+            nodeCount: Number(p2g.nodeCount.value),
+            timeStep: Number(p2g.timeStep.value),
+            acceleration: Number(p2g.acceleration.value),
+            flipRatio: Number(p2g.flipRatio.value),
+            fixedBoundaries: p2g.fixedBoundaries.checked
+        });
+        p2g.lastStep = step;
+        p2g.stepCount += 1;
+        p2g.elapsedTime += Number(p2g.timeStep.value);
+        step.updatedParticles.forEach((particle, index) => {
+            p2g.trails[index].push(before[index].position);
+            if (p2g.trails[index].length > 28) p2g.trails[index].shift();
+            const positionInput = index === 0 ? p2g.positionA : p2g.positionB;
+            const velocityInput = index === 0 ? p2g.velocityA : p2g.velocityB;
+            positionInput.value = particle.position.toFixed(3);
+            const clippedVelocity = core.clamp(particle.velocity, -2, 2);
+            velocityInput.value = clippedVelocity.toFixed(3);
+            byId(index === 0 ? 'particle-a-position-output' : 'particle-b-position-output').textContent = particle.position.toFixed(2);
+            byId(index === 0 ? 'particle-a-velocity-output' : 'particle-b-velocity-output').textContent = `${clippedVelocity.toFixed(2)} m/s`;
+        });
+        renderP2G();
+        if (p2g.stepCount >= 300) stopP2G();
+    }
+
+    byId('p2g-step').addEventListener('click', advanceP2G);
+    byId('p2g-play').addEventListener('click', () => {
+        if (p2g.timer) {
+            stopP2G();
+            return;
+        }
+        byId('p2g-play').textContent = '暂停';
+        byId('p2g-play').setAttribute('aria-pressed', 'true');
+        p2g.timer = setInterval(advanceP2G, 180);
+    });
+    byId('p2g-reset').addEventListener('click', () => {
+        stopP2G();
+        p2g.positionA.value = 0.28;
+        p2g.velocityA.value = 1.2;
+        p2g.massA.value = 1;
+        p2g.positionB.value = 0.68;
+        p2g.velocityB.value = -0.4;
+        p2g.massB.value = 1;
+        p2g.nodeCount.value = 6;
+        p2g.timeStep.value = 0.02;
+        p2g.acceleration.value = 0;
+        p2g.flipRatio.value = 0.7;
+        p2g.fixedBoundaries.checked = true;
+        p2g.lastStep = null;
+        p2g.stepCount = 0;
+        p2g.elapsedTime = 0;
+        p2g.trails = [[], []];
+        ['particle-a-position', 'particle-a-velocity', 'particle-a-mass', 'particle-b-position', 'particle-b-velocity', 'particle-b-mass', 'p2g-node-count', 'p2g-time-step', 'p2g-acceleration', 'p2g-flip-ratio'].forEach(id => byId(id).dispatchEvent(new Event('input')));
+    });
+
+    function p2gPointer(event) {
+        const rectangle = p2g.canvas.getBoundingClientRect();
+        return { x: event.clientX - rectangle.left, y: event.clientY - rectangle.top };
+    }
+
+    p2g.canvas.addEventListener('pointerdown', event => {
+        if (!p2g.lastGeometry) return;
+        const point = p2gPointer(event);
+        const { marginX, span, particleY, particles } = p2g.lastGeometry;
+        let closest = -1;
+        let distance = Infinity;
+        particles.forEach((particle, index) => {
+            const dx = point.x - (marginX + particle.position * span);
+            const dy = point.y - particleY;
+            const candidate = Math.hypot(dx, dy);
+            if (candidate < distance) { distance = candidate; closest = index; }
+        });
+        if (distance > 32) return;
+        p2g.dragging = closest;
+        p2g.canvas.setPointerCapture(event.pointerId);
+    });
+
+    p2g.canvas.addEventListener('pointermove', event => {
+        if (p2g.dragging < 0 || !p2g.lastGeometry) return;
+        const point = p2gPointer(event);
+        const position = core.clamp((point.x - p2g.lastGeometry.marginX) / p2g.lastGeometry.span, 0, 1);
+        const input = p2g.dragging === 0 ? p2g.positionA : p2g.positionB;
+        input.value = position.toFixed(2);
+        input.dispatchEvent(new Event('input'));
+    });
+    ['pointerup', 'pointercancel'].forEach(name => p2g.canvas.addEventListener(name, () => { p2g.dragging = -1; }));
+
+    const mpm2d = {
+        canvas: byId('mpm2d-canvas'),
+        nodeCount: byId('mpm2d-node-count'),
+        basis: byId('mpm2d-basis'),
+        halfWidthRatio: byId('mpm2d-half-width-ratio'),
+        layer: byId('mpm2d-layer'),
+        selected: 0,
+        particles: [],
+        geometry: null,
+        pointerId: null
+    };
+    const mpm2dFields = [
+        { id: 'x', key: 'x', scale: 1 },
+        { id: 'y', key: 'y', scale: 1 },
+        { id: 'mass', key: 'mass', scale: 1 },
+        { id: 'vx', key: 'vx', scale: 1 },
+        { id: 'vy', key: 'vy', scale: 1 },
+        { id: 'volume', key: 'volume', scale: 1e-6 },
+        { id: 'stress-xx', key: 'stressXX', scale: 1000 },
+        { id: 'stress-yy', key: 'stressYY', scale: 1000 },
+        { id: 'stress-xy', key: 'stressXY', scale: 1000 }
+    ];
+    const mpm2dBasisNames = { linear: '线性', quadratic: '二次 B 样条', gimp: 'uGIMP' };
+
+    function syncMPM2DControls() {
+        const particle = mpm2d.particles[mpm2d.selected];
+        byId('mpm2d-particle').value = mpm2d.selected;
+        byId('mpm2d-particle-output').textContent = 'ABCD'[mpm2d.selected];
+        mpm2dFields.forEach(field => {
+            const value = particle[field.key] / field.scale;
+            const input = byId(`mpm2d-${field.id}`);
+            input.value = Number(value.toPrecision(12));
+            input.removeAttribute('aria-invalid');
+            byId(`mpm2d-${field.id}-output`).textContent = value.toFixed(3);
+        });
+        ['x', 'y'].forEach(axis => { byId(`mpm2d-${axis}-range`).value = particle[axis]; });
+        byId('mpm2d-input-status').textContent = '';
+    }
+
+    function setMPM2DPreset(preset) {
+        mpm2d.particles = [
+            { x: 0.28, y: 0.32, mass: 1, vx: 0.8, vy: 0.3 },
+            { x: 0.67, y: 0.29, mass: 1.4, vx: -0.4, vy: 0.6 },
+            { x: 0.36, y: 0.72, mass: 0.8, vx: 0.2, vy: -0.5 },
+            { x: 0.76, y: 0.68, mass: 1.2, vx: -0.3, vy: -0.2 }
+        ].map(particle => ({
+            ...particle, volume: 0.001, stressXX: 0, stressYY: 0, stressXY: 0
+        }));
+        const notes = {
+            reset: '默认：不同质量与速度，零应力；没有时间推进。',
+            translation: '均匀平移：四粒子 v = (1, 0.5) m/s、应力为零；有质量节点速度相同。仅映射，不移动粒子。',
+            compression: '压应力：四粒子 σxx = σyy = −20 kPa、σxy = 0、速度为零；展示给定各向同性压应力的离散内力。',
+            shear: '纯剪切应力：四粒子 σxy = σyx = +15 kPa、正应力与速度为零；展示对称剪应力的节点内力。'
+        };
+        if (preset !== 'reset') {
+            mpm2d.particles.forEach(particle => {
+                particle.vx = preset === 'translation' ? 1 : 0;
+                particle.vy = preset === 'translation' ? 0.5 : 0;
+                particle.stressXX = particle.stressYY = preset === 'compression' ? -20000 : 0;
+                particle.stressXY = preset === 'shear' ? 15000 : 0;
+            });
+        } else {
+            mpm2d.nodeCount.value = '5';
+            mpm2d.basis.value = 'linear';
+            mpm2d.halfWidthRatio.value = '0.25';
+        }
+        mpm2d.layer.value = preset === 'translation' ? 'velocity' : preset === 'reset' ? 'mass' : 'internal-force';
+        mpm2d.selected = 0;
+        byId('mpm2d-preset-note').textContent = notes[preset];
+        syncMPM2DControls();
+        renderMPM2D();
+    }
+
+    function fillMPM2DTable(id, rows) {
+        byId(id).replaceChildren(...rows.map(values => {
+            const row = document.createElement('tr');
+            values.forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            return row;
+        }));
+    }
+
+    const scan = {
+        panel: byId('mpm-scan'),
+        position: byId('mpm-scan-position'),
+        frame: null,
+        lastFrame: null,
+        cache: null
+    };
+    const scanBases = ['linear', 'quadratic', 'gimp'];
+
+    function scanValue(position, nodeCount, basis, ratio, nodeIndex) {
+        const node = core.shapeStencil1D(position, nodeCount, basis, ratio)
+            .find(item => item.index === nodeIndex);
+        const weight = node ? node.weight : 0;
+        const gradient = node ? node.gradient : 0;
+        return [weight, gradient, -10 * gradient];
+    }
+
+    function scanData() {
+        const nodeCount = Number(mpm2d.nodeCount.value);
+        const ratio = Number(mpm2d.halfWidthRatio.value);
+        if (scan.cache && scan.cache.nodeCount === nodeCount && scan.cache.ratio === ratio) return scan.cache;
+        const h = 1 / (nodeCount - 1);
+        const nodeIndex = (nodeCount - 1) / 2;
+        const center = nodeIndex * h;
+        const start = center - h;
+        const end = center + h;
+        // Duplicate the middle sample so linear gradient/force paths can break
+        // there. Each segment endpoint is evaluated from inside its interval.
+        const curves = scanBases.map(basis => [0, 1].map(half =>
+            Array.from({ length: 121 }, (_, index) => {
+                const progress = (half + index / 120) / 2;
+                let position = start + (end - start) * progress;
+                if (basis === 'linear') {
+                    if (index === 0) position += h * 1e-9;
+                    if (index === 120) position -= h * 1e-9;
+                }
+                return { progress, values: scanValue(position, nodeCount, basis, ratio, nodeIndex) };
+            })
+        ));
+        scan.cache = { nodeCount, ratio, h, nodeIndex, center, start, end, curves };
+        return scan.cache;
+    }
+
+    function renderMPMScan() {
+        if (!scan.panel.open || byId('mpm2d-lab').hidden) return;
+        const data = scanData();
+        const progress = Number(scan.position.value);
+        const position = data.start + 2 * data.h * progress;
+        const values = scanBases.map(basis => scanValue(position, data.nodeCount, basis, data.ratio, data.nodeIndex));
+        const palette = colors();
+        const curveColors = [palette.blue, palette.cyan, palette.orange];
+        const dashes = [[], [7, 4], [3, 3]];
+        byId('mpm-scan-position-output').textContent = `${(progress * 100).toFixed(1)}%`;
+        byId('mpm-scan-status').textContent = `固定节点 i = ${data.nodeIndex}，xᵢ = ${data.center.toFixed(4)} m；粒子 xₚ = ${position.toFixed(4)} m。扫描区间 [${data.start.toFixed(4)}, ${data.end.toFixed(4)}] m，h = ${data.h.toFixed(4)} m，uGIMP ℓp/h = ${data.ratio.toFixed(2)}。`;
+        fillMPM2DTable('mpm-scan-values', values.map((row, index) =>
+            [mpm2dBasisNames[scanBases[index]], ...row.map(value => value.toFixed(6))]
+        ));
+        const path = setupCanvas(byId('mpm-scan-path'));
+        const pathX = value => 40 + value * (path.width - 80);
+        line(path.context, pathX(0), 44, pathX(1), 44, palette.border, 2);
+        path.context.font = '12px sans-serif';
+        path.context.textAlign = 'center';
+        [0, 0.5, 1].forEach(value => {
+            path.context.fillStyle = value === 0.5 ? palette.text : palette.muted;
+            path.context.fillRect(pathX(value) - 4, 40, 8, 8);
+            path.context.fillText(value === 0.5 ? '固定节点 i' : `${value === 0 ? 'i − 1' : 'i + 1'}`, pathX(value), 72);
+        });
+        path.context.fillStyle = palette.orange;
+        path.context.beginPath();
+        path.context.arc(pathX(progress), 25, 5, 0, 2 * Math.PI);
+        path.context.fill();
+        line(path.context, pathX(progress), 30, pathX(progress), 39, palette.orange);
+        const charts = [
+            { id: 'weight', title: '权重 Nᵢ', min: 0, max: 1.1 },
+            { id: 'gradient', title: '梯度 dNᵢ/dx / m⁻¹', min: -1.2 / data.h, max: 1.2 / data.h },
+            { id: 'force', title: '单粒子内力 fᵢₚ / N', min: -12 / data.h, max: 12 / data.h }
+        ];
+        charts.forEach((chart, field) => {
+            const { context, width, height } = setupCanvas(byId(`mpm-scan-${chart.id}`));
+            const left = 48, right = width - 20, top = 32, bottom = height - 36;
+            const xFor = value => left + value * (right - left);
+            const yFor = value => bottom - (value - chart.min) / (chart.max - chart.min) * (bottom - top);
+            context.font = '12px sans-serif';
+            context.fillStyle = palette.text;
+            context.textAlign = 'left';
+            context.fillText(chart.title, left, 17);
+            context.textAlign = 'right';
+            [chart.min, (chart.min + chart.max) / 2, chart.max].forEach(value => {
+                line(context, left, yFor(value), right, yFor(value), palette.border);
+                context.fillText(value.toFixed(1), left - 6, yFor(value) + 4);
+            });
+            context.textAlign = 'center';
+            [0, 0.5, 1].forEach(value => {
+                line(context, xFor(value), top, xFor(value), bottom, palette.border);
+                context.fillText((data.start + value * 2 * data.h).toFixed(3), xFor(value), bottom + 17);
+            });
+            context.textAlign = 'right';
+            context.fillText('xₚ / m', right, height - 3);
+            data.curves.forEach((segments, basisIndex) => {
+                context.strokeStyle = curveColors[basisIndex];
+                context.lineWidth = 2;
+                context.setLineDash(dashes[basisIndex]);
+                segments.forEach(segment => {
+                    context.beginPath();
+                    segment.forEach((point, index) => {
+                        if (index === 0) context.moveTo(xFor(point.progress), yFor(point.values[field]));
+                        else context.lineTo(xFor(point.progress), yFor(point.values[field]));
+                    });
+                    context.stroke();
+                });
+            });
+            context.setLineDash([2, 3]);
+            line(context, xFor(progress), top, xFor(progress), bottom, palette.muted);
+            context.setLineDash([]);
+            values.forEach((row, index) => {
+                context.fillStyle = curveColors[index];
+                context.beginPath();
+                context.arc(xFor(progress), yFor(row[field]), 3.5, 0, 2 * Math.PI);
+                context.fill();
+            });
+        });
+    }
+
+    function stopMPMScan() {
+        if (scan.frame !== null) cancelAnimationFrame(scan.frame);
+        scan.frame = null;
+        scan.lastFrame = null;
+        byId('mpm-scan-play').textContent = '播放扫描';
+        byId('mpm-scan-play').setAttribute('aria-pressed', 'false');
+    }
+
+    function advanceMPMScan(timestamp) {
+        if (!scan.panel.open || byId('mpm2d-lab').hidden || document.hidden) {
+            stopMPMScan();
+            return;
+        }
+        if (scan.lastFrame === null) scan.lastFrame = timestamp;
+        const elapsed = timestamp - scan.lastFrame;
+        if (elapsed >= 32) {
+            // Display pacing only: it does not represent a physical time step.
+            scan.position.value = Math.min(1, Number(scan.position.value) + Math.min(elapsed, 100) / 8000);
+            scan.lastFrame = timestamp;
+            renderMPMScan();
+        }
+        if (Number(scan.position.value) >= 1) stopMPMScan();
+        else scan.frame = requestAnimationFrame(advanceMPMScan);
+    }
+
+    byId('mpm-scan-play').addEventListener('click', () => {
+        if (scan.frame !== null) {
+            stopMPMScan();
+            return;
+        }
+        if (Number(scan.position.value) >= 1) scan.position.value = 0;
+        byId('mpm-scan-play').textContent = '暂停扫描';
+        byId('mpm-scan-play').setAttribute('aria-pressed', 'true');
+        scan.frame = requestAnimationFrame(advanceMPMScan);
+    });
+    byId('mpm-scan-reset').addEventListener('click', () => {
+        stopMPMScan();
+        scan.position.value = 0;
+        renderMPMScan();
+    });
+    scan.position.addEventListener('input', () => {
+        stopMPMScan();
+        renderMPMScan();
+    });
+    scan.panel.addEventListener('toggle', () => {
+        if (!scan.panel.open) stopMPMScan();
+        else renderMPMScan();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopMPMScan();
+    });
+    window.addEventListener('pagehide', stopMPMScan);
+
+    function renderMPM2D() {
+        if (byId('mpm2d-lab').hidden || !mpm2d.particles.length) return;
+        const nodeCount = Number(mpm2d.nodeCount.value);
+        const basis = mpm2d.basis.value;
+        const particleHalfWidthRatio = Number(mpm2d.halfWidthRatio.value);
+        const layer = mpm2d.layer.value;
+        const h = 1 / (nodeCount - 1);
+        const particleHalfWidth = particleHalfWidthRatio * h;
+        const domainDescription = `ℓp/h = ${particleHalfWidthRatio.toFixed(2)}，半宽 ℓp = ${particleHalfWidth.toFixed(5)} m，全宽 2ℓp = ${(2 * particleHalfWidth).toFixed(5)} m`;
+        mpm2d.halfWidthRatio.disabled = basis !== 'gimp';
+        byId('mpm2d-half-width-ratio-output').textContent = particleHalfWidthRatio.toFixed(2);
+        byId('mpm2d-domain-note').textContent = `${basis === 'gimp' ? '当前 uGIMP 域' : '保留的 uGIMP 比较参数（选择 uGIMP 后可调整）'}：${domainDescription}；h = ${h.toFixed(3)} m。切换形函数保留半宽比，跨边界对比始终使用此值。`;
+        const result = core.particleToGrid2D(mpm2d.particles, { nodeCount, basis, particleHalfWidthRatio });
+        const selected = mpm2d.particles[mpm2d.selected];
+        const support = result.nodes.flatMap(node => {
+            const contribution = node.contributions.find(item => item.particleIndex === mpm2d.selected);
+            return contribution ? [{ node, ...contribution }] : [];
+        });
+        const supportByIndex = new Map(support.map(item => [item.node.index, item]));
+        const { context, width, height } = setupCanvas(mpm2d.canvas);
+        const palette = colors();
+        const particleColors = [palette.orange, palette.violet, palette.cyan, palette.blue];
+        // Reserve 0.65 cell on each side for arrows on outer support nodes.
+        const cell = Math.min(width - 64, height - 64) / (nodeCount + 2.3);
+        const plotSize = cell * (nodeCount + 1);
+        const span = cell * (nodeCount - 1);
+        const originX = (width - plotSize) / 2 + cell;
+        const originY = (height + plotSize) / 2 - cell;
+        const xFor = x => originX + x * span;
+        const yFor = y => originY - y * span;
+        mpm2d.geometry = { width, height, originX, originY, span };
+
+        for (let index = -1; index <= nodeCount; index += 1) {
+            context.setLineDash(index === -1 || index === nodeCount ? [3, 4] : []);
+            line(context, xFor(index * h), yFor(-h), xFor(index * h), yFor(1 + h), palette.border);
+            line(context, xFor(-h), yFor(index * h), xFor(1 + h), yFor(index * h), palette.border);
+        }
+        context.setLineDash([]);
+        context.strokeStyle = palette.muted;
+        context.lineWidth = 1.5;
+        context.strokeRect(xFor(0), yFor(1), span, span);
+        context.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+        context.fillStyle = palette.text;
+        context.textAlign = 'center';
+        context.fillText('0', xFor(0), yFor(0) + 16);
+        context.fillText('1', xFor(1), yFor(0) + 16);
+        context.fillText('x / m →', width / 2, height - 9);
+        context.textAlign = 'left';
+        context.fillText('y / m ↑', 8, 15);
+        context.fillText('1', xFor(0) - 16, yFor(1) + 4);
+        context.fillText('0', xFor(0) - 16, yFor(0) + 4);
+
+        if (layer === 'weights') {
+            support.forEach(item => {
+                context.save();
+                context.globalAlpha = 0.25 + 0.75 * item.weight;
+                context.setLineDash(item.weight === 0 ? [3, 3] : []);
+                line(context, xFor(selected.x), yFor(selected.y), xFor(item.node.x), yFor(item.node.y), particleColors[mpm2d.selected], 1.5);
+                context.restore();
+            });
+        }
+        const vectorLayer = layer === 'velocity' || layer === 'internal-force';
+        const vectorX = layer === 'velocity' ? 'vx' : 'fx';
+        const vectorY = layer === 'velocity' ? 'vy' : 'fy';
+        const maxVector = vectorLayer ? Math.max(...result.nodes.map(node => Math.hypot(node[vectorX], node[vectorY]))) : 0;
+        const maxMass = Math.max(...result.nodes.map(node => node.mass));
+        const maxWeight = Math.max(...support.map(item => item.weight));
+        const arrowLength = cell * 0.65;
+        result.nodes.forEach(node => {
+            const contribution = supportByIndex.get(node.index);
+            const ratio = layer === 'mass' ? node.mass / maxMass : layer === 'weights' && contribution ? contribution.weight / maxWeight : 0;
+            const size = 2 + Math.min(7, cell * 0.22) * Math.sqrt(ratio);
+            const active = layer === 'weights' ? Boolean(contribution) : node.contributions.length > 0;
+            const color = active ? (layer === 'weights' ? particleColors[mpm2d.selected] : palette.blue) : palette.muted;
+            context.strokeStyle = color;
+            context.fillStyle = color;
+            context.lineWidth = active ? 1.5 : 1;
+            context.setLineDash(node.ghost ? [2, 2] : []);
+            if (!node.ghost && active) context.fillRect(xFor(node.x) - size, yFor(node.y) - size, size * 2, size * 2);
+            context.strokeRect(xFor(node.x) - size, yFor(node.y) - size, size * 2, size * 2);
+            context.setLineDash([]);
+            if (vectorLayer && maxVector > 0) {
+                const dx = node[vectorX] / maxVector * arrowLength;
+                const dy = -node[vectorY] / maxVector * arrowLength;
+                if (Math.hypot(dx, dy) >= 1) arrow(context, xFor(node.x), yFor(node.y), xFor(node.x) + dx, yFor(node.y) + dy, layer === 'velocity' ? palette.cyan : palette.orange, 1.8);
+            }
+        });
+        const domainHalfPixels = particleHalfWidth * span;
+        // Draw the selected particle last so its domain remains visible if domains overlap.
+        for (let offset = 1; offset <= mpm2d.particles.length; offset += 1) {
+            const index = (mpm2d.selected + offset) % mpm2d.particles.length;
+            const particle = mpm2d.particles[index];
+            const isSelected = index === mpm2d.selected;
+            if (basis === 'gimp') {
+                const left = xFor(particle.x - particleHalfWidth);
+                const top = yFor(particle.y + particleHalfWidth);
+                const size = 2 * domainHalfPixels;
+                context.save();
+                context.fillStyle = particleColors[index];
+                context.globalAlpha = isSelected ? 0.2 : 0.1;
+                context.fillRect(left, top, size, size);
+                context.globalAlpha = 1;
+                if (isSelected) {
+                    context.strokeStyle = palette.text;
+                    context.lineWidth = 3;
+                    context.strokeRect(left, top, size, size);
+                }
+                context.strokeStyle = particleColors[index];
+                context.lineWidth = isSelected ? 1.5 : 1.2;
+                context.strokeRect(left, top, size, size);
+                context.restore();
+            }
+            context.beginPath();
+            const radius = basis === 'gimp' ? Math.min(2, domainHalfPixels * 0.25) : isSelected ? 11 : 8;
+            context.arc(xFor(particle.x), yFor(particle.y), radius, 0, Math.PI * 2);
+            context.fillStyle = particleColors[index];
+            context.fill();
+            context.strokeStyle = palette.text;
+            context.lineWidth = basis === 'gimp' ? 0.75 : isSelected ? 2 : 1;
+            context.stroke();
+            context.fillStyle = palette.text;
+            context.textAlign = 'center';
+            context.fillText('ABCD'[index], xFor(particle.x), yFor(particle.y) - (basis === 'gimp' ? Math.max(16, domainHalfPixels + 10) : 16));
+        }
+        byId('mpm2d-scale').textContent = vectorLayer
+            ? `箭头每图自适应：最长为 0.65 个网格间距，表示 ${maxVector.toExponential(3)} ${layer === 'velocity' ? 'm/s' : 'N'}；长度按向量模同比缩放，短于 1 绘图像素不画。精确分量见节点表。`
+            : layer === 'mass'
+                ? `方块尺寸随节点质量增大；本图最大 ${maxMass.toFixed(4)} kg。真实网格 h = ${h.toFixed(3)} m；外围一层为外延支持。`
+                : `仅显示粒子 ${'ABCD'[mpm2d.selected]} 的支持；方块尺寸与连线深浅随权重增大，最大 N = ${maxWeight.toFixed(4)}。虚线连线表示零权重、非零梯度。`;
+
+        const totals = result.totals;
+        const fixed = value => value.toFixed(6);
+        const error = value => value.toExponential(2);
+        byId('mpm2d-mass-total').textContent = `${fixed(totals.particleMass)} / ${fixed(totals.gridMass)}`;
+        byId('mpm2d-momentum-x').textContent = `${fixed(totals.particleMomentumX)} / ${fixed(totals.gridMomentumX)}`;
+        byId('mpm2d-momentum-y').textContent = `${fixed(totals.particleMomentumY)} / ${fixed(totals.gridMomentumY)}`;
+        byId('mpm2d-mass-error').textContent = error(totals.massError);
+        byId('mpm2d-momentum-error').textContent = `(${error(totals.momentumErrorX)}, ${error(totals.momentumErrorY)})`;
+        byId('mpm2d-force-total').textContent = `(${error(totals.internalForceX)}, ${error(totals.internalForceY)})`;
+        byId('mpm2d-partition-error').textContent = error(totals.maxPartitionError);
+        byId('mpm2d-gradient-error').textContent = error(totals.maxGradientSumError);
+        [mpm2d.nodeCount, mpm2d.basis, mpm2d.layer].forEach(select => {
+            byId(`${select.id}-output`).textContent = select.selectedOptions[0].textContent;
+        });
+        fillMPM2DTable('mpm2d-node-body', result.nodes.filter(node => node.contributions.length).map(node => [
+            `(${node.ix}, ${node.iy})`, node.ghost ? '外延' : '真实',
+            ...[node.mass, node.px, node.py, node.vx, node.vy, node.fx, node.fy].map(fixed)
+        ]));
+        fillMPM2DTable('mpm2d-support-body', support.map(item => [
+            `(${item.node.ix}, ${item.node.iy})`, item.node.ghost ? '外延' : '真实',
+            fixed(item.weight), fixed(item.gradientX), fixed(item.gradientY)
+        ]));
+        const stencil = core.shapeStencil1D(selected.x, nodeCount, basis, particleHalfWidthRatio);
+        byId('mpm2d-shape-summary').textContent = `粒子 ${'ABCD'[mpm2d.selected]}：x = ${selected.x.toFixed(6)} m，h = ${h.toFixed(3)} m。${mpm2dBasisNames[basis]} 一维支持（二维为张量积）${basis === 'gimp' ? `；${domainDescription}` : ''}；下表梯度单位 m⁻¹。`;
+        fillMPM2DTable('mpm2d-shape-body', stencil.map(node => [
+            `${node.index}${node.index < 0 || node.index >= nodeCount ? '（外延）' : ''}`,
+            fixed(node.position), fixed(node.weight), fixed(node.gradient)
+        ]));
+        const boundary = core.clamp(Math.round(selected.x / h), 1, nodeCount - 2) * h;
+        const epsilon = h * 0.001;
+        byId('mpm2d-boundary-note').textContent = `当前比较边界 xb = ${fixed(boundary)} m；ε = ${fixed(epsilon)} m。三种基函数使用相同网格与采样位置，与当前二维图层无关。uGIMP 使用 ${domainDescription}。`;
+        const comparison = [];
+        ['linear', 'quadratic', 'gimp'].forEach(comparisonBasis => {
+            [-1, 0, 1].forEach(side => {
+                core.shapeStencil1D(boundary + side * epsilon, nodeCount, comparisonBasis, particleHalfWidthRatio).forEach(node => {
+                    comparison.push([
+                        mpm2dBasisNames[comparisonBasis],
+                        side === -1 ? 'xb − ε' : side === 1 ? 'xb + ε' : 'xb',
+                        node.index, fixed(node.weight), fixed(node.gradient)
+                    ]);
+                });
+            });
+        });
+        fillMPM2DTable('mpm2d-boundary-body', comparison);
+        renderMPMScan();
+    }
+
+    byId('mpm2d-controls').addEventListener('submit', event => event.preventDefault());
+    mpm2dFields.forEach(field => {
+        const input = byId(`mpm2d-${field.id}`);
+        input.addEventListener('input', () => {
+            if (!input.checkValidity() || !Number.isFinite(input.valueAsNumber)) {
+                input.setAttribute('aria-invalid', 'true');
+                byId('mpm2d-input-status').textContent = '此输入尚未应用：请输入范围内的有限数值；图表保留最近一次有效结果。';
+                return;
+            }
+            input.removeAttribute('aria-invalid');
+            mpm2d.particles[mpm2d.selected][field.key] = input.valueAsNumber * field.scale;
+            byId(`${input.id}-output`).textContent = input.valueAsNumber.toFixed(3);
+            if (field.id === 'x' || field.id === 'y') byId(`${input.id}-range`).value = input.value;
+            byId('mpm2d-input-status').textContent = byId('mpm2d-controls').querySelector('[aria-invalid="true"]') ? '仍有无效输入未应用；图表使用各参数最近一次有效值。' : '';
+            byId('mpm2d-preset-note').textContent = '自定义当前状态；没有时间推进。';
+            renderMPM2D();
+        });
+    });
+    ['x', 'y'].forEach(axis => {
+        byId(`mpm2d-${axis}-range`).addEventListener('input', event => {
+            const input = byId(`mpm2d-${axis}`);
+            input.value = event.target.value;
+            input.dispatchEvent(new Event('input'));
+        });
+    });
+    byId('mpm2d-particle').addEventListener('change', event => {
+        mpm2d.selected = Number(event.target.value);
+        syncMPM2DControls();
+        renderMPM2D();
+    });
+    [mpm2d.nodeCount, mpm2d.basis, mpm2d.layer].forEach(select => select.addEventListener('change', renderMPM2D));
+    mpm2d.halfWidthRatio.addEventListener('input', renderMPM2D);
+    ['reset', 'translation', 'compression', 'shear'].forEach(preset => {
+        byId(`mpm2d-${preset}`).addEventListener('click', () => setMPM2DPreset(preset));
+    });
+
+    function mpm2dPointer(event) {
+        const rectangle = mpm2d.canvas.getBoundingClientRect();
+        return {
+            x: (event.clientX - rectangle.left) * mpm2d.geometry.width / rectangle.width,
+            y: (event.clientY - rectangle.top) * mpm2d.geometry.height / rectangle.height
+        };
+    }
+    mpm2d.canvas.addEventListener('pointerdown', event => {
+        if (!mpm2d.geometry || mpm2d.pointerId !== null || event.button !== 0) return;
+        const point = mpm2dPointer(event);
+        const { originX, originY, span } = mpm2d.geometry;
+        let closest = -1;
+        let distance = 28;
+        mpm2d.particles.forEach((particle, index) => {
+            const candidate = Math.hypot(point.x - originX - particle.x * span, point.y - originY + particle.y * span);
+            if (candidate < distance) { closest = index; distance = candidate; }
+        });
+        if (closest < 0) return;
+        event.preventDefault();
+        mpm2d.selected = closest;
+        mpm2d.pointerId = event.pointerId;
+        mpm2d.canvas.setPointerCapture(event.pointerId);
+        syncMPM2DControls();
+        renderMPM2D();
+    });
+    mpm2d.canvas.addEventListener('pointermove', event => {
+        if (event.pointerId !== mpm2d.pointerId || byId('mpm2d-lab').hidden) return;
+        const point = mpm2dPointer(event);
+        const { originX, originY, span } = mpm2d.geometry;
+        const particle = mpm2d.particles[mpm2d.selected];
+        particle.x = Number(core.clamp((point.x - originX) / span, 0, 1).toFixed(3));
+        particle.y = Number(core.clamp((originY - point.y) / span, 0, 1).toFixed(3));
+        byId('mpm2d-preset-note').textContent = '自定义当前状态；没有时间推进。';
+        syncMPM2DControls();
+        renderMPM2D();
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(name => {
+        mpm2d.canvas.addEventListener(name, event => {
+            if (event.pointerId === mpm2d.pointerId) mpm2d.pointerId = null;
+        });
+    });
+
+    const vg = {
+        canvas: byId('retention-canvas'),
+        alpha: byId('vg-alpha'),
+        n: byId('vg-n'),
+        thetaResidual: byId('vg-theta-r'),
+        thetaSaturated: byId('vg-theta-s'),
+        porosity: byId('swrc-porosity'),
+        a: byId('swrc-a'),
+        lambda: byId('swrc-lambda'),
+        residualSaturation: byId('swrc-residual'),
+        family: byId('swrc-family')
+    };
+
+    function vgParameters() {
+        let residual = Number(vg.thetaResidual.value);
+        let saturated = Number(vg.thetaSaturated.value);
+        if (residual >= saturated) {
+            residual = Math.max(0.01, saturated - 0.01);
+            vg.thetaResidual.value = residual.toFixed(2);
+            byId('vg-theta-r-output').textContent = residual.toFixed(2);
+        }
+        return { alpha: Number(vg.alpha.value), n: Number(vg.n.value), thetaResidual: residual, thetaSaturated: saturated };
+    }
+
+    function swrcParameters(porosity) {
+        return {
+            porosity: porosity === undefined ? Number(vg.porosity.value) : porosity,
+            a: Number(vg.a.value),
+            lambda: Number(vg.lambda.value),
+            residualSaturation: Number(vg.residualSaturation.value)
+        };
+    }
+
+    function renderRetention() {
+        if (byId('retention-lab').hidden) return;
+        const parameters = vgParameters();
+        const tarantinoParameters = swrcParameters();
+        const sampleSuctions = [0, 1, 10, 100, 1000];
+        const sample = core.vanGenuchten(parameters, sampleSuctions);
+        const swrcSample = core.tarantinoSWRC(tarantinoParameters, sampleSuctions);
+        const curveSuctions = Array.from({ length: 181 }, (_, index) => Math.pow(10, -1 + index * (4 / 180)));
+        const curve = core.vanGenuchten(parameters, curveSuctions);
+        const swrcCurve = core.tarantinoSWRC(tarantinoParameters, curveSuctions);
+        const { context, width, height } = setupCanvas(vg.canvas);
+        const palette = colors();
+        const margin = { left: 58, right: 24, top: 28, bottom: 48 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const xFor = suction => margin.left + ((Math.log10(Math.max(0.1, suction)) + 1) / 4) * plotWidth;
+        const yFor = saturation => margin.top + (1 - saturation) * plotHeight;
+
+        context.font = '12px ui-monospace, SFMono-Regular, Menlo, monospace';
+        context.fillStyle = palette.muted;
+        context.textAlign = 'center';
+        [0.1, 1, 10, 100, 1000].forEach(value => {
+            const x = xFor(value);
+            line(context, x, margin.top, x, margin.top + plotHeight, palette.border, 1);
+            context.fillText(String(value), x, margin.top + plotHeight + 22);
+        });
+        context.textAlign = 'right';
+        [0, 0.2, 0.4, 0.6, 0.8, 1].forEach(value => {
+            const y = yFor(value);
+            line(context, margin.left, y, margin.left + plotWidth, y, palette.border, 1);
+            context.fillText(value.toFixed(1), margin.left - 9, y + 4);
+        });
+        context.textAlign = 'center';
+        context.fillText('基质吸力 s / kPa（对数坐标）', margin.left + plotWidth / 2, height - 9);
+        context.save();
+        context.translate(15, margin.top + plotHeight / 2);
+        context.rotate(-Math.PI / 2);
+        context.fillText('有效饱和度', 0, 0);
+        context.restore();
+
+        function drawRetentionCurve(points, valueKey, color, widthValue, dash) {
+            context.save();
+            context.beginPath();
+            points.forEach((point, index) => {
+                const x = xFor(point.suction);
+                const y = yFor(point[valueKey]);
+                if (index === 0) context.moveTo(x, y); else context.lineTo(x, y);
+            });
+            context.strokeStyle = color;
+            context.lineWidth = widthValue;
+            context.setLineDash(dash || []);
+            context.stroke();
+            context.restore();
+        }
+
+        if (vg.family.checked) {
+            const lowerPorosity = core.clamp(tarantinoParameters.porosity - 0.05, 0.2, 0.6);
+            const upperPorosity = core.clamp(tarantinoParameters.porosity + 0.05, 0.2, 0.6);
+            [lowerPorosity, upperPorosity].forEach(porosity => {
+                const familyCurve = core.tarantinoSWRC(swrcParameters(porosity), curveSuctions);
+                drawRetentionCurve(familyCurve.points, 'effectiveSaturation', `${palette.orange}66`, 1.5, [5, 5]);
+            });
+        }
+        drawRetentionCurve(curve.points, 'effectiveSaturation', palette.cyan, 3);
+        drawRetentionCurve(swrcCurve.points, 'effectiveSaturation', palette.orange, 3);
+
+        byId('vg-m-value').textContent = sample.m.toFixed(4);
+        byId('vg-air-entry').textContent = `${(1 / sample.alpha).toFixed(2)} kPa`;
+        const swrcAt100 = swrcSample.points.find(point => point.suction === 100);
+        byId('swrc-summary').textContent = `${swrcSample.voidRatio.toFixed(3)} / ${swrcSample.b.toFixed(3)} / ${swrcAt100.degreeOfSaturation.toFixed(3)}`;
+        const table = byId('retention-table-body');
+        table.replaceChildren(...sample.points.map((point, index) => {
+            const swrcPoint = swrcSample.points[index];
+            const row = document.createElement('tr');
+            [
+                point.suction.toFixed(1),
+                point.effectiveSaturation.toFixed(5),
+                point.waterContent.toFixed(5),
+                swrcPoint.effectiveSaturation.toFixed(5),
+                swrcPoint.degreeOfSaturation.toFixed(5),
+                swrcPoint.relativePermeability.toExponential(3)
+            ].forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            return row;
+        }));
+    }
+
+    bindOutput(vg.alpha, byId('vg-alpha-output'), value => `${value.toFixed(3)} kPa⁻¹`, renderRetention);
+    bindOutput(vg.n, byId('vg-n-output'), value => value.toFixed(2), renderRetention);
+    bindOutput(vg.thetaResidual, byId('vg-theta-r-output'), value => value.toFixed(2), renderRetention);
+    bindOutput(vg.thetaSaturated, byId('vg-theta-s-output'), value => value.toFixed(2), renderRetention);
+    bindOutput(vg.porosity, byId('swrc-porosity-output'), value => value.toFixed(2), renderRetention);
+    bindOutput(vg.a, byId('swrc-a-output'), value => `${value.toFixed(1)} m⁻¹`, renderRetention);
+    bindOutput(vg.lambda, byId('swrc-lambda-output'), value => value.toFixed(2), renderRetention);
+    bindOutput(vg.residualSaturation, byId('swrc-residual-output'), value => value.toFixed(2), renderRetention);
+    vg.family.addEventListener('change', renderRetention);
+    byId('vg-reset').addEventListener('click', () => {
+        vg.alpha.value = 0.08;
+        vg.n.value = 1.6;
+        vg.thetaResidual.value = 0.06;
+        vg.thetaSaturated.value = 0.46;
+        vg.porosity.value = 0.4;
+        vg.a.value = 12;
+        vg.lambda.value = 0.3;
+        vg.residualSaturation.value = 0.05;
+        vg.family.checked = true;
+        ['vg-alpha', 'vg-n', 'vg-theta-r', 'vg-theta-s', 'swrc-porosity', 'swrc-a', 'swrc-lambda', 'swrc-residual'].forEach(id => byId(id).dispatchEvent(new Event('input')));
+    });
+
+    const terrain = {
+        canvas: byId('terrain-canvas'),
+        grid: core.valleyTerrain(7),
+        selected: { row: 1, column: 1 },
+        seed: 20260830,
+        geometry: null
+    };
+
+    function elevationColor(value, minimum, maximum) {
+        const ratio = maximum === minimum ? 0.5 : (value - minimum) / (maximum - minimum);
+        const hue = 210 - ratio * 175;
+        const lightness = 30 + ratio * 32;
+        return `hsl(${hue} 48% ${lightness}%)`;
+    }
+
+    function renderTerrain() {
+        if (byId('terrain-lab').hidden) return;
+        const flow = core.traceD8(terrain.grid, terrain.selected);
+        const { context, width, height } = setupCanvas(terrain.canvas);
+        const palette = colors();
+        const size = terrain.grid.length;
+        const padding = 22;
+        const cell = Math.min((width - padding * 2) / size, (height - padding * 2) / size);
+        const gridWidth = cell * size;
+        const originX = (width - gridWidth) / 2;
+        const originY = (height - gridWidth) / 2;
+        const values = terrain.grid.flat();
+        const minimum = Math.min(...values);
+        const maximum = Math.max(...values);
+        const pathKeys = new Set(flow.path.map(point => `${point.row}:${point.column}`));
+
+        terrain.grid.forEach((row, rowIndex) => row.forEach((value, columnIndex) => {
+            const x = originX + columnIndex * cell;
+            const y = originY + rowIndex * cell;
+            context.fillStyle = elevationColor(value, minimum, maximum);
+            context.fillRect(x + 1, y + 1, cell - 2, cell - 2);
+            if (pathKeys.has(`${rowIndex}:${columnIndex}`)) {
+                context.fillStyle = 'rgba(36,165,165,.38)';
+                context.fillRect(x + 3, y + 3, cell - 6, cell - 6);
+            }
+            const direction = flow.directions[rowIndex][columnIndex];
+            if (direction) {
+                const startX = x + cell / 2;
+                const startY = y + cell / 2;
+                const deltaX = (direction.column - columnIndex) * cell * 0.25;
+                const deltaY = (direction.row - rowIndex) * cell * 0.25;
+                arrow(context, startX - deltaX * 0.25, startY - deltaY * 0.25, startX + deltaX, startY + deltaY, 'rgba(255,255,255,.62)', 1);
+            }
+            if (cell > 52) {
+                context.fillStyle = 'rgba(255,255,255,.86)';
+                context.font = `${Math.max(10, cell * 0.15)}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+                context.textAlign = 'left';
+                context.fillText(value.toFixed(1), x + 5, y + 14);
+            }
+        }));
+
+        const selectedX = originX + terrain.selected.column * cell;
+        const selectedY = originY + terrain.selected.row * cell;
+        context.strokeStyle = palette.orange;
+        context.lineWidth = 4;
+        context.strokeRect(selectedX + 2, selectedY + 2, cell - 4, cell - 4);
+        flow.path.forEach((point, index) => {
+            if (index === 0) return;
+            const previous = flow.path[index - 1];
+            arrow(
+                context,
+                originX + (previous.column + 0.5) * cell,
+                originY + (previous.row + 0.5) * cell,
+                originX + (point.column + 0.5) * cell,
+                originY + (point.row + 0.5) * cell,
+                palette.cyan,
+                3
+            );
+        });
+
+        terrain.geometry = { originX, originY, cell, size };
+        const selectedElevation = terrain.grid[terrain.selected.row][terrain.selected.column];
+        byId('terrain-cell').textContent = `${terrain.selected.row + 1} / ${terrain.selected.column + 1}`;
+        byId('terrain-elevation').textContent = `${selectedElevation.toFixed(2)} m`;
+        const labels = { outlet: '到达边界出口', sink: '终止于局部洼地', loop: '检测到循环' };
+        byId('terrain-status').textContent = `${labels[flow.reason]} · ${flow.path.length} 格`;
+    }
+
+    terrain.canvas.addEventListener('click', event => {
+        if (!terrain.geometry) return;
+        const rectangle = terrain.canvas.getBoundingClientRect();
+        const x = event.clientX - rectangle.left;
+        const y = event.clientY - rectangle.top;
+        const column = Math.floor((x - terrain.geometry.originX) / terrain.geometry.cell);
+        const row = Math.floor((y - terrain.geometry.originY) / terrain.geometry.cell);
+        if (row < 0 || row >= terrain.geometry.size || column < 0 || column >= terrain.geometry.size) return;
+        terrain.selected = { row, column };
+        renderTerrain();
+    });
+    byId('terrain-valley').addEventListener('click', () => { terrain.grid = core.valleyTerrain(7); renderTerrain(); });
+    byId('terrain-random').addEventListener('click', () => { terrain.seed += 1; terrain.grid = core.randomTerrain(7, terrain.seed); renderTerrain(); });
+    byId('terrain-raise').addEventListener('click', () => { terrain.grid[terrain.selected.row][terrain.selected.column] += 2; renderTerrain(); });
+    byId('terrain-lower').addEventListener('click', () => { terrain.grid[terrain.selected.row][terrain.selected.column] -= 2; renderTerrain(); });
+
+    const kinematics = {
+        canvas: byId('kinematics-canvas'),
+        preset: byId('kinematics-preset'),
+        rate: byId('kinematics-rate'),
+        timeStep: byId('kinematics-time-step'),
+        x: byId('kinematics-x'),
+        y: byId('kinematics-y'),
+        nodeCount: byId('kinematics-node-count'),
+        basis: byId('kinematics-basis'),
+        halfWidthRatio: byId('kinematics-half-width-ratio'),
+        frame: null,
+        lastFrame: null,
+        boundsKey: '',
+        bounds: null
+    };
+
+    function renderKinematics() {
+        if (byId('kinematics-lab').hidden) return;
+        const options = {
+            preset: kinematics.preset.value,
+            rate: Number(kinematics.rate.value),
+            timeStep: Number(kinematics.timeStep.value),
+            x: Number(kinematics.x.value),
+            y: Number(kinematics.y.value),
+            nodeCount: Number(kinematics.nodeCount.value),
+            basis: kinematics.basis.value,
+            particleHalfWidthRatio: Number(kinematics.halfWidthRatio.value)
+        };
+        const result = core.kinematics2D(options);
+        const h = 1 / (options.nodeCount - 1);
+        const fixed = value => (Math.abs(value) < 0.0000005 ? 0 : value).toFixed(6);
+        const coordinate = point => `(${point.map(fixed).join(', ')})`;
+        [kinematics.preset, kinematics.nodeCount, kinematics.basis].forEach(select => {
+            byId(`${select.id}-output`).textContent = select.selectedOptions[0].textContent;
+        });
+        [kinematics.rate, kinematics.timeStep, kinematics.halfWidthRatio, kinematics.x, kinematics.y].forEach(input => {
+            byId(`${input.id}-output`).textContent = Number(input.value).toFixed(input === kinematics.x || input === kinematics.y ? 3 : 2);
+        });
+        kinematics.halfWidthRatio.disabled = options.basis !== 'gimp';
+        byId('kinematics-rate-label').textContent = options.preset === 'translation' ? '平移倍率（无量纲）' : '速率 r / s⁻¹';
+        const fieldNotes = {
+            translation: `v = (${(0.2 * options.rate).toFixed(3)}, ${(0.1 * options.rate).toFixed(3)}) m/s；所有节点同速，梯度为零。`,
+            extension: `vx = r(x − 0.5 m)，vy = 0；沿 x 轴伸长，r = ${options.rate.toFixed(2)} s⁻¹。`,
+            shear: `vx = r(y − 0.5 m)，vy = 0；简单剪切，r = ${options.rate.toFixed(2)} s⁻¹。`,
+            rotation: `vx = −r(y − 0.5 m)，vy = r(x − 0.5 m)；逆时针角速度 ${options.rate.toFixed(2)} rad/s。`
+        };
+        byId('kinematics-field-note').textContent = fieldNotes[options.preset];
+        byId('kinematics-domain-note').textContent = `${options.basis === 'gimp' ? '当前' : '保留的'} uGIMP 半宽 ℓp = ${(options.particleHalfWidthRatio * h).toFixed(5)} m，全宽 2ℓp = ${(2 * options.particleHalfWidthRatio * h).toFixed(5)} m；h = ${h.toFixed(3)} m。此固定积分域独立于图示的 0.12 m 初始方域，不随 F 更新。`;
+
+        const compare = byId('kinematics-compare').checked;
+        const gridView = byId('kinematics-view').value === 'grid';
+        byId('kinematics-euler-scene').hidden = !compare;
+        byId('kinematics-comparison-note').hidden = !compare;
+        byId('kinematics-current-title').textContent = `当前状态 · t = ${options.timeStep.toFixed(2)} s`;
+        const observations = {
+            translation: '看位置：方块整体移动，形状、大小和方向都不变。',
+            extension: '看宽度：方块沿水平方向拉长，高度不变，面积增大。',
+            shear: '看上下两边：上边相对下边向右错动，方块变成平行四边形，面积不变。',
+            rotation: '看橙色角点：方块逆时针转动，方向改变，但形状和面积不变。'
+        };
+        byId('kinematics-observation').textContent = options.rate === 0 ? '当前速率为零，方块保持静止；可在计算细节中调整速率。' : observations[options.preset];
+        const comparisons = {
+            translation: '平移：一次 Euler 近似与精确运动相同。',
+            extension: '拉伸：一次大步 Euler 低估伸长；这里只比较从起点跨到当前时刻的一步。',
+            shear: '剪切：这个特殊速度场下，一次 Euler 近似恰好与精确运动相同。',
+            rotation: `旋转：精确面积保持 100%；一次 Euler 近似为 ${(result.eulerJ * 100).toFixed(1)}%。额外变大是算法误差，不是真实变形。`
+        };
+        byId('kinematics-comparison-note').textContent = comparisons[options.preset];
+        // Fit the entire 0–1 s path once, never auto-zoom as the block moves.
+        const boundsKey = [options.preset, options.rate, options.x, options.y,
+            options.nodeCount, options.basis, options.particleHalfWidthRatio, compare, gridView].join('|');
+        if (kinematics.boundsKey !== boundsKey) {
+            const end = core.kinematics2D({ ...options, timeStep: 1 });
+            const points = [...end.originalCorners, ...end.exactCorners];
+            if (compare) points.push(...end.eulerCorners);
+            if (options.preset === 'rotation') {
+                const radius = Math.max(...end.originalCorners.map(([x, y]) => Math.hypot(x - 0.5, y - 0.5)));
+                points.push([0.5 - radius, 0.5 - radius], [0.5 + radius, 0.5 + radius]);
+            }
+            if (gridView) points.push([-2 * h, -2 * h], [1 + 2 * h, 1 + 2 * h]);
+            kinematics.bounds = [
+                Math.min(...points.map(point => point[0])), Math.max(...points.map(point => point[0])),
+                Math.min(...points.map(point => point[1])), Math.max(...points.map(point => point[1]))
+            ];
+            kinematics.boundsKey = boundsKey;
+        }
+        const palette = colors();
+        const [minX, maxX, minY, maxY] = kinematics.bounds;
+        const scenes = [
+            [byId('kinematics-initial-canvas'), result.originalCorners, palette.muted],
+            [kinematics.canvas, result.exactCorners, palette.cyan]
+        ];
+        if (compare) scenes.push([byId('kinematics-euler-canvas'), result.eulerCorners, palette.violet]);
+        // Equal panel dimensions guarantee the same physical scale in all views.
+        const rectangles = scenes.map(([canvas]) => canvas.getBoundingClientRect());
+        const scale = Math.min(...rectangles.map(rectangle =>
+            Math.min((rectangle.width - 48) / (maxX - minX), (rectangle.height - 48) / (maxY - minY))));
+        scenes.forEach(([canvas, corners, color]) => {
+            const { context, width, height } = setupCanvas(canvas);
+            const xFor = x => width / 2 + (x - (minX + maxX) / 2) * scale;
+            const yFor = y => height / 2 - (y - (minY + maxY) / 2) * scale;
+            if (gridView) {
+                const maxVelocity = Math.max(...result.nodes.map(node => Math.hypot(node.vx, node.vy)));
+                const arrowScale = maxVelocity > 0 ? 0.5 * h / maxVelocity : 0;
+                result.nodes.forEach(node => {
+                    context.fillStyle = palette.border;
+                    context.fillRect(xFor(node.x) - 2, yFor(node.y) - 2, 4, 4);
+                    if (Math.hypot(node.vx, node.vy) * arrowScale * scale >= 8) {
+                        arrow(context, xFor(node.x), yFor(node.y),
+                            xFor(node.x + node.vx * arrowScale), yFor(node.y + node.vy * arrowScale), palette.blue, 1);
+                    }
+                });
+            }
+            context.beginPath();
+            corners.forEach(([x, y], index) => {
+                if (index === 0) context.moveTo(xFor(x), yFor(y));
+                else context.lineTo(xFor(x), yFor(y));
+            });
+            context.closePath();
+            context.fillStyle = color;
+            context.globalAlpha = 0.12;
+            context.fill();
+            context.globalAlpha = 1;
+            context.strokeStyle = color;
+            context.lineWidth = 3;
+            context.stroke();
+            // Internal material lines move with the same affine map as the corners.
+            const interpolate = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+            for (const t of [0.25, 0.5, 0.75]) {
+                for (const [a, b, c, d] of [[0, 1, 3, 2], [0, 3, 1, 2]]) {
+                    const start = interpolate(corners[a], corners[b], t);
+                    const end = interpolate(corners[c], corners[d], t);
+                    line(context, xFor(start[0]), yFor(start[1]), xFor(end[0]), yFor(end[1]), color, 1);
+                }
+            }
+            context.beginPath();
+            context.arc(xFor(corners[2][0]), yFor(corners[2][1]), 5, 0, 2 * Math.PI);
+            context.fillStyle = palette.orange;
+            context.fill();
+            context.fillStyle = palette.muted;
+            context.font = '12px system-ui, sans-serif';
+            context.textAlign = 'left';
+            context.fillText('y ↑', 10, 18);
+            context.textAlign = 'right';
+            context.fillText('x →', width - 10, height - 10);
+        });
+        if (!byId('kinematics-details').open) return;
+        byId('kinematics-scale').textContent = `每图 x、y 等比例，播放全程固定视野；h = ${h.toFixed(3)} m，初始方块边长 0.12 m。网格模式下速度箭头按最长 0.5h 同比缩放。图示方块不是 uGIMP 的积分域。`;
+
+        [['l', result.L], ['d', result.D], ['w', result.W]].forEach(([name, matrix]) => {
+            fillMPM2DTable(`kinematics-${name}-body`, [
+                ['x', fixed(matrix[0]), fixed(matrix[1])],
+                ['y', fixed(matrix[2]), fixed(matrix[3])]
+            ]);
+        });
+        byId('kinematics-gradient-error').textContent = result.gradientError.toExponential(3);
+        byId('kinematics-exact-j').textContent = fixed(result.exactJ);
+        byId('kinematics-euler-j').textContent = fixed(result.eulerJ);
+        const resultNotes = {
+            translation: '均匀平移不产生速度梯度、变形率或自旋；精确与一次 Euler 域重合，面积不变。',
+            extension: '单轴伸长的精确面积比为 exp(rΔt)，一次 Euler 为 1 + rΔt；差异来自时间离散，而不是形函数梯度误差。',
+            shear: '简单剪切同时含对称变形率与反对称自旋；本预设 A² = 0，精确与一次 Euler 域重合，面积比均为 1。',
+            rotation: `刚体旋转 D = 0，精确 J = 1；一次 Euler J = 1 + (rΔt)² = ${(1 + (options.rate * options.timeStep) ** 2).toFixed(6)}。Euler 面积增大是时间离散误差，不是材料可压缩性；不应据此推断应力。`
+        };
+        byId('kinematics-result-note').textContent = resultNotes[options.preset];
+        fillMPM2DTable('kinematics-position-body', [
+            ['固定采样点 / 初始中心', ...result.position.map(fixed)],
+            ['采样重构速度', ...result.velocity.map(fixed)],
+            ['精确演化中心', ...result.exactPosition.map(fixed)],
+            ['一次 Euler 中心', ...result.eulerPosition.map(fixed)]
+        ]);
+        fillMPM2DTable('kinematics-f-body', [
+            ['给定 A / s⁻¹', ...result.prescribedL.map(fixed)],
+            ['精确 F', ...result.exactF.map(fixed)],
+            ['一次 Euler F', ...result.eulerF.map(fixed)]
+        ]);
+        fillMPM2DTable('kinematics-corner-body', result.originalCorners.map((point, index) => [
+            index + 1, coordinate(point), coordinate(result.exactCorners[index]), coordinate(result.eulerCorners[index])
+        ]));
+        fillMPM2DTable('kinematics-node-body', result.nodes.filter(node => node.weight !== 0 || node.gx !== 0 || node.gy !== 0).map(node => [
+            coordinate([node.x, node.y]), node.ghost ? '外延' : '真实',
+            fixed(node.vx), fixed(node.vy), fixed(node.weight), fixed(node.gx), fixed(node.gy)
+        ]));
+    }
+
+    function stopKinematics() {
+        if (kinematics.frame !== null) cancelAnimationFrame(kinematics.frame);
+        kinematics.frame = null;
+        kinematics.lastFrame = null;
+        byId('kinematics-play').textContent = '播放运动';
+        byId('kinematics-play').setAttribute('aria-pressed', 'false');
+    }
+
+    function advanceKinematics(timestamp) {
+        if (byId('kinematics-lab').hidden || document.hidden) {
+            stopKinematics();
+            return;
+        }
+        if (kinematics.lastFrame === null) kinematics.lastFrame = timestamp;
+        const elapsed = timestamp - kinematics.lastFrame;
+        if (elapsed >= 32) {
+            kinematics.timeStep.value = Math.min(1, Number(kinematics.timeStep.value) + Math.min(elapsed, 100) / 6000);
+            kinematics.lastFrame = timestamp;
+            renderKinematics();
+        }
+        if (Number(kinematics.timeStep.value) >= 1) stopKinematics();
+        else kinematics.frame = requestAnimationFrame(advanceKinematics);
+    }
+
+    byId('kinematics-play').addEventListener('click', () => {
+        if (kinematics.frame !== null) {
+            stopKinematics();
+            return;
+        }
+        byId('kinematics-details').open = false;
+        if (Number(kinematics.timeStep.value) >= 1) kinematics.timeStep.value = 0;
+        byId('kinematics-play').textContent = '暂停';
+        byId('kinematics-play').setAttribute('aria-pressed', 'true');
+        kinematics.frame = requestAnimationFrame(advanceKinematics);
+        renderKinematics();
+    });
+    byId('kinematics-reset').addEventListener('click', () => {
+        stopKinematics();
+        kinematics.timeStep.value = 0;
+        renderKinematics();
+    });
+    [byId('kinematics-controls'), byId('kinematics-advanced')].forEach(form => {
+        form.addEventListener('submit', event => event.preventDefault());
+        form.addEventListener('input', event => {
+            stopKinematics();
+            if (event.target === kinematics.preset) kinematics.timeStep.value = 0;
+            renderKinematics();
+        });
+    });
+    byId('kinematics-details').addEventListener('toggle', () => {
+        if (byId('kinematics-details').open) stopKinematics();
+        renderKinematics();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopKinematics();
+    });
+    window.addEventListener('pagehide', stopKinematics);
+
+    const elasticBar = {
+        controls: byId('elastic-bar-controls'),
+        cells: byId('elastic-bar-cells'),
+        particlesPerCell: byId('elastic-bar-particles-per-cell'),
+        cfl: byId('elastic-bar-cfl'),
+        periods: byId('elastic-bar-periods'),
+        transfer: byId('elastic-bar-transfer'),
+        snapshot: byId('elastic-bar-snapshot'),
+        attempted: false,
+        result: null,
+        comparison: null
+    };
+
+    function elasticBarOptions() {
+        return {
+            cells: Number(elasticBar.cells.value),
+            particlesPerCell: Number(elasticBar.particlesPerCell.value),
+            cfl: Number(elasticBar.cfl.value),
+            periods: Number(elasticBar.periods.value),
+            transfer: elasticBar.transfer.value
+        };
+    }
+
+    function elasticBarCase(parameters, includeCells) {
+        return `${includeCells ? `${parameters.cells} 单元 · ${parameters.cells * parameters.particlesPerCell} 粒子 · ` : ''}${parameters.particlesPerCell} 粒子/单元 · CFL ${parameters.cfl.toFixed(2)} · ${parameters.periods.toFixed(2)} T · ${parameters.transfer.toUpperCase()}`;
+    }
+
+    function elasticBarError(error, action) {
+        const output = byId('elastic-bar-error');
+        output.hidden = false;
+        output.textContent = `${action}失败：${error instanceof Error ? error.message : String(error)} 请检查参数后重试。`;
+    }
+
+    function runElasticBar() {
+        elasticBar.attempted = true;
+        byId('elastic-bar-error').hidden = true;
+        try {
+            const result = core.elasticBar(elasticBarOptions());
+            elasticBar.result = result;
+            elasticBar.snapshot.max = String(result.history.length - 1);
+            elasticBar.snapshot.value = elasticBar.snapshot.max;
+            byId('elastic-bar-result').hidden = false;
+            byId('elastic-bar-status').dataset.stale = 'false';
+            byId('elastic-bar-status').textContent = '验证完成：下方为当前参数的已保存数值解。快照仅选择时间点，不重新求解。';
+            const parameters = result.parameters;
+            byId('elastic-bar-case').textContent = `已运行算例：${elasticBarCase(parameters, true)}；${parameters.stepCount} 步，实际 Δt = ${parameters.timeStep.toExponential(4)} s，实际 cΔt/h = ${(parameters.waveSpeed * parameters.timeStep * parameters.cells / parameters.length).toFixed(4)}；E₀ = ${parameters.initialEnergy.toExponential(4)} J。`;
+            updateElasticBarSnapshot();
+        } catch (error) {
+            byId('elastic-bar-status').dataset.stale = 'true';
+            byId('elastic-bar-status').textContent = elasticBar.result ? '本次运行未成功。下方仅保留上一次算例，不代表当前参数。' : '本次运行未成功，尚无数值结果。';
+            elasticBarError(error, '验证');
+        }
+    }
+
+    function runElasticBarConvergence() {
+        byId('elastic-bar-error').hidden = true;
+        try {
+            if (!elasticBar.comparison) {
+                const options = elasticBarOptions();
+                elasticBar.comparison = [8, 16, 32, 64].map(cells => {
+                    const result = core.elasticBar({ ...options, cells });
+                    return { parameters: result.parameters, final: result.history[result.history.length - 1] };
+                });
+            }
+            fillMPM2DTable('elastic-bar-convergence-body', elasticBar.comparison.map(({ parameters, final }) => [
+                `${parameters.cells} / ${parameters.cells * parameters.particlesPerCell}`,
+                `${parameters.stepCount} / ${parameters.timeStep.toExponential(3)}`,
+                (final.displacementError * 100).toFixed(4),
+                (final.velocityError * 100).toFixed(4),
+                (final.stressError * 100).toFixed(4),
+                (final.totalEnergy / parameters.initialEnergy).toFixed(6)
+            ]));
+            const parameters = elasticBar.comparison[0].parameters;
+            byId('elastic-bar-convergence-status').textContent = `已缓存对照：8 / 16 / 32 / 64 单元；${elasticBarCase(parameters, false)}；所有行终态 t = ${(parameters.periods * parameters.period).toFixed(6)} s。此表独立于上方单算例与快照；修改任一求解参数即失效。`;
+            byId('elastic-bar-convergence-result').hidden = false;
+        } catch (error) {
+            elasticBar.comparison = null;
+            byId('elastic-bar-convergence-result').hidden = true;
+            byId('elastic-bar-convergence-status').textContent = '对照未完成，没有可用对照表；请重新运行。';
+            elasticBarError(error, '网格对照');
+        }
+    }
+
+    function invalidateElasticBar() {
+        byId('elastic-bar-cfl-output').textContent = Number(elasticBar.cfl.value).toFixed(2);
+        byId('elastic-bar-periods-output').textContent = Number(elasticBar.periods.value).toFixed(2);
+        elasticBar.comparison = null;
+        byId('elastic-bar-error').hidden = true;
+        byId('elastic-bar-status').dataset.stale = 'true';
+        byId('elastic-bar-status').textContent = elasticBar.result ? '参数已修改，结果已过期。下方图表、误差与快照仍属于“已运行算例”，不是当前参数；请点击“运行验证”。' : '参数已修改，请点击“运行验证”生成数值结果。';
+        byId('elastic-bar-convergence-result').hidden = true;
+        byId('elastic-bar-convergence-body').replaceChildren();
+        byId('elastic-bar-convergence-status').textContent = '参数已修改，对照缓存已清除；请点击“网格收敛对照”重新生成。';
+    }
+
+    function updateElasticBarParticleTable() {
+        if (!elasticBar.result || !byId('elastic-bar-particle-details').open) return;
+        const sample = elasticBar.result.history[Number(elasticBar.snapshot.value)];
+        fillMPM2DTable('elastic-bar-particle-body', sample.particles.map(particle => [
+            particle.referencePosition.toFixed(6),
+            (particle.displacement * 1e6).toFixed(4),
+            (particle.exactDisplacement * 1e6).toFixed(4),
+            particle.velocity.toFixed(7),
+            particle.exactVelocity.toFixed(7),
+            (particle.stress / 1000).toFixed(6),
+            (particle.exactStress / 1000).toFixed(6)
+        ]));
+    }
+
+    function updateElasticBarSnapshot() {
+        if (!elasticBar.result) return;
+        const { parameters, history: samples } = elasticBar.result;
+        const index = Number(elasticBar.snapshot.value);
+        const sample = samples[index];
+        byId('elastic-bar-snapshot-output').textContent = `${index + 1} / ${samples.length}`;
+        byId('elastic-bar-time').textContent = `已运行算例快照：t = ${sample.time.toFixed(6)} s = ${(sample.time / parameters.period).toFixed(4)} T。`;
+        ['displacement', 'velocity', 'stress'].forEach(field => {
+            byId(`elastic-bar-${field}-error`).textContent = `${(sample[`${field}Error`] * 100).toFixed(4)}%`;
+        });
+        byId('elastic-bar-energy-summary').textContent = `当前 K/E₀ = ${(sample.kineticEnergy / parameters.initialEnergy).toFixed(6)}，U/E₀ = ${(sample.strainEnergy / parameters.initialEnergy).toFixed(6)}，总能量/E₀ = ${(sample.totalEnergy / parameters.initialEnergy).toFixed(6)}；解析总能量/E₀ = 1。`;
+        updateElasticBarParticleTable();
+        renderElasticBar();
+    }
+
+    function drawElasticBarPlot(canvas, series, options) {
+        const { context, width, height } = setupCanvas(canvas);
+        const palette = colors();
+        const margin = { left: 61, right: 18, top: 30, bottom: 43 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const x = value => margin.left + value / options.xMax * plotWidth;
+        const y = value => margin.top + (options.yMax - value) / (options.yMax - options.yMin) * plotHeight;
+        context.font = '11px system-ui, sans-serif';
+        context.fillStyle = palette.text;
+        context.textAlign = 'left';
+        context.fillText(options.label, margin.left, 18);
+        for (let index = 0; index <= 4; index += 1) {
+            const xValue = options.xMax * index / 4;
+            const yValue = options.yMin + (options.yMax - options.yMin) * index / 4;
+            line(context, x(xValue), margin.top, x(xValue), height - margin.bottom, palette.border);
+            line(context, margin.left, y(yValue), width - margin.right, y(yValue), palette.border);
+            context.fillStyle = palette.muted;
+            context.textAlign = 'center';
+            context.fillText(xValue.toFixed(2), x(xValue), height - margin.bottom + 17);
+            context.textAlign = 'right';
+            context.fillText(Math.abs(yValue) < 1e-12 ? '0' : yValue.toFixed(options.decimals), margin.left - 7, y(yValue) + 4);
+        }
+        if (options.marker !== undefined) {
+            line(context, x(options.marker), margin.top, x(options.marker), height - margin.bottom, palette.muted);
+        }
+        series.forEach(curve => {
+            context.beginPath();
+            curve.points.forEach((point, index) => {
+                if (index === 0) context.moveTo(x(point[0]), y(point[1]));
+                else context.lineTo(x(point[0]), y(point[1]));
+            });
+            context.strokeStyle = curve.color;
+            context.lineWidth = curve.width || 2;
+            context.setLineDash(curve.dash || []);
+            context.stroke();
+            context.setLineDash([]);
+            if (curve.dots) {
+                context.fillStyle = curve.color;
+                curve.points.forEach(point => {
+                    context.beginPath();
+                    context.arc(x(point[0]), y(point[1]), 1.6, 0, 2 * Math.PI);
+                    context.fill();
+                });
+            }
+        });
+        context.fillStyle = palette.text;
+        context.textAlign = 'center';
+        context.fillText(options.xLabel, margin.left + plotWidth / 2, height - 6);
+    }
+
+    function renderElasticBar() {
+        if (byId('elastic-bar-lab').hidden || !elasticBar.result) return;
+        const { parameters, history: samples } = elasticBar.result;
+        const sample = samples[Number(elasticBar.snapshot.value)];
+        const palette = colors();
+        const phase = 2 * Math.PI * sample.time / parameters.period;
+        [
+            { field: 'displacement', label: 'u / µm', scale: 1e6, amplitude: parameters.displacementAmplitude, temporal: Math.sin(phase), decimals: 1 },
+            { field: 'velocity', label: 'v / m/s', scale: 1, amplitude: parameters.velocityAmplitude, temporal: Math.cos(phase), decimals: 3 },
+            { field: 'stress', label: 'σ / kPa (拉正)', scale: 0.001, amplitude: parameters.stressAmplitude, temporal: Math.sin(phase), decimals: 2 }
+        ].forEach(({ field, label, scale, amplitude, temporal, decimals }) => {
+            const numerical = sample.particles.map(particle => [particle.referencePosition, particle[field] * scale]);
+            const analytical = Array.from({ length: 161 }, (_, index) => {
+                const position = parameters.length * index / 160;
+                const spatial = field === 'stress' ? Math.cos(Math.PI * position / parameters.length) : Math.sin(Math.PI * position / parameters.length);
+                return [position, amplitude * spatial * temporal * scale];
+            });
+            const extent = Math.max(amplitude * scale, ...numerical.map(point => Math.abs(point[1]))) * 1.12;
+            drawElasticBarPlot(byId(`elastic-bar-${field}`), [
+                { points: numerical, color: palette.blue, dots: true },
+                { points: analytical, color: palette.orange, dash: [6, 4] }
+            ], { label, xLabel: '参考 X / m', xMax: parameters.length, yMin: -extent, yMax: extent, decimals });
+        });
+        const energySeries = [
+            { field: 'kineticEnergy', color: palette.blue },
+            { field: 'strainEnergy', color: palette.cyan, dash: [6, 4] },
+            { field: 'totalEnergy', color: palette.violet, width: 3 }
+        ].map(curve => ({
+            ...curve,
+            points: samples.map(point => [point.time / parameters.period, point[curve.field] / parameters.initialEnergy])
+        }));
+        energySeries.push({ points: [[0, 1], [parameters.periods, 1]], color: palette.orange, dash: [2, 4] });
+        drawElasticBarPlot(byId('elastic-bar-energy'), energySeries, {
+            label: '能量 / E₀', xLabel: 't / T', xMax: parameters.periods,
+            yMin: 0, yMax: 1.12 * Math.max(1, ...samples.map(point => point.totalEnergy / parameters.initialEnergy)),
+            decimals: 2, marker: sample.time / parameters.period
+        });
+    }
+
+    elasticBar.controls.addEventListener('submit', event => { event.preventDefault(); runElasticBar(); });
+    elasticBar.controls.addEventListener('input', invalidateElasticBar);
+    elasticBar.controls.addEventListener('change', invalidateElasticBar);
+    byId('elastic-bar-convergence').addEventListener('click', runElasticBarConvergence);
+    elasticBar.snapshot.addEventListener('input', updateElasticBarSnapshot);
+    byId('elastic-bar-particle-details').addEventListener('toggle', updateElasticBarParticleTable);
+
+    const apic = {
+        panel: byId('apic-lab'),
+        preset: byId('apic-preset'),
+        affineInitialization: byId('apic-affine-init'),
+        stage: byId('apic-stage'),
+        rounds: byId('apic-rounds'),
+        inset: byId('apic-inset'),
+        step: byId('apic-step'),
+        canvases: ['pic', 'flip', 'apic'].map(method => byId(`apic-${method}-canvas`)),
+        tableIds: ['metrics', 'angular', 'momentum', 'matrix', 'particle', 'grid'].map(name => `apic-${name}-body`),
+        key: null,
+        result: null
+    };
+
+    function formatAPICNumber(value) {
+        if (value === 0) return '0';
+        return Math.abs(value) < 1e-4 || Math.abs(value) >= 1e5 ? value.toExponential(3) : String(Number(value.toFixed(6)));
+    }
+
+    function formatAPICPosition(position) {
+        return `(${position[0].toFixed(2)}, ${position[1].toFixed(2)}) m`;
+    }
+
+    function syncAPICControls() {
+        byId('apic-rounds-output').textContent = `${apic.rounds.value} 轮`;
+        byId('apic-inset-output').textContent = `${Number(apic.inset.value).toFixed(2)} m`;
+        apic.step.disabled = Number(apic.rounds.value) >= 20;
+    }
+
+    function updateAPICTables() {
+        const { methods, particlePositions, reference } = apic.result;
+        fillMPM2DTable('apic-metrics-body', methods.map(result => [
+            result.method.toUpperCase(),
+            `${formatAPICNumber(result.gridError * 100)}%`,
+            `${formatAPICNumber(result.particleError * 100)}%`,
+            result.matrixError === null ? '—' : formatAPICNumber(result.matrixError)
+        ]));
+        fillMPM2DTable('apic-angular-body', methods.map(result => [
+            result.method.toUpperCase(),
+            result.initial.angular.total,
+            result.before.angular.total,
+            result.gridAngular,
+            result.after.angular.total,
+            result.after.angular.orbital,
+            result.after.angular.affine
+        ].map((value, index) => index === 0 ? value : formatAPICNumber(value))));
+        fillMPM2DTable('apic-momentum-body', methods.map(result => [
+            result.method.toUpperCase(),
+            ...result.before.momentum,
+            ...result.gridMomentum,
+            ...result.after.momentum
+        ].map((value, index) => index === 0 ? value : formatAPICNumber(value))));
+        const affine = methods.find(result => result.method === 'apic');
+        fillMPM2DTable('apic-matrix-body', affine.after.matrices.map((matrix, index) => [
+            `P${index + 1}`, ...matrix.map(formatAPICNumber)
+        ]));
+        fillMPM2DTable('apic-particle-body', methods.flatMap(result => particlePositions.map((position, index) => [
+            result.method.toUpperCase(),
+            `P${index + 1} · ${formatAPICPosition(position)}`,
+            ...result.before.velocities[index].map(formatAPICNumber),
+            ...result.after.velocities[index].map(formatAPICNumber)
+        ])));
+        fillMPM2DTable('apic-grid-body', methods.flatMap(result => result.nodes.map((node, index) => [
+            result.method.toUpperCase(),
+            `N${index + 1} · ${formatAPICPosition(node.position)}`,
+            formatAPICNumber(node.mass),
+            ...node.velocity.map(formatAPICNumber),
+            ...reference.nodes[index].map(formatAPICNumber)
+        ])));
+    }
+
+    function updateAPICObservation() {
+        const { parameters, methods } = apic.result;
+        const [pic, flip, affine] = methods;
+        const percent = value => `${formatAPICNumber(value * 100)}%`;
+        const initialization = parameters.affineInitialization === 'exact'
+            ? 'APIC 仅在起点设 C = A，随后从网格重建；当前仿射场可保持。'
+            : parameters.preset === 'translation'
+                ? '平移场 A = 0，零 C 也是精确初始化。'
+                : '初始 C = 0：APIC 第一轮与 PIC 相同，后续重建不能补回已损失的幅值。';
+        const picNote = parameters.preset === 'translation'
+            ? '均匀平移可由 PIC 再现。'
+            : '本剪切／旋转场会被 PIC 反复平均而衰减。';
+        byId('apic-observation').textContent = [
+            `第 ${parameters.rounds} 轮 · ${apic.stage.value === 'grid' ? 'P2G 后网格速度' : 'G2P 后粒子速度'}。${picNote}`,
+            `网格／粒子误差：PIC ${percent(pic.gridError)}／${percent(pic.particleError)}；FLIP ${percent(flip.gridError)}／${percent(flip.particleError)}；APIC ${percent(affine.gridError)}／${percent(affine.particleError)}。`,
+            'FLIP 的零粒子误差来自零网格增量，不等于网格准确。',
+            initialization
+        ].join(' ');
+    }
+
+    function drawAPICVector(context, x, y, velocity, scale, color, reference) {
+        const dx = velocity[0] * scale;
+        const dy = -velocity[1] * scale;
+        const length = Math.hypot(dx, dy);
+        if (length < 1) return;
+        const endX = x + dx;
+        const endY = y + dy;
+        const angle = Math.atan2(dy, dx);
+        const head = Math.min(7, length * 0.35);
+        const strokeWidth = reference ? 3.5 : 1.8;
+        context.setLineDash(reference ? [5, 4] : []);
+        line(context, x, y, endX, endY, color, strokeWidth);
+        context.setLineDash([]);
+        line(context, endX, endY, endX - head * Math.cos(angle - Math.PI / 6), endY - head * Math.sin(angle - Math.PI / 6), color, strokeWidth);
+        line(context, endX, endY, endX - head * Math.cos(angle + Math.PI / 6), endY - head * Math.sin(angle + Math.PI / 6), color, strokeWidth);
+    }
+
+    function drawAPICComparison() {
+        const { methods, particlePositions, nodePositions, reference, parameters } = apic.result;
+        const scenes = apic.canvases.map(setupCanvas);
+        const palette = colors();
+        // One physical frame and velocity scale, independent of method, phase and round.
+        const span = Math.max(1, Math.min(...scenes.map(scene => Math.min(scene.width - 64, scene.height - 72))) / 1.8);
+        let referencePeak = 0;
+        for (const velocity of reference.nodes) {
+            referencePeak = Math.max(referencePeak, Math.abs(velocity[0]), Math.abs(velocity[1]));
+        }
+        const vectorLength = 0.36 / referencePeak;
+        const velocityScale = span * vectorLength;
+        byId('apic-vector-scale').textContent = formatAPICNumber(vectorLength);
+        const gridStage = apic.stage.value === 'grid';
+        const positions = gridStage ? nodePositions : particlePositions;
+        const analytical = gridStage ? reference.nodes : reference.particles;
+        scenes.forEach(({ context, width, height }, methodIndex) => {
+            const result = methods[methodIndex];
+            const xFor = x => width / 2 + (x - 0.5) * span;
+            const yFor = y => height / 2 - (y - 0.5) * span;
+            context.strokeStyle = palette.muted;
+            context.lineWidth = 1;
+            context.strokeRect(xFor(0), yFor(1), span, span);
+            context.setLineDash([2, 4]);
+            line(context, xFor(0.5), yFor(0), xFor(0.5), yFor(1), palette.border);
+            line(context, xFor(0), yFor(0.5), xFor(1), yFor(0.5), palette.border);
+            context.setLineDash([]);
+            context.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+            context.fillStyle = palette.text;
+            context.textAlign = 'center';
+            context.fillText(`${result.method.toUpperCase()} · 第 ${parameters.rounds} 轮 · ${gridStage ? '节点' : '返回粒子'}`, width / 2, 18);
+            context.fillText('x / m →', width / 2, height - 10);
+            context.fillText('0', xFor(0), yFor(0) + 17);
+            context.fillText('1', xFor(1), yFor(0) + 17);
+            context.textAlign = 'left';
+            context.fillText('y / m ↑', 8, 36);
+            context.fillText('0', xFor(0) - 17, yFor(0) + 4);
+            context.fillText('1', xFor(0) - 17, yFor(1) + 4);
+            nodePositions.forEach(position => {
+                context.fillStyle = gridStage ? palette.text : palette.muted;
+                context.fillRect(xFor(position[0]) - 3, yFor(position[1]) - 3, 6, 6);
+            });
+            particlePositions.forEach(position => {
+                context.beginPath();
+                context.arc(xFor(position[0]), yFor(position[1]), 3.5, 0, Math.PI * 2);
+                context.fillStyle = gridStage ? palette.muted : palette.text;
+                context.fill();
+            });
+            positions.forEach((position, index) => {
+                drawAPICVector(context, xFor(position[0]), yFor(position[1]), analytical[index], velocityScale, palette.orange, true);
+            });
+            positions.forEach((position, index) => {
+                const velocity = gridStage ? result.nodes[index].velocity : result.after.velocities[index];
+                drawAPICVector(context, xFor(position[0]), yFor(position[1]), velocity, velocityScale, palette.blue, false);
+            });
+        });
+    }
+
+    function clearAPICResult(error) {
+        apic.result = null;
+        apic.tableIds.forEach(id => byId(id).replaceChildren());
+        apic.canvases.forEach(canvas => {
+            const context = canvas.getContext('2d');
+            context.save();
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.restore();
+        });
+        const output = byId('apic-error');
+        output.hidden = false;
+        output.textContent = `纯传输计算失败：${error instanceof Error ? error.message : String(error)} 请修改参数后重试。`;
+        byId('apic-observation').textContent = '当前参数没有可用结果；旧图表与数值已清除。';
+    }
+
+    function renderAPIC() {
+        if (apic.panel.hidden) return;
+        syncAPICControls();
+        const options = {
+            preset: apic.preset.value,
+            rounds: apic.rounds.valueAsNumber,
+            inset: apic.inset.valueAsNumber,
+            affineInitialization: apic.affineInitialization.value
+        };
+        const key = JSON.stringify(options);
+        if (key !== apic.key) {
+            apic.key = key;
+            try {
+                apic.result = core.transferComparison2D(options);
+                byId('apic-error').hidden = true;
+                byId('apic-error').textContent = '';
+                updateAPICTables();
+            } catch (error) {
+                clearAPICResult(error);
+            }
+        }
+        if (!apic.result) return;
+        updateAPICObservation();
+        drawAPICComparison();
+    }
+
+    byId('apic-controls').addEventListener('submit', event => event.preventDefault());
+    [apic.preset, apic.affineInitialization, apic.rounds, apic.inset].forEach(input => {
+        ['input', 'change'].forEach(name => input.addEventListener(name, () => {
+            syncAPICControls();
+            renderAPIC();
+        }));
+    });
+    apic.stage.addEventListener('change', renderAPIC);
+    apic.step.addEventListener('click', () => {
+        apic.rounds.value = Math.min(20, apic.rounds.valueAsNumber + 1);
+        syncAPICControls();
+        renderAPIC();
+    });
+    byId('apic-reset').addEventListener('click', () => {
+        apic.rounds.value = 1;
+        syncAPICControls();
+        renderAPIC();
+    });
+    syncAPICControls();
+
+    function renderVisible() {
+        renderP2G();
+        renderMPM2D();
+        renderRetention();
+        renderTerrain();
+        renderKinematics();
+        renderElasticBar();
+        renderAPIC();
+    }
+
+    const initialPanel = panels.some(panel => `#${panel.id}` === location.hash) ? location.hash.slice(1) : 'mpm-lab';
+    byId('mpm2d-lab').hidden = initialPanel !== 'mpm2d-lab';
+    setMPM2DPreset('reset');
+    activatePanel(initialPanel, false);
+    window.addEventListener('hashchange', () => activatePanel(location.hash.slice(1), false));
+
+    if ('ResizeObserver' in window) {
+        const observer = new ResizeObserver(() => requestAnimationFrame(renderVisible));
+        panels.forEach(panel => observer.observe(panel));
+    } else {
+        window.addEventListener('resize', renderVisible);
+    }
+
+    new MutationObserver(renderVisible).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+}());
