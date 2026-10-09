@@ -48,6 +48,108 @@
       </tags>
   </entry>
   <entry>
+    <title>基于蒙特卡洛法的边坡可靠度分析程序说明</title>
+    <url>/2024/04/74b4d97f/</url>
+    <content><![CDATA[<h2 id="非饱和黄土边坡失效概率计算程序">非饱和黄土边坡失效概率计算程序</h2>
+<p>本程序是基于有限元的边坡可靠度分析程序，改进自<a href="https://inside.mines.edu/~vgriffit">Griffith教授</a> 的非饱和黄土边坡稳定性计算程序</p>
+<p>本程序使用强度折减法计算稳定系数，使用Monte-Carlo法计算失效概率；</p>
+<p>将计算作业量，分成<strong>线程数量</strong>的段数，将作业量平均分配给每一个线程；</p>
+<p><strong>本程序使用MPI实现并行运算</strong></p>
+<p><strong>程序文件</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">slope_new/Subroutine.py</span><br><span class="line">slope_new/slope2.f90</span><br></pre></td></tr></table></figure>
+<p><strong>示例数据文件</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exmaple/1.dat</span><br><span class="line">exmaple/1_c.txt</span><br><span class="line">exmaple/1_phi.txt</span><br><span class="line">example/1_gamma.txt !未给出</span><br><span class="line">exmaple/1_mstd.txt</span><br><span class="line">exmaple/1_grid.txt</span><br></pre></td></tr></table></figure>
+<p><strong>结果文件</strong> 未给出</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1_fs.res</span><br><span class="line">1_fail.res</span><br></pre></td></tr></table></figure>
+<h3 id="前置安装教程">前置安装教程</h3>
+<ol>
+<li>Fortran程序前置安装：<a href="https://github.com/sourceryinstitute/OpenCoarrays">OpenCoarrays</a></li>
+</ol>
+<p>以Ubuntu22.04安装Open-coarrays 2.9.2为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install cmake gfortran</span><br><span class="line">wget https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz</span><br><span class="line">tar xf 2.9.2.tar.gz</span><br><span class="line">cd OpenCoarrays-2.9.2</span><br><span class="line">makedir build</span><br><span class="line">cd build</span><br><span class="line">cmake ..</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<p>！若<a href="https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz">OpenCoarrays2.9.2</a> 下载失败可手动下载并上传到<code>/home/username/</code>再解压编译安装</p>
+<ol start="2">
+<li>可选安装–后台运行<a href="https://www.gnu.org/software/screen/">Screen</a></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">安装：</span><br><span class="line">sudo apt-get install screen</span><br><span class="line">列出全部会话：</span><br><span class="line">screen -ls</span><br><span class="line">新建：</span><br><span class="line">screen</span><br><span class="line">screen -S name</span><br><span class="line">删除：</span><br><span class="line">screen -S name -X quit ! 或在窗口内使用快捷键ctrl + D</span><br><span class="line">放置后台：</span><br><span class="line">使用快捷键ctrl+A再ctrl+D </span><br><span class="line">返回窗口：</span><br><span class="line">screen -R</span><br><span class="line">screen -r name </span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>Python程序须安装<a href="https://www.python.org/downloads/">Python3.x</a> ！无须安装在服务器中，仅做数据处理工作，在本地使用即可</li>
+</ol>
+<p>程序运行依赖<code>numpy</code>库，可使用pip安装：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pip install numpy</span><br></pre></td></tr></table></figure>
+<h3 id="程序使用教程">程序使用教程</h3>
+<ol>
+<li>运行<a href="https://github.com/liudh56/Slope/blob/main/Slope_new/Subroutine.py">Subroutine.py</a></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd 代码所在目录</span><br><span class="line">python ./Subroutine.py</span><br></pre></td></tr></table></figure>
+<p>根据提示操作即可<a href="https://github.com/liudh56/Slope/tree/main/example">使用教程</a></p>
+<ol start="2">
+<li>将生成文件与<code>slope2.f90</code>放在同一文件夹内（本文件夹即要上传的文件夹）</li>
+</ol>
+<p>文件包括：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx.dat</span><br><span class="line">xxx_c.txt xxx_phi.txt xxx_gamma.txt #具体文件数量与设为随机的参数有关</span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/liudh56/Slope/blob/main/example/1.dat">dat文件详细</a></p>
+<p>其他python程序使用文件（无需上传）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx_mstd.txt</span><br><span class="line">xxx_grid.txt</span><br></pre></td></tr></table></figure>
+<h4 id="Fortran程序–在服务器中运行">Fortran程序–在服务器中运行</h4>
+<ol>
+<li>
+<p>将上文中的文件夹上传至服务器并打开目录</p>
+</li>
+<li>
+<p>编译命令：</p>
+</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">caf slope2.f90 -o slope</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>运行：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cafrun -n 4 slope</span><br><span class="line">！ 4代表线程数，可更改，若线程数报错改用下面的命令</span><br></pre></td></tr></table></figure>
+<p>或者：使用下面命令适用于多主机的情况，根据主机实际情况分配线程数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mpirun --host host1:40 host2:40 -n 80 filename</span><br><span class="line">mpirun --host hostfile -n 80 filename !使用该命令须先创建hostfile文件</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>保存结果文件到本地与Subroutine.py文件放置在同一文件内</li>
+</ol>
+<p>运行Subroutine.py程序并选择功能3计算失效概率，结果保存在<code>xxx_fail.res</code>文件内。</p>
+<h2 id="Subroutine-py程序使用方式">Subroutine.py程序使用方式</h2>
+<h3 id="1-输入项目名称xxx。">1. 输入项目名称xxx。</h3>
+<h3 id="2-选择功能（输入序号）。">2. 选择功能（输入序号）。</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. （首次使用）引导填写并重新生成xxx.dat和xxx_mstd.txt文件</span><br><span class="line">   </span><br><span class="line">2. 根据xxx_mstd.txt生成phi、c和gamma的值</span><br><span class="line">   </span><br><span class="line">3. 计算失效概率,并生成xxx_fail.res文件,储存失效概率</span><br><span class="line">   </span><br><span class="line">4. 生成xxx_grid.txt文件,储存网格点的序号(多层土的情况使用)</span><br><span class="line">   </span><br><span class="line">5. 根据xxx_mstd.txt重新生成某参数值</span><br><span class="line"></span><br><span class="line">0. 退出程序(默认)</span><br></pre></td></tr></table></figure>
+<h3 id="功能使用教程">功能使用教程</h3>
+<ol>
+<li>第一次使用选择<code>1</code>填写<code>xxx.dat</code>和<code>xxx_mstd.txt</code>文件（也可直接修改示例文件来使用）</li>
+</ol>
+<p><strong>建议先查看示例文件</strong></p>
+<p><strong>若填写过程中出现填写错误，可继续填写，等待填写完成再从生成文件内修改错误</strong></p>
+<p><strong>功能4，可协助填写<code>xxx.dat</code>文件，后文介绍</strong></p>
+<ol start="2">
+<li>再选择<code>2</code>根据提示进行选择（以内摩擦角和粘聚力为随机参数为例）</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">请输入模拟次数:10000</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 10</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布) 1</span><br><span class="line">已生成xxx_c.txt文件!</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 20</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布): 1</span><br><span class="line">已生成xxx_phi.txt文件!</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>
+<p>文件上传计算</p>
+</li>
+<li>
+<p>计算完成后，将结果文件<code>xxx_fs.res</code>放置与本程序在同一文件夹内，运行程序选择<code>3</code>，结果保存在<code>xxx_fail.res</code>文件</p>
+</li>
+</ol>
+<p><strong>功能4介绍（单层土不需要使用）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">！根据自己划分的每层土的单元格数（不是高度）填写即可，注意与ny1和ny2区分</span><br><span class="line">请输入第1层土的厚度(竖向单元格数): 16</span><br><span class="line">请输入第2层土的厚度(竖向单元格数): 5</span><br><span class="line">已生成xxx_grid.txt文件!</span><br></pre></td></tr></table></figure>
+<p><code>xxx_grid.txt</code>的内容复制到<code>xxx.dat</code>文件的以下位置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;Choose whether to set it as a random variable (the order is: phi c gamma,1 is random)&quot;</span><br><span class="line">1 1 0</span><br><span class="line"></span><br><span class="line">&quot;Property group assigned to each element (etype, data not needed if np_types=1)&quot;</span><br><span class="line">（--------此位置--------）</span><br><span class="line"></span><br><span class="line">&quot;Pseudo-static analysis: Horizontal acceleration factor (k_h)&quot;</span><br><span class="line">0.0</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>有限元法（FEM）</category>
+      </categories>
+      <tags>
+        <tag>边坡稳定性</tag>
+        <tag>可靠度分析</tag>
+        <tag>蒙特卡洛法</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>有限元非饱和土孔压迭代程序修改说明</title>
     <url>/2024/04/863a85e0/</url>
     <content><![CDATA[<h2 id="修改内容">修改内容</h2>
@@ -251,108 +353,6 @@
       </categories>
       <tags>
         <tag>质量守恒</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>基于蒙特卡洛法的边坡可靠度分析程序说明</title>
-    <url>/2024/04/74b4d97f/</url>
-    <content><![CDATA[<h2 id="非饱和黄土边坡失效概率计算程序">非饱和黄土边坡失效概率计算程序</h2>
-<p>本程序是基于有限元的边坡可靠度分析程序，改进自<a href="https://inside.mines.edu/~vgriffit">Griffith教授</a> 的非饱和黄土边坡稳定性计算程序</p>
-<p>本程序使用强度折减法计算稳定系数，使用Monte-Carlo法计算失效概率；</p>
-<p>将计算作业量，分成<strong>线程数量</strong>的段数，将作业量平均分配给每一个线程；</p>
-<p><strong>本程序使用MPI实现并行运算</strong></p>
-<p><strong>程序文件</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">slope_new/Subroutine.py</span><br><span class="line">slope_new/slope2.f90</span><br></pre></td></tr></table></figure>
-<p><strong>示例数据文件</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exmaple/1.dat</span><br><span class="line">exmaple/1_c.txt</span><br><span class="line">exmaple/1_phi.txt</span><br><span class="line">example/1_gamma.txt !未给出</span><br><span class="line">exmaple/1_mstd.txt</span><br><span class="line">exmaple/1_grid.txt</span><br></pre></td></tr></table></figure>
-<p><strong>结果文件</strong> 未给出</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1_fs.res</span><br><span class="line">1_fail.res</span><br></pre></td></tr></table></figure>
-<h3 id="前置安装教程">前置安装教程</h3>
-<ol>
-<li>Fortran程序前置安装：<a href="https://github.com/sourceryinstitute/OpenCoarrays">OpenCoarrays</a></li>
-</ol>
-<p>以Ubuntu22.04安装Open-coarrays 2.9.2为例：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install cmake gfortran</span><br><span class="line">wget https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz</span><br><span class="line">tar xf 2.9.2.tar.gz</span><br><span class="line">cd OpenCoarrays-2.9.2</span><br><span class="line">makedir build</span><br><span class="line">cd build</span><br><span class="line">cmake ..</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-<p>！若<a href="https://github.com/sourceryinstitute/OpenCoarrays/archive/refs/tags/2.9.2.tar.gz">OpenCoarrays2.9.2</a> 下载失败可手动下载并上传到<code>/home/username/</code>再解压编译安装</p>
-<ol start="2">
-<li>可选安装–后台运行<a href="https://www.gnu.org/software/screen/">Screen</a></li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">安装：</span><br><span class="line">sudo apt-get install screen</span><br><span class="line">列出全部会话：</span><br><span class="line">screen -ls</span><br><span class="line">新建：</span><br><span class="line">screen</span><br><span class="line">screen -S name</span><br><span class="line">删除：</span><br><span class="line">screen -S name -X quit ! 或在窗口内使用快捷键ctrl + D</span><br><span class="line">放置后台：</span><br><span class="line">使用快捷键ctrl+A再ctrl+D </span><br><span class="line">返回窗口：</span><br><span class="line">screen -R</span><br><span class="line">screen -r name </span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>Python程序须安装<a href="https://www.python.org/downloads/">Python3.x</a> ！无须安装在服务器中，仅做数据处理工作，在本地使用即可</li>
-</ol>
-<p>程序运行依赖<code>numpy</code>库，可使用pip安装：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pip install numpy</span><br></pre></td></tr></table></figure>
-<h3 id="程序使用教程">程序使用教程</h3>
-<ol>
-<li>运行<a href="https://github.com/liudh56/Slope/blob/main/Slope_new/Subroutine.py">Subroutine.py</a></li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd 代码所在目录</span><br><span class="line">python ./Subroutine.py</span><br></pre></td></tr></table></figure>
-<p>根据提示操作即可<a href="https://github.com/liudh56/Slope/tree/main/example">使用教程</a></p>
-<ol start="2">
-<li>将生成文件与<code>slope2.f90</code>放在同一文件夹内（本文件夹即要上传的文件夹）</li>
-</ol>
-<p>文件包括：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx.dat</span><br><span class="line">xxx_c.txt xxx_phi.txt xxx_gamma.txt #具体文件数量与设为随机的参数有关</span><br></pre></td></tr></table></figure>
-<p><a href="https://github.com/liudh56/Slope/blob/main/example/1.dat">dat文件详细</a></p>
-<p>其他python程序使用文件（无需上传）：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xxx_mstd.txt</span><br><span class="line">xxx_grid.txt</span><br></pre></td></tr></table></figure>
-<h4 id="Fortran程序–在服务器中运行">Fortran程序–在服务器中运行</h4>
-<ol>
-<li>
-<p>将上文中的文件夹上传至服务器并打开目录</p>
-</li>
-<li>
-<p>编译命令：</p>
-</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">caf slope2.f90 -o slope</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>运行：</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cafrun -n 4 slope</span><br><span class="line">！ 4代表线程数，可更改，若线程数报错改用下面的命令</span><br></pre></td></tr></table></figure>
-<p>或者：使用下面命令适用于多主机的情况，根据主机实际情况分配线程数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mpirun --host host1:40 host2:40 -n 80 filename</span><br><span class="line">mpirun --host hostfile -n 80 filename !使用该命令须先创建hostfile文件</span><br></pre></td></tr></table></figure>
-<ol start="4">
-<li>保存结果文件到本地与Subroutine.py文件放置在同一文件内</li>
-</ol>
-<p>运行Subroutine.py程序并选择功能3计算失效概率，结果保存在<code>xxx_fail.res</code>文件内。</p>
-<h2 id="Subroutine-py程序使用方式">Subroutine.py程序使用方式</h2>
-<h3 id="1-输入项目名称xxx。">1. 输入项目名称xxx。</h3>
-<h3 id="2-选择功能（输入序号）。">2. 选择功能（输入序号）。</h3>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. （首次使用）引导填写并重新生成xxx.dat和xxx_mstd.txt文件</span><br><span class="line">   </span><br><span class="line">2. 根据xxx_mstd.txt生成phi、c和gamma的值</span><br><span class="line">   </span><br><span class="line">3. 计算失效概率,并生成xxx_fail.res文件,储存失效概率</span><br><span class="line">   </span><br><span class="line">4. 生成xxx_grid.txt文件,储存网格点的序号(多层土的情况使用)</span><br><span class="line">   </span><br><span class="line">5. 根据xxx_mstd.txt重新生成某参数值</span><br><span class="line"></span><br><span class="line">0. 退出程序(默认)</span><br></pre></td></tr></table></figure>
-<h3 id="功能使用教程">功能使用教程</h3>
-<ol>
-<li>第一次使用选择<code>1</code>填写<code>xxx.dat</code>和<code>xxx_mstd.txt</code>文件（也可直接修改示例文件来使用）</li>
-</ol>
-<p><strong>建议先查看示例文件</strong></p>
-<p><strong>若填写过程中出现填写错误，可继续填写，等待填写完成再从生成文件内修改错误</strong></p>
-<p><strong>功能4，可协助填写<code>xxx.dat</code>文件，后文介绍</strong></p>
-<ol start="2">
-<li>再选择<code>2</code>根据提示进行选择（以内摩擦角和粘聚力为随机参数为例）</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">请输入模拟次数:10000</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 10</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布) 1</span><br><span class="line">已生成xxx_c.txt文件!</span><br><span class="line">请输入参数类型(10:内摩擦角,20:粘聚力,30:重度) 20</span><br><span class="line">请输入分布类型(0:定值（默认）,1:正态分布,2:对数正态分布): 1</span><br><span class="line">已生成xxx_phi.txt文件!</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>
-<p>文件上传计算</p>
-</li>
-<li>
-<p>计算完成后，将结果文件<code>xxx_fs.res</code>放置与本程序在同一文件夹内，运行程序选择<code>3</code>，结果保存在<code>xxx_fail.res</code>文件</p>
-</li>
-</ol>
-<p><strong>功能4介绍（单层土不需要使用）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">！根据自己划分的每层土的单元格数（不是高度）填写即可，注意与ny1和ny2区分</span><br><span class="line">请输入第1层土的厚度(竖向单元格数): 16</span><br><span class="line">请输入第2层土的厚度(竖向单元格数): 5</span><br><span class="line">已生成xxx_grid.txt文件!</span><br></pre></td></tr></table></figure>
-<p><code>xxx_grid.txt</code>的内容复制到<code>xxx.dat</code>文件的以下位置：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;Choose whether to set it as a random variable (the order is: phi c gamma,1 is random)&quot;</span><br><span class="line">1 1 0</span><br><span class="line"></span><br><span class="line">&quot;Property group assigned to each element (etype, data not needed if np_types=1)&quot;</span><br><span class="line">（--------此位置--------）</span><br><span class="line"></span><br><span class="line">&quot;Pseudo-static analysis: Horizontal acceleration factor (k_h)&quot;</span><br><span class="line">0.0</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>数值模拟</category>
-        <category>有限元法（FEM）</category>
-      </categories>
-      <tags>
-        <tag>边坡稳定性</tag>
-        <tag>可靠度分析</tag>
-        <tag>蒙特卡洛法</tag>
       </tags>
   </entry>
   <entry>
@@ -2650,6 +2650,161 @@ V_p^{n+1}=J_p^{n+1}V_p^0.
       </tags>
   </entry>
   <entry>
+    <title>深度平均法论文研读：二维泥沙输运模型</title>
+    <url>/2024/12/3e16e77c/</url>
+    <content><![CDATA[<h2 id="原文">原文</h2>
+<p><a href="https://www.sciencedirect.com/science/article/pii/S0924796313000833">A depth-averaged two-dimensional sediment transport model for environmental studies in the Scheldt Estuary and tidal river network - ScienceDirect</a></p>
+<p><a href="https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh">附PDF: https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh</a></p>
+<h2 id="工作内容">工作内容</h2>
+<p>针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。</p>
+<h2 id="流体力学和盐度模型">流体力学和盐度模型</h2>
+<p>河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程</p>
+<h3 id="浅水方程-Shallow-water-equations">浅水方程(Shallow water equations)</h3>
+<div class="math block">
+<script type="math/tex; mode=display">\frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) = 0</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u = -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}</script>
+</div>
+<p>其中 t 是时间, <span class="math inline"><script type="math/tex">H=h+\eta</script></span> 是水深, h 是水柱参考高度; <span class="math inline"><script type="math/tex">f=2\omega\sin \phi</script></span>为科里奥利参数, 以<span class="math inline"><script type="math/tex">\omega</script></span>为地球角速度, 以<span class="math inline"><script type="math/tex">\phi</script></span>为纬度; k为单位向上矢量; G为重力加速度; <span class="math inline"><script type="math/tex">\rho</script></span> 是水的密度, 假设水的密度是恒定的, <span class="math inline"><script type="math/tex">P_a</script></span> 是水面的大气压力; <span class="math inline"><script type="math/tex">\nu</script></span> 为水平涡动粘度; <span class="math inline"><script type="math/tex">\tau_s</script></span>和<span class="math inline"><script type="math/tex">\tau_b</script></span>分别为表面和底部应力矢量.</p>
+<h3 id="深度平均盐度运输方程">深度平均盐度运输方程</h3>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial (HS)}{\partial t} + \nabla\cdot (HuS) = \nabla \cdot (Hk\nabla S)</script>
+</div>
+<p>其中k为扩散系数</p>
+<h3 id="水平涡粘性系数">水平涡粘性系数</h3>
+<p>根据 Smagorinsky（1963）的工作，水平涡粘性系数 <span class="math inline"><script type="math/tex">\nu</script></span> 通常按照以下形式给出：</p>
+<div class="math block">
+<script type="math/tex; mode=display">ν = C_s^2 * Δx * |S|</script>
+</div>
+<p>这里，</p>
+<p><span class="math inline"><script type="math/tex">C_s</script></span> 是 Smagorinsky 常数，一般取值在 0.1 到 0.2 之间；<br>
+<span class="math inline"><script type="math/tex">Δx</script></span> 是网格间距，代表了模型分辨率；<br>
+<span class="math inline"><script type="math/tex">|S|</script></span> 是应变率张量 S 的模，它描述了速度场的空间变化，具体为：</p>
+<div class="math block">
+<script type="math/tex; mode=display">S = (∇u + (∇u)^T) / 2</script>
+</div>
+<p>其中 <span class="math inline"><script type="math/tex">∇u</script></span> 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：</p>
+<div class="math block">
+<script type="math/tex; mode=display">|S| = sqrt(2 * S_{ij} * S_{ij})</script>
+</div>
+<p>这里的 <span class="math inline"><script type="math/tex">S_ij</script></span> 表示应变率张量的分量。</p>
+<h3 id="曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation">曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)</h3>
+<div class="math block">
+<script type="math/tex; mode=display">\tau_b = \rho g n^2 \frac{u \begin{Vmatrix} u \end{Vmatrix} }{H^{1/3}}</script>
+</div>
+<p>其中 n 是曼宁系数. 在大陆架等于<span class="math inline"><script type="math/tex">0.0235\ s\ m^{-1/3}</script></span> , 在Antwerp附近, 从河口线性增加到<span class="math inline"><script type="math/tex">0.028\ s\ m^{-1/3}</script></span></p>
+<h3 id="扩散系数-k-Okubo">扩散系数 k (Okubo)</h3>
+<div class="math block">
+<script type="math/tex; mode=display">k = c_k \Delta^{1.15}</script>
+</div>
+<p>其中 <span class="math inline"><script type="math/tex">c_k</script></span> 为常数, <span class="math inline"><script type="math/tex">\Delta</script></span> 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 <span class="math inline"><script type="math/tex">c_k = 150\ m^{0.85}s^{-1}</script></span>.</p>
+<h2 id="泥沙模型">泥沙模型</h2>
+<p>泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即<span class="math inline"><script type="math/tex">C_{ss}</script></span>, 悬浮沉积物的深度平均浓度[<span class="math inline"><script type="math/tex">kg\ m^{−3}</script></span>], 以及<span class="math inline"><script type="math/tex">C_{sb}</script></span>, 新鲜层中底层沉积物的浓度[<span class="math inline"><script type="math/tex">kg\ m^{−2}</script></span>]。母层是沉积物的无限来源, 只有当<span class="math inline"><script type="math/tex">C_{sb}</script></span>局部为零时才会被侵蚀。</p>
+<p>悬浮中的沉积物是通过平流和扩散输送的, 而底部的沉积物则不是。在区域的二维部分, 悬浮泥沙浓度和新沉积泥沙浓度服从如下方程:</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial (HC_{ss})}{\partial t} + \nabla \cdot (HuC_{ss}) = \nabla \cdot (Hk\nabla C_{ss}) + E_f + E_p - D</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial C_{sb}}{\partial t} = D - E_f</script>
+</div>
+<img src="/2024/12/3e16e77c/image-20241208170632962.png" alt="泥沙侵蚀沉积与悬沙输运示意图" style="zoom:50%;">
+<p>式中<span class="math inline"><script type="math/tex">E_f</script></span>为新鲜层沉积物的侵蚀速率, <span class="math inline"><script type="math/tex">E_p</script></span>为母层沉积物的侵蚀速率, <span class="math inline"><script type="math/tex">D</script></span>为新鲜层沉积物的沉积速率。</p>
+<p><strong>假设母层从未供应, 并且两个底层之间没有交换。此外, 也没有考虑床质输运。</strong></p>
+<h3 id="侵蚀速率-Partheniades-1965">侵蚀速率 (Partheniades(1965))</h3>
+<div class="math block">
+<script type="math/tex; mode=display">E_f = \begin{cases}
+M\left( \dfrac{\tau_b}{\tau_e} - 1 \right),
+    & \text{if } \tau_b > \tau_e \text{ and } C_{sb} > 0, \\
+0,  & \text{otherwise}.
+\end{cases}</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">E_p = \begin{cases}
+M\left( \dfrac{\tau_b}{\tau_{e,p}} - 1 \right),
+    & \text{if } \tau_b > \tau_{e,p} \text{ and } C_{sb} = 0, \\
+0,  & \text{otherwise}.
+\end{cases}</script>
+</div>
+<p>当<span class="math inline"><script type="math/tex">\tau_b</script></span>(底部应力向量的范数<span class="math inline"><script type="math/tex">\tau_b</script></span>) 高于一个阈值<span class="math inline"><script type="math/tex">\tau_e</script></span>时, 沉积物从新鲜层被侵蚀, 或者, 如果新鲜层局部是空的, 当<span class="math inline"><script type="math/tex">\tau_b</script></span>高于另一个阈值<span class="math inline"><script type="math/tex">\tau_{e,p}</script></span>; M被称为侵蚀速率参数。</p>
+<h3 id="沉积速率-Einstein和Krone-1962">沉积速率(Einstein和Krone (1962))</h3>
+<div class="math block">
+<script type="math/tex; mode=display">D=w_sC_{ss}</script>
+</div>
+<p>其中 <span class="math inline"><script type="math/tex">w_s</script></span> 为沉降速度.</p>
+<div class="math block">
+<script type="math/tex; mode=display">w_S = w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m</script>
+</div>
+<p>其中 <span class="math inline"><script type="math/tex">C_{ss,0}=0.1\ kg m^{-3}</script></span> 是 Scheldt SSC的参考值, <span class="math inline"><script type="math/tex">w_{s,0}</script></span> 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999).</p>
+<h3 id="连续方程的推导">连续方程的推导</h3>
+<p><img src="/2024/12/3e16e77c/image-20241211171404424.png" alt="深度平均模型的水深与基准面定义"></p>
+<p>引入自由表面的运动学条件和底部运动学条件</p>
+<div class="math block">
+<script type="math/tex; mode=display">u_z|_{z=z_s} = \frac{dz_s}{dt} = \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x} u_x + \frac{\partial z_s}{\partial y} u_y</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">u_z|_{z=z_b} = \frac{dz_b}{dt} = \frac{\partial z_b}{\partial t} + \frac{\partial z_b}{\partial x} u_x + \frac{\partial z_b}{\partial y} u_y</script>
+</div>
+<p>对连续性方程沿水深方向进行积分</p>
+<div class="math block">
+<script type="math/tex; mode=display">\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j} dz = 0 \ (j=1,2,3)</script>
+</div>
+<div class="math block">
+<script type="math/tex; mode=display">\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j}dz + u_z|_{z_s} - u_z|_{u_b} = 0 \ (j=1,2)</script>
+</div>
+<p>由牛顿-莱布尼兹公式</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial}{\partial x_j} \int_a^b f dz = \int_a^b \frac{\partial f}{\partial x_j} dz + f|_b \frac{\partial b}{\partial x_j} - f|_a \frac{\partial a}{\partial x_j}</script>
+</div>
+<p>将上式第一项展开，可得</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + u_z|_{z_s} - u_z|_{z_b} = 0 \ (j=1,2)</script>
+</div>
+<p>代入两个运动学条件，可得</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x_j} u_j|_{z_s} - \frac{\partial z_b}{\partial t} - \frac{\partial z_b}{\partial x_j} u_j|_{z_b} = 0 \ (j=1,2)</script>
+</div>
+<p>化简，得</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz + \frac{\partial z_s}{\partial x_j} - \frac{\partial z_b}{\partial x_j} = 0 \ (j=1,2)</script>
+</div>
+<p>由 <span class="math inline"><script type="math/tex">H=z_s-z_b</script></span>, 进一步化简为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz = 0 \ (j=1,2)</script>
+</div>
+<p>又有</p>
+<div class="math block">
+<script type="math/tex; mode=display">\int_{z_b}^{z_s} u_j dz = HU_j \ (j=1,2)</script>
+</div>
+<p>代入上式，得</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial HU_j}{\partial x_j} = 0 \ (j=1,2)</script>
+</div>
+<p>即</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial HU_x}{\partial x} + \frac{\partial HU_y}{\partial y} = 0</script>
+</div>
+<p>本篇文章中 <span class="math inline"><script type="math/tex">H = h + \eta</script></span>, <span class="math inline"><script type="math/tex">H</script></span> 为水深，<span class="math inline"><script type="math/tex">h</script></span> 为参考水柱高度（河床到基准面的高度），<span class="math inline"><script type="math/tex">\eta</script></span> 为水面相对于基准面的高度，是一个瞬时变化量。</p>
+<p>因此，第一项水深随时间的变化率写为 <span class="math inline"><script type="math/tex">\frac{\partial \eta}{\partial t}</script></span>，第二三项的为水平方向的水流通量，其通过面积可表示为 <span class="math inline"><script type="math/tex">H</script></span>, 因此此项应写为 <span class="math inline"><script type="math/tex">\frac{\partial Hu_j}{\partial x_j}</script></span>.</p>
+<p>综上</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial \eta}{\partial t} + \frac{\partial Hu_j}{\partial x_j} = 0 \ (j=1,2)</script>
+</div>
+<p>使用哈密顿算子可以表示为</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac{\partial \eta}{\partial t} + \nabla \cdot (Hu) = 0</script>
+</div>
+]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>深度平均法</category>
+      </categories>
+      <tags>
+        <tag>泥沙输运</tag>
+        <tag>盐度输运</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Git 分支工作流：从本地开发到 Pull Request 合并</title>
     <url>/2024/04/5dbdb580/</url>
     <content><![CDATA[<p>直接在 <code>main</code> 分支修改代码，短期看似省事，却会让未完成的功能、紧急修复和稳定版本混在一起。更稳妥的做法是：<strong>每项任务使用独立分支，在分支上完成小步提交，通过 Pull Request（PR）审查后再合并到 <code>main</code></strong>。</p>
@@ -3019,161 +3174,6 @@ V_p^{n+1}=J_p^{n+1}V_p^0.
       <tags>
         <tag>Hexo</tag>
         <tag>云服务器</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>深度平均法论文研读：二维泥沙输运模型</title>
-    <url>/2024/12/3e16e77c/</url>
-    <content><![CDATA[<h2 id="原文">原文</h2>
-<p><a href="https://www.sciencedirect.com/science/article/pii/S0924796313000833">A depth-averaged two-dimensional sediment transport model for environmental studies in the Scheldt Estuary and tidal river network - ScienceDirect</a></p>
-<p><a href="https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh">附PDF: https://pan.baidu.com/s/1XmZkQXuFonfgSAhfdp6Wrw?pwd=pnkh</a></p>
-<h2 id="工作内容">工作内容</h2>
-<p>针对SLIM有限元模型(Second-generation Louvainla-Neuve Ice-ocean Model)的二维深度平均分量和一维截面平均分量设计了泥沙模块, 并将其应用于斯海尔德盆地的潮汐部分. 该泥沙输运模块侧重于细粒、粘性沉积物. 它是进行环境生物地球化学研究的必要工具, 其中细粒沉积物动力学起着至关重要的作用。</p>
-<h2 id="流体力学和盐度模型">流体力学和盐度模型</h2>
-<p>河口部分使用二维深度平均方程, 河流部分使用一维截面平均方程</p>
-<h3 id="浅水方程-Shallow-water-equations">浅水方程(Shallow water equations)</h3>
-<div class="math block">
-<script type="math/tex; mode=display">\frac {\partial \eta}{\partial t} + \nabla \cdot(Hu) = 0</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial u}{\partial t} + u \cdot (\nabla u) + fk \times u = -g \nabla \eta - \frac{1}{\rho}\nabla P_a + \frac{1}{H}\nabla \cdot (H\nu (\nabla u)) + \frac{\tau_s - \tau_b}{\rho H}</script>
-</div>
-<p>其中 t 是时间, <span class="math inline"><script type="math/tex">H=h+\eta</script></span> 是水深, h 是水柱参考高度; <span class="math inline"><script type="math/tex">f=2\omega\sin \phi</script></span>为科里奥利参数, 以<span class="math inline"><script type="math/tex">\omega</script></span>为地球角速度, 以<span class="math inline"><script type="math/tex">\phi</script></span>为纬度; k为单位向上矢量; G为重力加速度; <span class="math inline"><script type="math/tex">\rho</script></span> 是水的密度, 假设水的密度是恒定的, <span class="math inline"><script type="math/tex">P_a</script></span> 是水面的大气压力; <span class="math inline"><script type="math/tex">\nu</script></span> 为水平涡动粘度; <span class="math inline"><script type="math/tex">\tau_s</script></span>和<span class="math inline"><script type="math/tex">\tau_b</script></span>分别为表面和底部应力矢量.</p>
-<h3 id="深度平均盐度运输方程">深度平均盐度运输方程</h3>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial (HS)}{\partial t} + \nabla\cdot (HuS) = \nabla \cdot (Hk\nabla S)</script>
-</div>
-<p>其中k为扩散系数</p>
-<h3 id="水平涡粘性系数">水平涡粘性系数</h3>
-<p>根据 Smagorinsky（1963）的工作，水平涡粘性系数 <span class="math inline"><script type="math/tex">\nu</script></span> 通常按照以下形式给出：</p>
-<div class="math block">
-<script type="math/tex; mode=display">ν = C_s^2 * Δx * |S|</script>
-</div>
-<p>这里，</p>
-<p><span class="math inline"><script type="math/tex">C_s</script></span> 是 Smagorinsky 常数，一般取值在 0.1 到 0.2 之间；<br>
-<span class="math inline"><script type="math/tex">Δx</script></span> 是网格间距，代表了模型分辨率；<br>
-<span class="math inline"><script type="math/tex">|S|</script></span> 是应变率张量 S 的模，它描述了速度场的空间变化，具体为：</p>
-<div class="math block">
-<script type="math/tex; mode=display">S = (∇u + (∇u)^T) / 2</script>
-</div>
-<p>其中 <span class="math inline"><script type="math/tex">∇u</script></span> 是速度梯度张量，而上标 T 表示转置。应变率张量的模可以通过下式计算：</p>
-<div class="math block">
-<script type="math/tex; mode=display">|S| = sqrt(2 * S_{ij} * S_{ij})</script>
-</div>
-<p>这里的 <span class="math inline"><script type="math/tex">S_ij</script></span> 表示应变率张量的分量。</p>
-<h3 id="曼宁-斯特里克勒公式-the-Chezy–Manning–Strickler-formulation">曼宁-斯特里克勒公式(the Chézy–Manning–Strickler formulation)</h3>
-<div class="math block">
-<script type="math/tex; mode=display">\tau_b = \rho g n^2 \frac{u \begin{Vmatrix} u \end{Vmatrix} }{H^{1/3}}</script>
-</div>
-<p>其中 n 是曼宁系数. 在大陆架等于<span class="math inline"><script type="math/tex">0.0235\ s\ m^{-1/3}</script></span> , 在Antwerp附近, 从河口线性增加到<span class="math inline"><script type="math/tex">0.028\ s\ m^{-1/3}</script></span></p>
-<h3 id="扩散系数-k-Okubo">扩散系数 k (Okubo)</h3>
-<div class="math block">
-<script type="math/tex; mode=display">k = c_k \Delta^{1.15}</script>
-</div>
-<p>其中 <span class="math inline"><script type="math/tex">c_k</script></span> 为常数, <span class="math inline"><script type="math/tex">\Delta</script></span> 是网格的特征长度尺度(即二维网格中三角形的最长边, 或一维网格中线段的长度). 对其值进行校准以准确地表示Scheldt中的盐度变化, 从而得到 <span class="math inline"><script type="math/tex">c_k = 150\ m^{0.85}s^{-1}</script></span>.</p>
-<h2 id="泥沙模型">泥沙模型</h2>
-<p>泥沙模块考虑了三层: 悬浮沉积物所在的水柱, 由底部新沉积的沉积物组成的一层, 以及后者下方的一个母层。虽然考虑了三层, 但该模块仅由两个相互作用的变量组成, 即<span class="math inline"><script type="math/tex">C_{ss}</script></span>, 悬浮沉积物的深度平均浓度[<span class="math inline"><script type="math/tex">kg\ m^{−3}</script></span>], 以及<span class="math inline"><script type="math/tex">C_{sb}</script></span>, 新鲜层中底层沉积物的浓度[<span class="math inline"><script type="math/tex">kg\ m^{−2}</script></span>]。母层是沉积物的无限来源, 只有当<span class="math inline"><script type="math/tex">C_{sb}</script></span>局部为零时才会被侵蚀。</p>
-<p>悬浮中的沉积物是通过平流和扩散输送的, 而底部的沉积物则不是。在区域的二维部分, 悬浮泥沙浓度和新沉积泥沙浓度服从如下方程:</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial (HC_{ss})}{\partial t} + \nabla \cdot (HuC_{ss}) = \nabla \cdot (Hk\nabla C_{ss}) + E_f + E_p - D</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial C_{sb}}{\partial t} = D - E_f</script>
-</div>
-<img src="/2024/12/3e16e77c/image-20241208170632962.png" alt="泥沙侵蚀沉积与悬沙输运示意图" style="zoom:50%;">
-<p>式中<span class="math inline"><script type="math/tex">E_f</script></span>为新鲜层沉积物的侵蚀速率, <span class="math inline"><script type="math/tex">E_p</script></span>为母层沉积物的侵蚀速率, <span class="math inline"><script type="math/tex">D</script></span>为新鲜层沉积物的沉积速率。</p>
-<p><strong>假设母层从未供应, 并且两个底层之间没有交换。此外, 也没有考虑床质输运。</strong></p>
-<h3 id="侵蚀速率-Partheniades-1965">侵蚀速率 (Partheniades(1965))</h3>
-<div class="math block">
-<script type="math/tex; mode=display">E_f = \begin{cases}
-M\left( \dfrac{\tau_b}{\tau_e} - 1 \right),
-    & \text{if } \tau_b > \tau_e \text{ and } C_{sb} > 0, \\
-0,  & \text{otherwise}.
-\end{cases}</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">E_p = \begin{cases}
-M\left( \dfrac{\tau_b}{\tau_{e,p}} - 1 \right),
-    & \text{if } \tau_b > \tau_{e,p} \text{ and } C_{sb} = 0, \\
-0,  & \text{otherwise}.
-\end{cases}</script>
-</div>
-<p>当<span class="math inline"><script type="math/tex">\tau_b</script></span>(底部应力向量的范数<span class="math inline"><script type="math/tex">\tau_b</script></span>) 高于一个阈值<span class="math inline"><script type="math/tex">\tau_e</script></span>时, 沉积物从新鲜层被侵蚀, 或者, 如果新鲜层局部是空的, 当<span class="math inline"><script type="math/tex">\tau_b</script></span>高于另一个阈值<span class="math inline"><script type="math/tex">\tau_{e,p}</script></span>; M被称为侵蚀速率参数。</p>
-<h3 id="沉积速率-Einstein和Krone-1962">沉积速率(Einstein和Krone (1962))</h3>
-<div class="math block">
-<script type="math/tex; mode=display">D=w_sC_{ss}</script>
-</div>
-<p>其中 <span class="math inline"><script type="math/tex">w_s</script></span> 为沉降速度.</p>
-<div class="math block">
-<script type="math/tex; mode=display">w_S = w_{s,0} \left( \frac{C_{ss}}{C_{ss,0}}\right)^m</script>
-</div>
-<p>其中 <span class="math inline"><script type="math/tex">C_{ss,0}=0.1\ kg m^{-3}</script></span> 是 Scheldt SSC的参考值, <span class="math inline"><script type="math/tex">w_{s,0}</script></span> 是相关的参考沉降速度, 其值是经验确定的, m 是0.5到3.5之间的系数(van Leussen, 1999).</p>
-<h3 id="连续方程的推导">连续方程的推导</h3>
-<p><img src="/2024/12/3e16e77c/image-20241211171404424.png" alt="深度平均模型的水深与基准面定义"></p>
-<p>引入自由表面的运动学条件和底部运动学条件</p>
-<div class="math block">
-<script type="math/tex; mode=display">u_z|_{z=z_s} = \frac{dz_s}{dt} = \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x} u_x + \frac{\partial z_s}{\partial y} u_y</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">u_z|_{z=z_b} = \frac{dz_b}{dt} = \frac{\partial z_b}{\partial t} + \frac{\partial z_b}{\partial x} u_x + \frac{\partial z_b}{\partial y} u_y</script>
-</div>
-<p>对连续性方程沿水深方向进行积分</p>
-<div class="math block">
-<script type="math/tex; mode=display">\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j} dz = 0 \ (j=1,2,3)</script>
-</div>
-<div class="math block">
-<script type="math/tex; mode=display">\int_{z_b}^{z_s}\frac{\partial u_j}{\partial x_j}dz + u_z|_{z_s} - u_z|_{u_b} = 0 \ (j=1,2)</script>
-</div>
-<p>由牛顿-莱布尼兹公式</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial}{\partial x_j} \int_a^b f dz = \int_a^b \frac{\partial f}{\partial x_j} dz + f|_b \frac{\partial b}{\partial x_j} - f|_a \frac{\partial a}{\partial x_j}</script>
-</div>
-<p>将上式第一项展开，可得</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + u_z|_{z_s} - u_z|_{z_b} = 0 \ (j=1,2)</script>
-</div>
-<p>代入两个运动学条件，可得</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial }{\partial x_j}\int_{z_b}^{z_s}u_jdz - u_j|_{z_s}\frac{\partial z_s}{\partial x_j} +u_j|_{z_b}\frac{\partial z_b}{\partial x_j} + \frac{\partial z_s}{\partial t} + \frac{\partial z_s}{\partial x_j} u_j|_{z_s} - \frac{\partial z_b}{\partial t} - \frac{\partial z_b}{\partial x_j} u_j|_{z_b} = 0 \ (j=1,2)</script>
-</div>
-<p>化简，得</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz + \frac{\partial z_s}{\partial x_j} - \frac{\partial z_b}{\partial x_j} = 0 \ (j=1,2)</script>
-</div>
-<p>由 <span class="math inline"><script type="math/tex">H=z_s-z_b</script></span>, 进一步化简为</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial }{\partial x_j} \int_{z_b}^{z_s} u_j dz = 0 \ (j=1,2)</script>
-</div>
-<p>又有</p>
-<div class="math block">
-<script type="math/tex; mode=display">\int_{z_b}^{z_s} u_j dz = HU_j \ (j=1,2)</script>
-</div>
-<p>代入上式，得</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial HU_j}{\partial x_j} = 0 \ (j=1,2)</script>
-</div>
-<p>即</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial H}{\partial t} + \frac{\partial HU_x}{\partial x} + \frac{\partial HU_y}{\partial y} = 0</script>
-</div>
-<p>本篇文章中 <span class="math inline"><script type="math/tex">H = h + \eta</script></span>, <span class="math inline"><script type="math/tex">H</script></span> 为水深，<span class="math inline"><script type="math/tex">h</script></span> 为参考水柱高度（河床到基准面的高度），<span class="math inline"><script type="math/tex">\eta</script></span> 为水面相对于基准面的高度，是一个瞬时变化量。</p>
-<p>因此，第一项水深随时间的变化率写为 <span class="math inline"><script type="math/tex">\frac{\partial \eta}{\partial t}</script></span>，第二三项的为水平方向的水流通量，其通过面积可表示为 <span class="math inline"><script type="math/tex">H</script></span>, 因此此项应写为 <span class="math inline"><script type="math/tex">\frac{\partial Hu_j}{\partial x_j}</script></span>.</p>
-<p>综上</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial \eta}{\partial t} + \frac{\partial Hu_j}{\partial x_j} = 0 \ (j=1,2)</script>
-</div>
-<p>使用哈密顿算子可以表示为</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac{\partial \eta}{\partial t} + \nabla \cdot (Hu) = 0</script>
-</div>
-]]></content>
-      <categories>
-        <category>数值模拟</category>
-        <category>深度平均法</category>
-      </categories>
-      <tags>
-        <tag>泥沙输运</tag>
-        <tag>盐度输运</tag>
       </tags>
   </entry>
   <entry>
@@ -4448,6 +4448,228 @@ L_{ab}=\frac{\partial v_a}{\partial x_b}.
       </tags>
   </entry>
   <entry>
+    <title>物质点法速度回传：PIC 与 FLIP 的耗散差异</title>
+    <url>/2026/09/76f4599c/</url>
+    <content><![CDATA[<p>同一根无阻尼弹性杆，采用相同网格、粒子和时间步，只切换速度回传方式：两个振动周期后，FLIP 的总能量约为初始值的 <strong>0.994379</strong>，PIC 则约为 <strong>0.120633</strong>。材料没有变软，也没有加入黏性，振动为何衰减得如此不同？</p>
+<p>关键在于：网格算完一步以后，是用网格速度<strong>替换</strong>粒子速度，还是把网格速度的<strong>增量</strong>加回粒子？两者看似只差一行，却决定了粒子原有速度信息能否越过一次往返映射。</p>
+<p>本文先读实际能量曲线，再用一个可手算的单元拆开原因。阅读只需了解速度、动量、动能，以及<a href="/2026/09/1de4dce6/">形函数的权重含义</a>；完整循环可参照<a href="/2024/07/96d26/">物质点法基本流程</a>。这里不比较所有 MPM 变体，也不把“耗散较小”直接等同于“算法更好”。</p>
+<h2 id="一、先看两个周期里发生了什么">一、先看两个周期里发生了什么</h2>
+<p><img src="/2026/09/76f4599c/energy-comparison.svg" alt="固定参考网格弹性杆在两个周期内的归一化总能量：FLIP 保持在初始值附近，PIC 明显衰减"></p>
+<p>横轴为 <span class="math inline"><script type="math/tex">t/T</script></span>，即时间除以解析振动周期；纵轴为 <span class="math inline"><script type="math/tex">E/E_0</script></span>，即数值总能量除以初始总能量。曲线来自<a href="/lab/#elastic-bar-lab">固定两端弹性杆实验</a>实际推进所得的数据，不是预设的衰减函数。解析无阻尼解的归一化总能量恒为 <span class="math inline"><script type="math/tex">1</script></span>。</p>
+<p>两组计算均使用 <span class="math inline"><script type="math/tex">16</script></span> 个单元、每单元 <span class="math inline"><script type="math/tex">4</script></span> 个粒子、CFL 数 <span class="math inline"><script type="math/tex">0.2</script></span>，共推进 <span class="math inline"><script type="math/tex">320</script></span> 步至 <span class="math inline"><script type="math/tex">2T</script></span>。固定参数为：</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>取值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>杆长 <span class="math inline"><script type="math/tex">L</script></span>、截面积 <span class="math inline"><script type="math/tex">A</script></span></td>
+<td><span class="math inline"><script type="math/tex">1\,\mathrm{m}</script></span>、<span class="math inline"><script type="math/tex">0.01\,\mathrm{m^2}</script></span></td>
+</tr>
+<tr>
+<td>杨氏模量 <span class="math inline"><script type="math/tex">E_Y</script></span>、密度 <span class="math inline"><script type="math/tex">\rho</script></span></td>
+<td><span class="math inline"><script type="math/tex">10^6\,\mathrm{Pa}</script></span>、<span class="math inline"><script type="math/tex">1000\,\mathrm{kg/m^3}</script></span></td>
+</tr>
+<tr>
+<td>波速 <span class="math inline"><script type="math/tex">c=\sqrt{E_Y/\rho}</script></span></td>
+<td><span class="math inline"><script type="math/tex">31.6228\,\mathrm{m/s}</script></span></td>
+</tr>
+<tr>
+<td>初速度幅值 <span class="math inline"><script type="math/tex">v_0</script></span></td>
+<td><span class="math inline"><script type="math/tex">0.001c\approx0.0316228\,\mathrm{m/s}</script></span></td>
+</tr>
+<tr>
+<td>周期 <span class="math inline"><script type="math/tex">T=2L/c</script></span></td>
+<td><span class="math inline"><script type="math/tex">0.0632456\,\mathrm{s}</script></span></td>
+</tr>
+<tr>
+<td>实际时间步 <span class="math inline"><script type="math/tex">\Delta t</script></span></td>
+<td><span class="math inline"><script type="math/tex">3.9528471\times10^{-4}\,\mathrm{s}</script></span></td>
+</tr>
+<tr>
+<td>初始能量 <span class="math inline"><script type="math/tex">E_0</script></span></td>
+<td><span class="math inline"><script type="math/tex">0.0025\,\mathrm{J}</script></span></td>
+</tr>
+</tbody>
+</table>
+<p>初始位移、应变和应力为零，粒子初速度为 <span class="math inline"><script type="math/tex">v(X,0)=v_0\sin(\pi X/L)</script></span>，其中 <span class="math inline"><script type="math/tex">X</script></span> 是沿杆向右的参考坐标。图中的总能量按粒子求和：</p>
+<div class="math block">
+<script type="math/tex; mode=display">E=K+U,
+\qquad
+K=\sum_p\frac12m_pv_p^2,
+\qquad
+U=\sum_p\frac{V_p\sigma_p^2}{2E_Y}.</script>
+</div>
+<p><span class="math inline"><script type="math/tex">p</script></span> 表示粒子，<span class="math inline"><script type="math/tex">m_p</script></span> 为质量，<span class="math inline"><script type="math/tex">V_p</script></span> 为体积，<span class="math inline"><script type="math/tex">v_p</script></span> 为速度，<span class="math inline"><script type="math/tex">\sigma_p</script></span> 为拉正应力；<span class="math inline"><script type="math/tex">K</script></span>、<span class="math inline"><script type="math/tex">U</script></span> 分别是动能与应变能，单位均为焦耳。这里用 <span class="math inline"><script type="math/tex">E_Y</script></span> 表示材料模量，避免与图中总能量 <span class="math inline"><script type="math/tex">E</script></span> 混淆。</p>
+<p><strong>这是一维固定参考网格上的线性小应变物质点离散</strong>。粒子参考坐标、线性形函数权重、梯度、质量和体积全程不变；位移会更新，但不会据此移动映射位置。它不是随粒子当前位置重算形函数的 updated-Lagrangian MPM，因此这张图不能证明网格穿越、有限应变或不同基函数下的优劣。</p>
+<p>在这个限定模型里，PIC 的反复覆盖带来了明显更强的耗散；FLIP 曲线则在 <span class="math inline"><script type="math/tex">1</script></span> 附近波动，终点也不恰好等于 <span class="math inline"><script type="math/tex">1</script></span>。这已经提示：<strong>低耗散不是严格能量守恒</strong>。</p>
+<h2 id="二、回传之前，先分清节点速度的时间状态">二、回传之前，先分清节点速度的时间状态</h2>
+<p>设 <span class="math inline"><script type="math/tex">n</script></span> 表示当前时间步，<span class="math inline"><script type="math/tex">i</script></span> 表示节点，<span class="math inline"><script type="math/tex">w_{ip}=N_i(X_p)</script></span> 是无量纲权重。对质量非零的节点，粒子到网格的动量映射给出</p>
+<div class="math block">
+<script type="math/tex; mode=display">m_i=\sum_p m_pw_{ip},
+\qquad
+\widehat v_i^n=\frac{\sum_p m_pw_{ip}v_p^n}{m_i}.</script>
+</div>
+<p><span class="math inline"><script type="math/tex">\widehat v_i^n</script></span> 是<strong>刚映射、尚未处理速度边界</strong>的节点速度，不是上一时间步留下来的节点速度。对它施加本步速度约束后，记为 <span class="math inline"><script type="math/tex">\bar v_i^n</script></span>；再用已处理约束的节点加速度 <span class="math inline"><script type="math/tex">a_i^n</script></span> 更新：</p>
+<div class="math block">
+<script type="math/tex; mode=display">v_i^{n+1}=\bar v_i^n+\Delta t\,a_i^n.
+\tag{1}\label{eq:pic-flip-grid-update}</script>
+</div>
+<p>速度单位为 <span class="math inline"><script type="math/tex">\mathrm{m/s}</script></span>，加速度为 <span class="math inline"><script type="math/tex">\mathrm{m/s^2}</script></span>，<span class="math inline"><script type="math/tex">\Delta t</script></span> 为秒。本文中的 <span class="math inline"><script type="math/tex">v_i^{n+1}</script></span> 特指本步网格更新后的状态；下一步通常会重新映射，并不保证它等于下一步的映射速度。</p>
+<p>PIC（Particle-in-Cell）从更新后的网格重新构造粒子速度：</p>
+<div class="math block">
+<script type="math/tex; mode=display">v_{p,\mathrm{PIC}}^{n+1}=\sum_iw_{ip}v_i^{n+1}.
+\tag{2}\label{eq:pic-flip-pic}</script>
+</div>
+<p>FLIP（Fluid-Implicit-Particle）保留旧粒子速度，只接收网格变化量：</p>
+<div class="math block">
+<script type="math/tex; mode=display">v_{p,\mathrm{FLIP}}^{n+1}
+=v_p^n+\sum_iw_{ip}\Delta v_i.
+\tag{3}\label{eq:pic-flip-flip}</script>
+</div>
+<p>若增量的起点选为式 <span class="math inline"><script type="math/tex">\eqref{eq:pic-flip-grid-update}</script></span> 的 <span class="math inline"><script type="math/tex">\bar v_i^n</script></span>，则 <span class="math inline"><script type="math/tex">\Delta v_i=v_i^{n+1}-\bar v_i^n=\Delta t\,a_i^n</script></span>。于是区别很直接：PIC 问“网格现在认为我该多快”，FLIP 问“这一步网格让我改变多少”。</p>
+<p>写程序时，必须保留增量两端的状态，或单独保存加速度。<strong>不能先原地覆盖旧节点速度，再用同一数组相减求增量</strong>；同样，计算两种候选回传结果或混合结果时，不能先丢掉 <span class="math inline"><script type="math/tex">v_p^n</script></span>。不过，保存这些数学状态不一定要求复制整套数组：像本例直接存储加速度，就不必为差分额外保存旧网格速度。</p>
+<h2 id="三、边界处理也是增量定义的一部分">三、边界处理也是增量定义的一部分</h2>
+<p>本例由当前应力组装内力：</p>
+<div class="math block">
+<script type="math/tex; mode=display">f_i^n=-\sum_pV_p\sigma_p^nN_i'(X_p),
+\qquad
+a_i^n=\frac{f_i^n}{m_i}.</script>
+</div>
+<p><span class="math inline"><script type="math/tex">N_i'=\mathrm{d}N_i/\mathrm{d}X</script></span> 的单位为 <span class="math inline"><script type="math/tex">\mathrm{m^{-1}}</script></span>，内力 <span class="math inline"><script type="math/tex">f_i</script></span> 的单位为牛顿。两个固定端点的<strong>映射速度和加速度均设为零</strong>，内节点则使用上式。因而实际 FLIP 分支只回传</p>
+<div class="math block">
+<script type="math/tex; mode=display">v_p^{n+1}=v_p^n+\Delta t\sum_iw_{ip}a_i^n.</script>
+</div>
+<p>如果另一个程序把增量定义为“最终节点速度减去最初未约束的 <span class="math inline"><script type="math/tex">\widehat v_i^n</script></span>”，端点还会包含 <span class="math inline"><script type="math/tex">0-\widehat v_i^n</script></span> 这项投影修正。那是另一种增量口径，<strong>不等于这里的受约束加速度回传</strong>。不能为了套用通用差分公式，悄悄把这项修正加进本实验，也不能据此承诺不同边界实现的代码等价。</p>
+<p>无论选择 PIC 还是 FLIP，本实验都用同一份更新后网格速度推进位移与应变：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\begin{aligned}
+u_p^{n+1}&=u_p^n+\Delta t\sum_iw_{ip}v_i^{n+1},\\
+\varepsilon_p^{n+1}&=\varepsilon_p^n+\Delta t\sum_iN_i'(X_p)v_i^{n+1},\\
+\sigma_p^{n+1}&=E_Y\varepsilon_p^{n+1}.
+\end{aligned}</script>
+</div>
+<p><span class="math inline"><script type="math/tex">u_p</script></span> 的单位为米，<span class="math inline"><script type="math/tex">\varepsilon_p</script></span> 为无量纲小应变。这里不直接用 FLIP 粒子速度推进位移；速度回传仍会通过下一步动量映射影响后续位移和应力。速度梯度为何进入应变更新，可接着阅读<a href="/2026/09/f1536c55/">物质点法运动学</a>。解析解只用于初始化与对照，没有被代入这些推进式。</p>
+<h2 id="四、一个单元就能看见投影耗散">四、一个单元就能看见投影耗散</h2>
+<p>暂时拿掉弹性力和边界约束。取一个孤立的一维单元，两端节点位于 <span class="math inline"><script type="math/tex">0</script></span>、<span class="math inline"><script type="math/tex">h</script></span>，<span class="math inline"><script type="math/tex">h>0</script></span> 是单元长度。两个粒子质量均为 <span class="math inline"><script type="math/tex">1\,\mathrm{kg}</script></span>，分别位于 <span class="math inline"><script type="math/tex">h/4</script></span>、<span class="math inline"><script type="math/tex">3h/4</script></span>，速度为 <span class="math inline"><script type="math/tex">+1</script></span>、<span class="math inline"><script type="math/tex">-1\,\mathrm{m/s}</script></span>。</p>
+<p>线性形函数的权重矩阵以粒子为行、节点为列：</p>
+<div class="math block">
+<script type="math/tex; mode=display">W=\begin{pmatrix}
+3/4&1/4\\
+1/4&3/4
+\end{pmatrix}.</script>
+</div>
+<p>两个节点质量均为 <span class="math inline"><script type="math/tex">1\,\mathrm{kg}</script></span>；映射后速度为</p>
+<div class="math block">
+<script type="math/tex; mode=display">v_{g,0}=\frac34(1)+\frac14(-1)=\frac12\,\mathrm{m/s},
+\qquad
+v_{g,1}=-\frac12\,\mathrm{m/s}.</script>
+</div>
+<p>没有力，也没有速度约束，因此网格增量为零。PIC 仍会把网格速度插回粒子，得到</p>
+<div class="math block">
+<script type="math/tex; mode=display">v_{1,\mathrm{PIC}}=\frac34\frac12+\frac14\left(-\frac12\right)
+=\frac14\,\mathrm{m/s},
+\qquad
+v_{2,\mathrm{PIC}}=-\frac14\,\mathrm{m/s}.</script>
+</div>
+<p>FLIP 加回的增量是零，所以两个粒子仍以 <span class="math inline"><script type="math/tex">+1</script></span>、<span class="math inline"><script type="math/tex">-1\,\mathrm{m/s}</script></span> 运动。对比动量与动能：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th style="text-align:right">总动量 <span class="math inline"><script type="math/tex">P</script></span> / <span class="math inline"><script type="math/tex">\mathrm{kg\,m/s}</script></span></th>
+<th style="text-align:right">动能 <span class="math inline"><script type="math/tex">K</script></span> / <span class="math inline"><script type="math/tex">\mathrm{J}</script></span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始粒子</td>
+<td style="text-align:right"><span class="math inline"><script type="math/tex">0</script></span></td>
+<td style="text-align:right"><span class="math inline"><script type="math/tex">1</script></span></td>
+</tr>
+<tr>
+<td>映射后的网格</td>
+<td style="text-align:right"><span class="math inline"><script type="math/tex">0</script></span></td>
+<td style="text-align:right"><span class="math inline"><script type="math/tex">0.25</script></span></td>
+</tr>
+<tr>
+<td>PIC 回传后的粒子</td>
+<td style="text-align:right"><span class="math inline"><script type="math/tex">0</script></span></td>
+<td style="text-align:right"><span class="math inline"><script type="math/tex">0.0625</script></span></td>
+</tr>
+<tr>
+<td>FLIP 回传后的粒子</td>
+<td style="text-align:right"><span class="math inline"><script type="math/tex">0</script></span></td>
+<td style="text-align:right"><span class="math inline"><script type="math/tex">1</script></span></td>
+</tr>
+</tbody>
+</table>
+<p>两次平均把 PIC 速度幅值变成原来的四分之一，动能则变为十六分之一。这里既没有材料阻尼，也没有时间积分力的误差：能量损失来自映射本身。网格动能只是中间表示的诊断量，不能与粒子动能相加；表格也不表示 FLIP 在网格阶段凭空补回了能量——它始终保存着原来的粒子速度。</p>
+<h2 id="五、为什么动量不丢，动能却会丢">五、为什么动量不丢，动能却会丢</h2>
+<p>上述结论有明确前提：粒子质量为正，权重非负且满足 <span class="math inline"><script type="math/tex">\sum_iw_{ip}=1</script></span>，计算包含完整支撑域，映射与回传使用相容权重；这里还排除了外力和边界速度修改。</p>
+<p>节点速度是质量加权平均。平方函数的凸性给出</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac12m_i\bar v_i^2
+\leq\sum_p\frac12m_pw_{ip}(v_p^n)^2.</script>
+</div>
+<p>对所有节点求和，可得网格动能不超过原粒子动能；对 PIC 的节点到粒子平均再用一次相同论证，得到</p>
+<div class="math block">
+<script type="math/tex; mode=display">K_{\mathrm{PIC}}\leq K_{\mathrm{grid}}\leq K_{\mathrm{particles}}^n.</script>
+</div>
+<p>而动量是速度的一次量。无力、无约束的往返映射满足</p>
+<div class="math block">
+<script type="math/tex; mode=display">\sum_pm_pv_{p,\mathrm{PIC}}
+=\sum_im_i\bar v_i
+=\sum_pm_pv_p^n.</script>
+</div>
+<p>所以“动量守恒”与“动能减少”并不矛盾。若被平均的速度恰好相同，平均也未必损失动能；不能把这个不等式说成每一步必定严格下降。</p>
+<p>这些是<strong>无力投影步骤</strong>的结论，不是完整弹性求解器的总能量定理。力会使动能与应变能相互交换，时间离散会引入误差，约束还会交换动量。固定端点的杆不是无外界作用的孤立系统，不能直接拿上面的总动量等式要求它始终保持初始动量。理想静止支座不做功，也不意味着离散边界处理自动守能。</p>
+<h2 id="六、FLIP-留下来的信息不一定都应该删掉">六、FLIP 留下来的信息不一定都应该删掉</h2>
+<p>FLIP 不反复用网格平均值覆盖粒子速度，因此也会保留网格分辨不了的速度分量。例如，同一单元内放三个等质量粒子，位置为 <span class="math inline"><script type="math/tex">h/4</script></span>、<span class="math inline"><script type="math/tex">h/2</script></span>、<span class="math inline"><script type="math/tex">3h/4</script></span>，速度为 <span class="math inline"><script type="math/tex">[1,-2,1]\,\mathrm{m/s}</script></span>。两个节点的映射动量都为零：</p>
+<div class="math block">
+<script type="math/tex; mode=display">\frac34(1)+\frac12(-2)+\frac14(1)=0,
+\qquad
+\frac14(1)+\frac12(-2)+\frac34(1)=0.</script>
+</div>
+<p>网格只看见静止，但粒子并非静止。无力时，PIC 会清除这个分量，FLIP 则保留它。它属于该映射的零空间模式，说明网格表示不能唯一还原粒子速度。</p>
+<p><strong>网格未解析的信息，不应一概称为噪声</strong>：它可能是希望保留的细节，也可能是数值振荡或不受网格力有效控制的运动。判断需要看空间尺度、初值与误差演化。FLIP 的低耗散是一项特点，不是自动正确的保证；PIC 的平滑能抑制某些振荡，也可能抹掉真正的振动幅值。</p>
+<p>常见折中是混合两种候选速度：</p>
+<div class="math block">
+<script type="math/tex; mode=display">v_p^{n+1}=(1-\alpha)v_{p,\mathrm{PIC}}^{n+1}
++\alpha v_{p,\mathrm{FLIP}}^{n+1},
+\qquad 0\leq\alpha\leq1.</script>
+</div>
+<p>这里 <span class="math inline"><script type="math/tex">\alpha=0</script></span> 为纯 PIC，<span class="math inline"><script type="math/tex">\alpha=1</script></span> 为纯 FLIP；阅读其他代码时应先确认其系数约定。混合可以调节平滑程度，却没有一个通用于所有问题的最佳比例。本弹性杆界面只提供纯 PIC 和纯 FLIP，没有混合系数控件。</p>
+<h2 id="七、在实验里怎样比较，才不会只看能量下结论">七、在实验里怎样比较，才不会只看能量下结论</h2>
+<p>打开<a href="/lab/#elastic-bar-lab">弹性杆实验</a>，按以下顺序复现开头的对照：</p>
+<ol>
+<li>设单元数为 <span class="math inline"><script type="math/tex">16</script></span>、每单元粒子数为 <span class="math inline"><script type="math/tex">4</script></span>、CFL 为 <span class="math inline"><script type="math/tex">0.20</script></span>、求解时长为 <span class="math inline"><script type="math/tex">2.00T</script></span>，选择 FLIP，点击“运行验证”。核对已运行算例为 <span class="math inline"><script type="math/tex">320</script></span> 步，再查看终态总能量比。</li>
+<li>只把速度回传改为 PIC，重新点击“运行验证”。参数变化不会自动替换已保存结果；末端能量比分别应约为 <span class="math inline"><script type="math/tex">0.994379</script></span> 与 <span class="math inline"><script type="math/tex">0.120633</script></span>。</li>
+<li>用快照查看位移、速度和应力曲线相对解析解的偏差，并检查完整能量历史。单个终点接近 <span class="math inline"><script type="math/tex">1</script></span>，不能排除途中波动或相位偏移。</li>
+<li>选定一种回传方式后再做网格收敛对照。固定 CFL 时，网格加密也会缩小时间步、增加回传次数；这不是只改变空间误差的实验。</li>
+</ol>
+<p>至少要同时看四件事：振动幅值是否衰减，峰值出现的时间是否偏移，粒子速度是否出现异常细尺度变化，总能量是否漂移。即使能量接近正确值，位移和速度也可能因相位误差而明显偏离解析解；反过来，曲线平滑、不发散也不等于振幅正确。</p>
+<p><strong>稳定、守恒、准确是不同的问题</strong>。本算例说明 PIC 的投影耗散可以主导长时间振动，却不足以得出所有场景都应使用 FLIP 的结论。下一篇<a href="/2026/09/c400904d/">固定两端弹性杆验证文章</a>将把解析驻波、误差归一化与网格细化放在一起讨论。</p>
+<p>本篇的 PIC／FLIP 传递没有为粒子额外存储局部仿射速度矩阵。若希望在传输时携带这种局部速度结构，可以继续阅读 <a href="/2026/09/a261e16f/">PIC、FLIP 与 APIC 对比文章</a>，并在<a href="/lab/#apic-lab">纯传递实验</a>中比较。本文的弹性杆实验仍未实现 APIC，不能把两条能量曲线当成三种方法的排名。</p>
+
+<div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
+  <span class="ai-content-label__icon" aria-hidden="true">
+    <i class="fas fa-wand-magic-sparkles"></i>
+  </span>
+  <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span>
+</div>]]></content>
+      <categories>
+        <category>数值模拟</category>
+        <category>物质点法（MPM）</category>
+      </categories>
+      <tags>
+        <tag>离散化</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>物质点法传递方法对比：PIC、FLIP 与 APIC</title>
     <url>/2026/09/a261e16f/</url>
     <content><![CDATA[<p>同一组粒子速度经过网格往返，PIC 可能把旋转磨平，FLIP 可以保住粒子原有速度；那么 APIC 多保存一个矩阵，到底解决了什么问题？关键不只是“回传时少损失一些速度”，而是<strong>网格能否看见粒子所代表的局部速度结构</strong>。</p>
@@ -4786,228 +5008,6 @@ J_{\mathrm{orb}}+
 <li>Jiang, C., Schroeder, C., Selle, A., Teran, J., &amp; Stomakhin, A. (2015). <em>The Affine Particle-In-Cell Method</em>. ACM Transactions on Graphics, 34(4), Article 51. <a href="https://doi.org/10.1145/2766996">DOI: 10.1145/2766996</a>。本文传递公式对应原文第 5.3 节式（8）—（11），能量与局限讨论参照第 8、9 节。</li>
 <li>Disney Animation：<a href="https://disneyanimation.com/publications/the-affine-particle-in-cell-method/">作者发布页及原论文</a>。本文的四粒子数值表和示意图为独立构造的验证，不是论文图表的复刻，也不是对原论文全部动力学实验的复现。</li>
 </ol>
-
-<div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
-  <span class="ai-content-label__icon" aria-hidden="true">
-    <i class="fas fa-wand-magic-sparkles"></i>
-  </span>
-  <span class="ai-content-label__text">本文含有 <strong>AI 生成内容</strong></span>
-</div>]]></content>
-      <categories>
-        <category>数值模拟</category>
-        <category>物质点法（MPM）</category>
-      </categories>
-      <tags>
-        <tag>离散化</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>物质点法速度回传：PIC 与 FLIP 的耗散差异</title>
-    <url>/2026/09/76f4599c/</url>
-    <content><![CDATA[<p>同一根无阻尼弹性杆，采用相同网格、粒子和时间步，只切换速度回传方式：两个振动周期后，FLIP 的总能量约为初始值的 <strong>0.994379</strong>，PIC 则约为 <strong>0.120633</strong>。材料没有变软，也没有加入黏性，振动为何衰减得如此不同？</p>
-<p>关键在于：网格算完一步以后，是用网格速度<strong>替换</strong>粒子速度，还是把网格速度的<strong>增量</strong>加回粒子？两者看似只差一行，却决定了粒子原有速度信息能否越过一次往返映射。</p>
-<p>本文先读实际能量曲线，再用一个可手算的单元拆开原因。阅读只需了解速度、动量、动能，以及<a href="/2026/09/1de4dce6/">形函数的权重含义</a>；完整循环可参照<a href="/2024/07/96d26/">物质点法基本流程</a>。这里不比较所有 MPM 变体，也不把“耗散较小”直接等同于“算法更好”。</p>
-<h2 id="一、先看两个周期里发生了什么">一、先看两个周期里发生了什么</h2>
-<p><img src="/2026/09/76f4599c/energy-comparison.svg" alt="固定参考网格弹性杆在两个周期内的归一化总能量：FLIP 保持在初始值附近，PIC 明显衰减"></p>
-<p>横轴为 <span class="math inline"><script type="math/tex">t/T</script></span>，即时间除以解析振动周期；纵轴为 <span class="math inline"><script type="math/tex">E/E_0</script></span>，即数值总能量除以初始总能量。曲线来自<a href="/lab/#elastic-bar-lab">固定两端弹性杆实验</a>实际推进所得的数据，不是预设的衰减函数。解析无阻尼解的归一化总能量恒为 <span class="math inline"><script type="math/tex">1</script></span>。</p>
-<p>两组计算均使用 <span class="math inline"><script type="math/tex">16</script></span> 个单元、每单元 <span class="math inline"><script type="math/tex">4</script></span> 个粒子、CFL 数 <span class="math inline"><script type="math/tex">0.2</script></span>，共推进 <span class="math inline"><script type="math/tex">320</script></span> 步至 <span class="math inline"><script type="math/tex">2T</script></span>。固定参数为：</p>
-<table>
-<thead>
-<tr>
-<th>量</th>
-<th>取值</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>杆长 <span class="math inline"><script type="math/tex">L</script></span>、截面积 <span class="math inline"><script type="math/tex">A</script></span></td>
-<td><span class="math inline"><script type="math/tex">1\,\mathrm{m}</script></span>、<span class="math inline"><script type="math/tex">0.01\,\mathrm{m^2}</script></span></td>
-</tr>
-<tr>
-<td>杨氏模量 <span class="math inline"><script type="math/tex">E_Y</script></span>、密度 <span class="math inline"><script type="math/tex">\rho</script></span></td>
-<td><span class="math inline"><script type="math/tex">10^6\,\mathrm{Pa}</script></span>、<span class="math inline"><script type="math/tex">1000\,\mathrm{kg/m^3}</script></span></td>
-</tr>
-<tr>
-<td>波速 <span class="math inline"><script type="math/tex">c=\sqrt{E_Y/\rho}</script></span></td>
-<td><span class="math inline"><script type="math/tex">31.6228\,\mathrm{m/s}</script></span></td>
-</tr>
-<tr>
-<td>初速度幅值 <span class="math inline"><script type="math/tex">v_0</script></span></td>
-<td><span class="math inline"><script type="math/tex">0.001c\approx0.0316228\,\mathrm{m/s}</script></span></td>
-</tr>
-<tr>
-<td>周期 <span class="math inline"><script type="math/tex">T=2L/c</script></span></td>
-<td><span class="math inline"><script type="math/tex">0.0632456\,\mathrm{s}</script></span></td>
-</tr>
-<tr>
-<td>实际时间步 <span class="math inline"><script type="math/tex">\Delta t</script></span></td>
-<td><span class="math inline"><script type="math/tex">3.9528471\times10^{-4}\,\mathrm{s}</script></span></td>
-</tr>
-<tr>
-<td>初始能量 <span class="math inline"><script type="math/tex">E_0</script></span></td>
-<td><span class="math inline"><script type="math/tex">0.0025\,\mathrm{J}</script></span></td>
-</tr>
-</tbody>
-</table>
-<p>初始位移、应变和应力为零，粒子初速度为 <span class="math inline"><script type="math/tex">v(X,0)=v_0\sin(\pi X/L)</script></span>，其中 <span class="math inline"><script type="math/tex">X</script></span> 是沿杆向右的参考坐标。图中的总能量按粒子求和：</p>
-<div class="math block">
-<script type="math/tex; mode=display">E=K+U,
-\qquad
-K=\sum_p\frac12m_pv_p^2,
-\qquad
-U=\sum_p\frac{V_p\sigma_p^2}{2E_Y}.</script>
-</div>
-<p><span class="math inline"><script type="math/tex">p</script></span> 表示粒子，<span class="math inline"><script type="math/tex">m_p</script></span> 为质量，<span class="math inline"><script type="math/tex">V_p</script></span> 为体积，<span class="math inline"><script type="math/tex">v_p</script></span> 为速度，<span class="math inline"><script type="math/tex">\sigma_p</script></span> 为拉正应力；<span class="math inline"><script type="math/tex">K</script></span>、<span class="math inline"><script type="math/tex">U</script></span> 分别是动能与应变能，单位均为焦耳。这里用 <span class="math inline"><script type="math/tex">E_Y</script></span> 表示材料模量，避免与图中总能量 <span class="math inline"><script type="math/tex">E</script></span> 混淆。</p>
-<p><strong>这是一维固定参考网格上的线性小应变物质点离散</strong>。粒子参考坐标、线性形函数权重、梯度、质量和体积全程不变；位移会更新，但不会据此移动映射位置。它不是随粒子当前位置重算形函数的 updated-Lagrangian MPM，因此这张图不能证明网格穿越、有限应变或不同基函数下的优劣。</p>
-<p>在这个限定模型里，PIC 的反复覆盖带来了明显更强的耗散；FLIP 曲线则在 <span class="math inline"><script type="math/tex">1</script></span> 附近波动，终点也不恰好等于 <span class="math inline"><script type="math/tex">1</script></span>。这已经提示：<strong>低耗散不是严格能量守恒</strong>。</p>
-<h2 id="二、回传之前，先分清节点速度的时间状态">二、回传之前，先分清节点速度的时间状态</h2>
-<p>设 <span class="math inline"><script type="math/tex">n</script></span> 表示当前时间步，<span class="math inline"><script type="math/tex">i</script></span> 表示节点，<span class="math inline"><script type="math/tex">w_{ip}=N_i(X_p)</script></span> 是无量纲权重。对质量非零的节点，粒子到网格的动量映射给出</p>
-<div class="math block">
-<script type="math/tex; mode=display">m_i=\sum_p m_pw_{ip},
-\qquad
-\widehat v_i^n=\frac{\sum_p m_pw_{ip}v_p^n}{m_i}.</script>
-</div>
-<p><span class="math inline"><script type="math/tex">\widehat v_i^n</script></span> 是<strong>刚映射、尚未处理速度边界</strong>的节点速度，不是上一时间步留下来的节点速度。对它施加本步速度约束后，记为 <span class="math inline"><script type="math/tex">\bar v_i^n</script></span>；再用已处理约束的节点加速度 <span class="math inline"><script type="math/tex">a_i^n</script></span> 更新：</p>
-<div class="math block">
-<script type="math/tex; mode=display">v_i^{n+1}=\bar v_i^n+\Delta t\,a_i^n.
-\tag{1}\label{eq:pic-flip-grid-update}</script>
-</div>
-<p>速度单位为 <span class="math inline"><script type="math/tex">\mathrm{m/s}</script></span>，加速度为 <span class="math inline"><script type="math/tex">\mathrm{m/s^2}</script></span>，<span class="math inline"><script type="math/tex">\Delta t</script></span> 为秒。本文中的 <span class="math inline"><script type="math/tex">v_i^{n+1}</script></span> 特指本步网格更新后的状态；下一步通常会重新映射，并不保证它等于下一步的映射速度。</p>
-<p>PIC（Particle-in-Cell）从更新后的网格重新构造粒子速度：</p>
-<div class="math block">
-<script type="math/tex; mode=display">v_{p,\mathrm{PIC}}^{n+1}=\sum_iw_{ip}v_i^{n+1}.
-\tag{2}\label{eq:pic-flip-pic}</script>
-</div>
-<p>FLIP（Fluid-Implicit-Particle）保留旧粒子速度，只接收网格变化量：</p>
-<div class="math block">
-<script type="math/tex; mode=display">v_{p,\mathrm{FLIP}}^{n+1}
-=v_p^n+\sum_iw_{ip}\Delta v_i.
-\tag{3}\label{eq:pic-flip-flip}</script>
-</div>
-<p>若增量的起点选为式 <span class="math inline"><script type="math/tex">\eqref{eq:pic-flip-grid-update}</script></span> 的 <span class="math inline"><script type="math/tex">\bar v_i^n</script></span>，则 <span class="math inline"><script type="math/tex">\Delta v_i=v_i^{n+1}-\bar v_i^n=\Delta t\,a_i^n</script></span>。于是区别很直接：PIC 问“网格现在认为我该多快”，FLIP 问“这一步网格让我改变多少”。</p>
-<p>写程序时，必须保留增量两端的状态，或单独保存加速度。<strong>不能先原地覆盖旧节点速度，再用同一数组相减求增量</strong>；同样，计算两种候选回传结果或混合结果时，不能先丢掉 <span class="math inline"><script type="math/tex">v_p^n</script></span>。不过，保存这些数学状态不一定要求复制整套数组：像本例直接存储加速度，就不必为差分额外保存旧网格速度。</p>
-<h2 id="三、边界处理也是增量定义的一部分">三、边界处理也是增量定义的一部分</h2>
-<p>本例由当前应力组装内力：</p>
-<div class="math block">
-<script type="math/tex; mode=display">f_i^n=-\sum_pV_p\sigma_p^nN_i'(X_p),
-\qquad
-a_i^n=\frac{f_i^n}{m_i}.</script>
-</div>
-<p><span class="math inline"><script type="math/tex">N_i'=\mathrm{d}N_i/\mathrm{d}X</script></span> 的单位为 <span class="math inline"><script type="math/tex">\mathrm{m^{-1}}</script></span>，内力 <span class="math inline"><script type="math/tex">f_i</script></span> 的单位为牛顿。两个固定端点的<strong>映射速度和加速度均设为零</strong>，内节点则使用上式。因而实际 FLIP 分支只回传</p>
-<div class="math block">
-<script type="math/tex; mode=display">v_p^{n+1}=v_p^n+\Delta t\sum_iw_{ip}a_i^n.</script>
-</div>
-<p>如果另一个程序把增量定义为“最终节点速度减去最初未约束的 <span class="math inline"><script type="math/tex">\widehat v_i^n</script></span>”，端点还会包含 <span class="math inline"><script type="math/tex">0-\widehat v_i^n</script></span> 这项投影修正。那是另一种增量口径，<strong>不等于这里的受约束加速度回传</strong>。不能为了套用通用差分公式，悄悄把这项修正加进本实验，也不能据此承诺不同边界实现的代码等价。</p>
-<p>无论选择 PIC 还是 FLIP，本实验都用同一份更新后网格速度推进位移与应变：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\begin{aligned}
-u_p^{n+1}&=u_p^n+\Delta t\sum_iw_{ip}v_i^{n+1},\\
-\varepsilon_p^{n+1}&=\varepsilon_p^n+\Delta t\sum_iN_i'(X_p)v_i^{n+1},\\
-\sigma_p^{n+1}&=E_Y\varepsilon_p^{n+1}.
-\end{aligned}</script>
-</div>
-<p><span class="math inline"><script type="math/tex">u_p</script></span> 的单位为米，<span class="math inline"><script type="math/tex">\varepsilon_p</script></span> 为无量纲小应变。这里不直接用 FLIP 粒子速度推进位移；速度回传仍会通过下一步动量映射影响后续位移和应力。速度梯度为何进入应变更新，可接着阅读<a href="/2026/09/f1536c55/">物质点法运动学</a>。解析解只用于初始化与对照，没有被代入这些推进式。</p>
-<h2 id="四、一个单元就能看见投影耗散">四、一个单元就能看见投影耗散</h2>
-<p>暂时拿掉弹性力和边界约束。取一个孤立的一维单元，两端节点位于 <span class="math inline"><script type="math/tex">0</script></span>、<span class="math inline"><script type="math/tex">h</script></span>，<span class="math inline"><script type="math/tex">h>0</script></span> 是单元长度。两个粒子质量均为 <span class="math inline"><script type="math/tex">1\,\mathrm{kg}</script></span>，分别位于 <span class="math inline"><script type="math/tex">h/4</script></span>、<span class="math inline"><script type="math/tex">3h/4</script></span>，速度为 <span class="math inline"><script type="math/tex">+1</script></span>、<span class="math inline"><script type="math/tex">-1\,\mathrm{m/s}</script></span>。</p>
-<p>线性形函数的权重矩阵以粒子为行、节点为列：</p>
-<div class="math block">
-<script type="math/tex; mode=display">W=\begin{pmatrix}
-3/4&1/4\\
-1/4&3/4
-\end{pmatrix}.</script>
-</div>
-<p>两个节点质量均为 <span class="math inline"><script type="math/tex">1\,\mathrm{kg}</script></span>；映射后速度为</p>
-<div class="math block">
-<script type="math/tex; mode=display">v_{g,0}=\frac34(1)+\frac14(-1)=\frac12\,\mathrm{m/s},
-\qquad
-v_{g,1}=-\frac12\,\mathrm{m/s}.</script>
-</div>
-<p>没有力，也没有速度约束，因此网格增量为零。PIC 仍会把网格速度插回粒子，得到</p>
-<div class="math block">
-<script type="math/tex; mode=display">v_{1,\mathrm{PIC}}=\frac34\frac12+\frac14\left(-\frac12\right)
-=\frac14\,\mathrm{m/s},
-\qquad
-v_{2,\mathrm{PIC}}=-\frac14\,\mathrm{m/s}.</script>
-</div>
-<p>FLIP 加回的增量是零，所以两个粒子仍以 <span class="math inline"><script type="math/tex">+1</script></span>、<span class="math inline"><script type="math/tex">-1\,\mathrm{m/s}</script></span> 运动。对比动量与动能：</p>
-<table>
-<thead>
-<tr>
-<th>状态</th>
-<th style="text-align:right">总动量 <span class="math inline"><script type="math/tex">P</script></span> / <span class="math inline"><script type="math/tex">\mathrm{kg\,m/s}</script></span></th>
-<th style="text-align:right">动能 <span class="math inline"><script type="math/tex">K</script></span> / <span class="math inline"><script type="math/tex">\mathrm{J}</script></span></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>初始粒子</td>
-<td style="text-align:right"><span class="math inline"><script type="math/tex">0</script></span></td>
-<td style="text-align:right"><span class="math inline"><script type="math/tex">1</script></span></td>
-</tr>
-<tr>
-<td>映射后的网格</td>
-<td style="text-align:right"><span class="math inline"><script type="math/tex">0</script></span></td>
-<td style="text-align:right"><span class="math inline"><script type="math/tex">0.25</script></span></td>
-</tr>
-<tr>
-<td>PIC 回传后的粒子</td>
-<td style="text-align:right"><span class="math inline"><script type="math/tex">0</script></span></td>
-<td style="text-align:right"><span class="math inline"><script type="math/tex">0.0625</script></span></td>
-</tr>
-<tr>
-<td>FLIP 回传后的粒子</td>
-<td style="text-align:right"><span class="math inline"><script type="math/tex">0</script></span></td>
-<td style="text-align:right"><span class="math inline"><script type="math/tex">1</script></span></td>
-</tr>
-</tbody>
-</table>
-<p>两次平均把 PIC 速度幅值变成原来的四分之一，动能则变为十六分之一。这里既没有材料阻尼，也没有时间积分力的误差：能量损失来自映射本身。网格动能只是中间表示的诊断量，不能与粒子动能相加；表格也不表示 FLIP 在网格阶段凭空补回了能量——它始终保存着原来的粒子速度。</p>
-<h2 id="五、为什么动量不丢，动能却会丢">五、为什么动量不丢，动能却会丢</h2>
-<p>上述结论有明确前提：粒子质量为正，权重非负且满足 <span class="math inline"><script type="math/tex">\sum_iw_{ip}=1</script></span>，计算包含完整支撑域，映射与回传使用相容权重；这里还排除了外力和边界速度修改。</p>
-<p>节点速度是质量加权平均。平方函数的凸性给出</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac12m_i\bar v_i^2
-\leq\sum_p\frac12m_pw_{ip}(v_p^n)^2.</script>
-</div>
-<p>对所有节点求和，可得网格动能不超过原粒子动能；对 PIC 的节点到粒子平均再用一次相同论证，得到</p>
-<div class="math block">
-<script type="math/tex; mode=display">K_{\mathrm{PIC}}\leq K_{\mathrm{grid}}\leq K_{\mathrm{particles}}^n.</script>
-</div>
-<p>而动量是速度的一次量。无力、无约束的往返映射满足</p>
-<div class="math block">
-<script type="math/tex; mode=display">\sum_pm_pv_{p,\mathrm{PIC}}
-=\sum_im_i\bar v_i
-=\sum_pm_pv_p^n.</script>
-</div>
-<p>所以“动量守恒”与“动能减少”并不矛盾。若被平均的速度恰好相同，平均也未必损失动能；不能把这个不等式说成每一步必定严格下降。</p>
-<p>这些是<strong>无力投影步骤</strong>的结论，不是完整弹性求解器的总能量定理。力会使动能与应变能相互交换，时间离散会引入误差，约束还会交换动量。固定端点的杆不是无外界作用的孤立系统，不能直接拿上面的总动量等式要求它始终保持初始动量。理想静止支座不做功，也不意味着离散边界处理自动守能。</p>
-<h2 id="六、FLIP-留下来的信息不一定都应该删掉">六、FLIP 留下来的信息不一定都应该删掉</h2>
-<p>FLIP 不反复用网格平均值覆盖粒子速度，因此也会保留网格分辨不了的速度分量。例如，同一单元内放三个等质量粒子，位置为 <span class="math inline"><script type="math/tex">h/4</script></span>、<span class="math inline"><script type="math/tex">h/2</script></span>、<span class="math inline"><script type="math/tex">3h/4</script></span>，速度为 <span class="math inline"><script type="math/tex">[1,-2,1]\,\mathrm{m/s}</script></span>。两个节点的映射动量都为零：</p>
-<div class="math block">
-<script type="math/tex; mode=display">\frac34(1)+\frac12(-2)+\frac14(1)=0,
-\qquad
-\frac14(1)+\frac12(-2)+\frac34(1)=0.</script>
-</div>
-<p>网格只看见静止，但粒子并非静止。无力时，PIC 会清除这个分量，FLIP 则保留它。它属于该映射的零空间模式，说明网格表示不能唯一还原粒子速度。</p>
-<p><strong>网格未解析的信息，不应一概称为噪声</strong>：它可能是希望保留的细节，也可能是数值振荡或不受网格力有效控制的运动。判断需要看空间尺度、初值与误差演化。FLIP 的低耗散是一项特点，不是自动正确的保证；PIC 的平滑能抑制某些振荡，也可能抹掉真正的振动幅值。</p>
-<p>常见折中是混合两种候选速度：</p>
-<div class="math block">
-<script type="math/tex; mode=display">v_p^{n+1}=(1-\alpha)v_{p,\mathrm{PIC}}^{n+1}
-+\alpha v_{p,\mathrm{FLIP}}^{n+1},
-\qquad 0\leq\alpha\leq1.</script>
-</div>
-<p>这里 <span class="math inline"><script type="math/tex">\alpha=0</script></span> 为纯 PIC，<span class="math inline"><script type="math/tex">\alpha=1</script></span> 为纯 FLIP；阅读其他代码时应先确认其系数约定。混合可以调节平滑程度，却没有一个通用于所有问题的最佳比例。本弹性杆界面只提供纯 PIC 和纯 FLIP，没有混合系数控件。</p>
-<h2 id="七、在实验里怎样比较，才不会只看能量下结论">七、在实验里怎样比较，才不会只看能量下结论</h2>
-<p>打开<a href="/lab/#elastic-bar-lab">弹性杆实验</a>，按以下顺序复现开头的对照：</p>
-<ol>
-<li>设单元数为 <span class="math inline"><script type="math/tex">16</script></span>、每单元粒子数为 <span class="math inline"><script type="math/tex">4</script></span>、CFL 为 <span class="math inline"><script type="math/tex">0.20</script></span>、求解时长为 <span class="math inline"><script type="math/tex">2.00T</script></span>，选择 FLIP，点击“运行验证”。核对已运行算例为 <span class="math inline"><script type="math/tex">320</script></span> 步，再查看终态总能量比。</li>
-<li>只把速度回传改为 PIC，重新点击“运行验证”。参数变化不会自动替换已保存结果；末端能量比分别应约为 <span class="math inline"><script type="math/tex">0.994379</script></span> 与 <span class="math inline"><script type="math/tex">0.120633</script></span>。</li>
-<li>用快照查看位移、速度和应力曲线相对解析解的偏差，并检查完整能量历史。单个终点接近 <span class="math inline"><script type="math/tex">1</script></span>，不能排除途中波动或相位偏移。</li>
-<li>选定一种回传方式后再做网格收敛对照。固定 CFL 时，网格加密也会缩小时间步、增加回传次数；这不是只改变空间误差的实验。</li>
-</ol>
-<p>至少要同时看四件事：振动幅值是否衰减，峰值出现的时间是否偏移，粒子速度是否出现异常细尺度变化，总能量是否漂移。即使能量接近正确值，位移和速度也可能因相位误差而明显偏离解析解；反过来，曲线平滑、不发散也不等于振幅正确。</p>
-<p><strong>稳定、守恒、准确是不同的问题</strong>。本算例说明 PIC 的投影耗散可以主导长时间振动，却不足以得出所有场景都应使用 FLIP 的结论。下一篇<a href="/2026/09/c400904d/">固定两端弹性杆验证文章</a>将把解析驻波、误差归一化与网格细化放在一起讨论。</p>
-<p>本篇的 PIC／FLIP 传递没有为粒子额外存储局部仿射速度矩阵。若希望在传输时携带这种局部速度结构，可以继续阅读 <a href="/2026/09/a261e16f/">PIC、FLIP 与 APIC 对比文章</a>，并在<a href="/lab/#apic-lab">纯传递实验</a>中比较。本文的弹性杆实验仍未实现 APIC，不能把两条能量曲线当成三种方法的排名。</p>
 
 <div class="ai-content-label" role="note" aria-label="AI 生成内容标识">
   <span class="ai-content-label__icon" aria-hidden="true">
