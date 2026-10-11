@@ -1027,58 +1027,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Ubuntu WebDAV 服务部署指南</title>
-    <url>/2024/05/e8755f24/</url>
-    <content><![CDATA[<p>参考文章: <a href="https://colzry.github.io/posts/linux%E6%9C%8D%E5%8A%A1/linux%E6%90%AD%E5%BB%BAwebdav%E6%9C%8D%E5%8A%A1/">Linux搭建WebDav服务 - Colzry’s Blog</a></p>
-<blockquote>
-<p>以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决</p>
-</blockquote>
-<h2 id="步骤一-安装WebDAV服务">步骤一: 安装WebDAV服务</h2>
-<p>首先, 我们需要安装<a href="https://github.com/hacdias/webdav">WebDAV Server</a>, 打开页面下载合适的版本, 本文以<a href="https://github.com/hacdias/webdav/releases/download/v4.2.0/linux-amd64-webdav.tar.gz"><code>linux-amd64-webdav.tar.gz</code></a>为例, 其中<code>amd64</code>表示<code>x64</code>架构</p>
-<p>然后, 解压并移动文件到<code>/usr/bin/</code>, 其余的README和LICENSE文件可删除</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -zxvf linux-amd64-webdav.tar.gz</span><br><span class="line">mv webdav /usr/bin/</span><br></pre></td></tr></table></figure>
-<h2 id="步骤二-配置WebDAV服务">步骤二: 配置WebDAV服务</h2>
-<p>安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 <code>/home/liudh/webdav</code>的目录, 注意修改用户名<code>liudh</code>为自己的用户名</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir /home/liudh/webdav</span><br></pre></td></tr></table></figure>
-<p>然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
-<p>在配置文件中, 我们需要添加以下内容.</p>
-<blockquote>
-<p>注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容</p>
-<p>注意缩进, <code>cors</code>和<code>users</code>后的参数均需要两个空格的缩进, 带<code>-</code>的参数需再缩进两个空格(四个)</p>
-<p>每一个参数<code>:</code>后均有一个空格</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Server related settings</span><br><span class="line">address: 0.0.0.0</span><br><span class="line">port: 10101</span><br><span class="line"># 如果无需验证填 false</span><br><span class="line">auth: true</span><br><span class="line"># 如果不需要 https 则填 false</span><br><span class="line">tls: false</span><br><span class="line"># https证书和密钥，如果 tls 为 false，cert 和 key 不需要</span><br><span class="line"># cert: cert_path</span><br><span class="line"># key: key_path</span><br><span class="line"># 访问前缀，建议默认</span><br><span class="line">prefix: /</span><br><span class="line">debug: false</span><br><span class="line"># 如果 auth 为 false 生效，文件共享的路径</span><br><span class="line">scope: .</span><br><span class="line">modify: true</span><br><span class="line">rules: []</span><br><span class="line"># 跨域设置</span><br><span class="line">cors:</span><br><span class="line">  enabled: true</span><br><span class="line">  credentials: true</span><br><span class="line">  allowed_headers:</span><br><span class="line">    - Depth</span><br><span class="line">  allowed_hosts:</span><br><span class="line">    - http://localhost:10101</span><br><span class="line">  allowed_methods:</span><br><span class="line">    - GET</span><br><span class="line">  exposed_headers:</span><br><span class="line">    - Content-Length</span><br><span class="line">    - Content-Range</span><br><span class="line"># 用户信息，如果 auth 为 true 生效</span><br><span class="line">users:</span><br><span class="line">  - username: liudh</span><br><span class="line">    password: passwd</span><br><span class="line">    scope: /home/liudh/webdav/</span><br><span class="line">    # 是否允许修改</span><br><span class="line">    modify: true</span><br><span class="line"># 可以根据此模板继续添加其他用户</span><br></pre></td></tr></table></figure>
-<p>保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/bin/webdav -c /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
-<h2 id="步骤三-添加守护进程">步骤三: 添加守护进程</h2>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /usr/lib/systemd/system/webdav.service</span><br></pre></td></tr></table></figure>
-<p>将以下内容添加到文件中</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=WebDAV server</span><br><span class="line">After=network.target</span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">ExecStart=/usr/bin/webdav -c /opt/webdav_config.yaml</span><br><span class="line">Restart=on-failure</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-<p>保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start webdav.service</span><br><span class="line">systemctl status webdav.service</span><br><span class="line">systemctl enable webdav.service</span><br></pre></td></tr></table></figure>
-<p>之后修改配置文件后, 可以使用以下命令重启服务</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl restart webdav.service</span><br></pre></td></tr></table></figure>
-<h2 id="步骤四-挂载webdav测试服务">步骤四: 挂载webdav测试服务</h2>
-<p>使用任意webdav挂载软件, 挂载测试, 注意填写参数如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">协议: http # 如果配置了ssl证书就用https</span><br><span class="line">主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号</span><br><span class="line">	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/</span><br><span class="line">端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要</span><br><span class="line">用户名: liudh # 都改成自己的</span><br><span class="line">密码: passwd</span><br></pre></td></tr></table></figure>
-<p>之后就可以上传下载文件测试一下了, 如果有错误就用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl status webdav.service</span><br></pre></td></tr></table></figure>
-<p>查看错误日志.</p>
-<blockquote>
-<p>如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>计算机技术</category>
-        <category>服务器运维</category>
-      </categories>
-      <tags>
-        <tag>WebDAV</tag>
-        <tag>文件共享</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Windows Git 安装与基础配置指南</title>
     <url>/2024/05/cbf708ce/</url>
     <content><![CDATA[<h2 id="1-下载安装包">1. 下载安装包</h2>
@@ -1135,6 +1083,58 @@
       <tags>
         <tag>安装配置</tag>
         <tag>Windows</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu WebDAV 服务部署指南</title>
+    <url>/2024/05/e8755f24/</url>
+    <content><![CDATA[<p>参考文章: <a href="https://colzry.github.io/posts/linux%E6%9C%8D%E5%8A%A1/linux%E6%90%AD%E5%BB%BAwebdav%E6%9C%8D%E5%8A%A1/">Linux搭建WebDav服务 - Colzry’s Blog</a></p>
+<blockquote>
+<p>以下操作如出现无权限的情况, 可根据自己实际情况, 使用sudo提权解决</p>
+</blockquote>
+<h2 id="步骤一-安装WebDAV服务">步骤一: 安装WebDAV服务</h2>
+<p>首先, 我们需要安装<a href="https://github.com/hacdias/webdav">WebDAV Server</a>, 打开页面下载合适的版本, 本文以<a href="https://github.com/hacdias/webdav/releases/download/v4.2.0/linux-amd64-webdav.tar.gz"><code>linux-amd64-webdav.tar.gz</code></a>为例, 其中<code>amd64</code>表示<code>x64</code>架构</p>
+<p>然后, 解压并移动文件到<code>/usr/bin/</code>, 其余的README和LICENSE文件可删除</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -zxvf linux-amd64-webdav.tar.gz</span><br><span class="line">mv webdav /usr/bin/</span><br></pre></td></tr></table></figure>
+<h2 id="步骤二-配置WebDAV服务">步骤二: 配置WebDAV服务</h2>
+<p>安装完成后, 我们需要对WebDAV服务进行配置. 首先, 我们需要创建一个目录用于存储WebDAV文件. 可以使用以下命令创建一个名为 <code>/home/liudh/webdav</code>的目录, 注意修改用户名<code>liudh</code>为自己的用户名</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir /home/liudh/webdav</span><br></pre></td></tr></table></figure>
+<p>然后, 我们需要编辑WebDAV服务的配置文件. 可以使用以下命令打开配置文件进行编辑</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
+<p>在配置文件中, 我们需要添加以下内容.</p>
+<blockquote>
+<p>注意根据自己的实际修改, 端口号可修改, 用户名, 密码, 用户空间均修改为自己的内容</p>
+<p>注意缩进, <code>cors</code>和<code>users</code>后的参数均需要两个空格的缩进, 带<code>-</code>的参数需再缩进两个空格(四个)</p>
+<p>每一个参数<code>:</code>后均有一个空格</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Server related settings</span><br><span class="line">address: 0.0.0.0</span><br><span class="line">port: 10101</span><br><span class="line"># 如果无需验证填 false</span><br><span class="line">auth: true</span><br><span class="line"># 如果不需要 https 则填 false</span><br><span class="line">tls: false</span><br><span class="line"># https证书和密钥，如果 tls 为 false，cert 和 key 不需要</span><br><span class="line"># cert: cert_path</span><br><span class="line"># key: key_path</span><br><span class="line"># 访问前缀，建议默认</span><br><span class="line">prefix: /</span><br><span class="line">debug: false</span><br><span class="line"># 如果 auth 为 false 生效，文件共享的路径</span><br><span class="line">scope: .</span><br><span class="line">modify: true</span><br><span class="line">rules: []</span><br><span class="line"># 跨域设置</span><br><span class="line">cors:</span><br><span class="line">  enabled: true</span><br><span class="line">  credentials: true</span><br><span class="line">  allowed_headers:</span><br><span class="line">    - Depth</span><br><span class="line">  allowed_hosts:</span><br><span class="line">    - http://localhost:10101</span><br><span class="line">  allowed_methods:</span><br><span class="line">    - GET</span><br><span class="line">  exposed_headers:</span><br><span class="line">    - Content-Length</span><br><span class="line">    - Content-Range</span><br><span class="line"># 用户信息，如果 auth 为 true 生效</span><br><span class="line">users:</span><br><span class="line">  - username: liudh</span><br><span class="line">    password: passwd</span><br><span class="line">    scope: /home/liudh/webdav/</span><br><span class="line">    # 是否允许修改</span><br><span class="line">    modify: true</span><br><span class="line"># 可以根据此模板继续添加其他用户</span><br></pre></td></tr></table></figure>
+<p>保存并关闭配置文件后, 使用以下命令启动服务, 显示地址和端口即为启动成功</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/bin/webdav -c /opt/webdav_config.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="步骤三-添加守护进程">步骤三: 添加守护进程</h2>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /usr/lib/systemd/system/webdav.service</span><br></pre></td></tr></table></figure>
+<p>将以下内容添加到文件中</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=WebDAV server</span><br><span class="line">After=network.target</span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">ExecStart=/usr/bin/webdav -c /opt/webdav_config.yaml</span><br><span class="line">Restart=on-failure</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>保存并关闭, 然后运行以下命令, 可能会要求输入用户密码验证</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start webdav.service</span><br><span class="line">systemctl status webdav.service</span><br><span class="line">systemctl enable webdav.service</span><br></pre></td></tr></table></figure>
+<p>之后修改配置文件后, 可以使用以下命令重启服务</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl restart webdav.service</span><br></pre></td></tr></table></figure>
+<h2 id="步骤四-挂载webdav测试服务">步骤四: 挂载webdav测试服务</h2>
+<p>使用任意webdav挂载软件, 挂载测试, 注意填写参数如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">协议: http # 如果配置了ssl证书就用https</span><br><span class="line">主机: # 设备的ip地址或域名, 如果是本地设备就填局域网的IP   !!!域名或IP结尾要加上 / 这个符号</span><br><span class="line">	# 例如: 192.168.1.100:10101/  如果端口是单独填写就填: 192.168.1.100/</span><br><span class="line">端口: 10101 # 注意配置防火墙开放端口, 本地设备一般不需要</span><br><span class="line">用户名: liudh # 都改成自己的</span><br><span class="line">密码: passwd</span><br></pre></td></tr></table></figure>
+<p>之后就可以上传下载文件测试一下了, 如果有错误就用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl status webdav.service</span><br></pre></td></tr></table></figure>
+<p>查看错误日志.</p>
+<blockquote>
+<p>如果填对了账户还显示密码错误, 大概率是前面配置文件时缩进出错了, 回头检查一下</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>计算机技术</category>
+        <category>服务器运维</category>
+      </categories>
+      <tags>
+        <tag>WebDAV</tag>
+        <tag>文件共享</tag>
       </tags>
   </entry>
   <entry>
@@ -2086,6 +2086,60 @@ dx_1  &dx_2  &dx_3\\
       </tags>
   </entry>
   <entry>
+    <title>DJI Mavic 3 Classic 航点飞行指南</title>
+    <url>/2024/08/78788d45/</url>
+    <content><![CDATA[<h2 id="准备工作">准备工作</h2>
+<p>遥控手柄(带屏)</p>
+<p>航线规划软件(网页) - Rainbow Cloud</p>
+<p>SD卡, 读卡器, 电脑</p>
+<h2 id="1-创建航线">1. 创建航线</h2>
+<p>首先, 打开<a href="https://app.flydji.cn/">Rainbow Cloud网站</a>.</p>
+<p>网页界面如下:</p>
+<img src="/2024/08/78788d45/20240907103046.webp" alt="DJI Pilot 2 航线规划地图界面" style="zoom: 33%;">
+<p>点击左侧新建任务.</p>
+<img src="/2024/08/78788d45/20240907103203.png" alt="DJI Pilot 2 新建任务入口" style="zoom:33%;">
+<p>选择正射</p>
+<img src="/2024/08/78788d45/20240907103355.png" alt="DJI Pilot 2 航点任务类型" style="zoom: 33%;">
+<p>输入任务名称</p>
+<img src="/2024/08/78788d45/20240907103444.png" alt="DJI Pilot 2 航点任务命名" style="zoom:50%;">
+<p>确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围.</p>
+<img src="/2024/08/78788d45/20240907103635.webp" alt="在地图上绘制矩形航区" style="zoom:33%;">
+<p>然后, 调整这个范围至合适位置. 可以移动和添加顶点</p>
+<img src="/2024/08/78788d45/20240907104233.webp" alt="调整航区边界控制点" style="zoom:33%;">
+<p>然后, 调整右侧参数栏的参数.</p>
+<img src="/2024/08/78788d45/20240907104901.webp" alt="航线高度与航向参数设置" style="zoom:33%;">
+<img src="/2024/08/78788d45/20240907105200.webp" alt="航线参数调整后的覆盖范围" style="zoom:33%;">
+<p>其余设置与上图保持一致, 保存任务</p>
+<img src="/2024/08/78788d45/20240907105605.png" alt="在航线上添加航点" style="zoom:50%;">
+<p>点击右上角任务导出</p>
+<img src="/2024/08/78788d45/20240907105752.webp" alt="自动生成的航点飞行路线" style="zoom:33%;">
+<p>选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.</p>
+<img src="/2024/08/78788d45/20240907110020.png" alt="Mavic 3 Classic 飞行参数设置" style="zoom:50%;">
+<p>点击下载, 将文件下载并导入到SD卡中.</p>
+<h2 id="2-导入航线">2. 导入航线</h2>
+<p>根据导入教程导入文件<a href="https://docs.qq.com/doc/DWWNyWkxjaURLU05G">Mavic3系列屏控手动导入Kmz航点任务</a></p>
+<h3 id="2-1-创建并备份航线">2.1 创建并备份航线</h3>
+<p>创建任意数量的航点, 保存.</p>
+<p>航点文件保存位置如下</p>
+<img src="/2024/08/78788d45/20240913182709.png" alt="遥控器中的 waypoint 航线文件夹" style="zoom:33%;">
+<p>一串英文字符的文件夹内存放的就是航线文件(kmz格式)</p>
+<p>将整个waypoint文件夹复制至SD卡中</p>
+<h3 id="2-2-替换kmz文件">2.2 替换kmz文件</h3>
+<p>将已经下载好的Kmz文件同样导入到SD卡的该文件夹内</p>
+<p>注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).</p>
+<p>将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)</p>
+<p>最后将替换好的waypoint文件夹替换回去</p>
+]]></content>
+      <categories>
+        <category>地理空间技术</category>
+        <category>无人机测绘</category>
+      </categories>
+      <tags>
+        <tag>DJI Mavic 3 Classic</tag>
+        <tag>航点飞行</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>物质点法基础（二）：标准 MPM 的控制方程离散与计算流程</title>
     <url>/2024/07/96d26/</url>
     <content><![CDATA[<p>上一篇介绍了连续体的运动描述、变形梯度、变形率、柯西应力与焦曼应力率，但连续控制方程还不能直接交给计算机求解。物质点法的关键，是用物质点保存材料状态，用背景网格离散并求解动量方程，再把节点解传回物质点。这个过程同时包含空间离散、数值积分和粒子—网格双向映射，任一环节的符号或更新顺序不一致，都会造成非物理加速度、应力振荡或质量丢失。</p>
@@ -2593,60 +2647,6 @@ V_p^{n+1}=J_p^{n+1}V_p^0.
       <tags>
         <tag>控制方程</tag>
         <tag>离散化</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>DJI Mavic 3 Classic 航点飞行指南</title>
-    <url>/2024/08/78788d45/</url>
-    <content><![CDATA[<h2 id="准备工作">准备工作</h2>
-<p>遥控手柄(带屏)</p>
-<p>航线规划软件(网页) - Rainbow Cloud</p>
-<p>SD卡, 读卡器, 电脑</p>
-<h2 id="1-创建航线">1. 创建航线</h2>
-<p>首先, 打开<a href="https://app.flydji.cn/">Rainbow Cloud网站</a>.</p>
-<p>网页界面如下:</p>
-<img src="/2024/08/78788d45/20240907103046.webp" alt="DJI Pilot 2 航线规划地图界面" style="zoom: 33%;">
-<p>点击左侧新建任务.</p>
-<img src="/2024/08/78788d45/20240907103203.png" alt="DJI Pilot 2 新建任务入口" style="zoom:33%;">
-<p>选择正射</p>
-<img src="/2024/08/78788d45/20240907103355.png" alt="DJI Pilot 2 航点任务类型" style="zoom: 33%;">
-<p>输入任务名称</p>
-<img src="/2024/08/78788d45/20240907103444.png" alt="DJI Pilot 2 航点任务命名" style="zoom:50%;">
-<p>确认之后, 找到我们需要飞行的区域. 任意点击一个区域, 生成一个默认的范围.</p>
-<img src="/2024/08/78788d45/20240907103635.webp" alt="在地图上绘制矩形航区" style="zoom:33%;">
-<p>然后, 调整这个范围至合适位置. 可以移动和添加顶点</p>
-<img src="/2024/08/78788d45/20240907104233.webp" alt="调整航区边界控制点" style="zoom:33%;">
-<p>然后, 调整右侧参数栏的参数.</p>
-<img src="/2024/08/78788d45/20240907104901.webp" alt="航线高度与航向参数设置" style="zoom:33%;">
-<img src="/2024/08/78788d45/20240907105200.webp" alt="航线参数调整后的覆盖范围" style="zoom:33%;">
-<p>其余设置与上图保持一致, 保存任务</p>
-<img src="/2024/08/78788d45/20240907105605.png" alt="在航线上添加航点" style="zoom:50%;">
-<p>点击右上角任务导出</p>
-<img src="/2024/08/78788d45/20240907105752.webp" alt="自动生成的航点飞行路线" style="zoom:33%;">
-<p>选择合适的航点数, 每个文件最多支持300个航点. 航点越多单文件加载越慢.</p>
-<img src="/2024/08/78788d45/20240907110020.png" alt="Mavic 3 Classic 飞行参数设置" style="zoom:50%;">
-<p>点击下载, 将文件下载并导入到SD卡中.</p>
-<h2 id="2-导入航线">2. 导入航线</h2>
-<p>根据导入教程导入文件<a href="https://docs.qq.com/doc/DWWNyWkxjaURLU05G">Mavic3系列屏控手动导入Kmz航点任务</a></p>
-<h3 id="2-1-创建并备份航线">2.1 创建并备份航线</h3>
-<p>创建任意数量的航点, 保存.</p>
-<p>航点文件保存位置如下</p>
-<img src="/2024/08/78788d45/20240913182709.png" alt="遥控器中的 waypoint 航线文件夹" style="zoom:33%;">
-<p>一串英文字符的文件夹内存放的就是航线文件(kmz格式)</p>
-<p>将整个waypoint文件夹复制至SD卡中</p>
-<h3 id="2-2-替换kmz文件">2.2 替换kmz文件</h3>
-<p>将已经下载好的Kmz文件同样导入到SD卡的该文件夹内</p>
-<p>注意一个文件内只有一个kmz文件, 导出多个文件时需要提前创建好足够数量的航点文件(单文件最大支持300个航点).</p>
-<p>将文件夹内的kmz文件名称复制 -&gt; 删除 -&gt; 导入下载的kmz文件 -&gt; 重命名为刚复制的文件名(即保证文件名不更换)</p>
-<p>最后将替换好的waypoint文件夹替换回去</p>
-]]></content>
-      <categories>
-        <category>地理空间技术</category>
-        <category>无人机测绘</category>
-      </categories>
-      <tags>
-        <tag>DJI Mavic 3 Classic</tag>
-        <tag>航点飞行</tag>
       </tags>
   </entry>
   <entry>
